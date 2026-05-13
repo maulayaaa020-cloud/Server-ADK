@@ -1,0 +1,165 @@
+﻿<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ADK PHOTOCOPY</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- NAVBAR -->
+    <div class="navbar">
+        <a href="Index.html" class="logo">
+            <img src="LOGO ADK.png" alt="ADK Logo">
+            <span>ADK PHOTOCOPY</span>
+        </a>
+
+        <div class="menu">
+            <a href="index.html" class="active">Home</a>
+            <a href="tutorial.html">Tutorial</a>
+
+            <div class="dropdown">
+                <a href="#" class="dropdown-toggle">
+                    Jasa ADK <span class="dropdown-arrow">▾</span>
+                </a>
+                <div class="dropdown-menu">
+                    <a href="jasa.html">
+                        <div class="dropdown-item-icon">📄</div>
+                        <div class="dropdown-item-title">Penomoran Halaman</div>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="nav-right">
+            <a href="cek_pembelian.php" class="btn-nav">Cek Pembelian</a>
+        </div>
+        <div class="mobile-jasa-drop" id="jasaDrop">
+            <button class="mobile-jasa-link" onclick="toggleJasaDrop()">Jasa ADK <span class="mobile-jasa-arrow">▾</span></button>
+            <div class="mobile-jasa-menu">
+                <a href="jasa.html">📄 Penomoran Halaman</a>
+            </div>
+        </div>
+        <button class="hamburger" onclick="openMobileMenu()">
+            <span></span><span></span><span></span>
+        </button>
+    </div>
+
+    <div class="mobile-nav" id="mobileNav">
+        <div class="mobile-nav-header">
+            <a href="Index.html" class="logo">
+                <img src="LOGO ADK.png" alt="ADK Logo">
+                <span>ADK PHOTOCOPY</span>
+            </a>
+            <button class="mobile-nav-close" onclick="closeMobileMenu()">✕</button>
+        </div>
+        <div class="mobile-nav-links">
+            <a href="Index.html">Home</a>
+            <a href="tutorial.html">Tutorial</a>
+            <a href="jasa.html">Jasa ADK</a>
+        </div>
+        <div class="mobile-nav-footer">
+            <a href="cek_pembelian.php" class="btn-nav">Cek Pembelian</a>
+        </div>
+    </div>
+
+    <!-- HERO -->
+    <div class="hero">
+
+        <!-- KIRI -->
+        <div class="hero-left">
+            <h1>
+                Penomoran Halaman<br>
+                Otomatis, Cepat<br>
+                &amp; Akurat
+            </h1>
+
+            <p>
+                Solusi praktis penomoran halaman sesuai pedoman kampus.<br>
+                Tanpa ribet, tanpa software tambahan.
+            </p>
+
+            <div class="stats-row">
+                <div class="stat-item">
+                    <span class="stat-label">Dokumen Diproses</span>
+                    <span class="stat-num">500++</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Rata-rata Selesai</span>
+                    <span class="stat-num">5 Menit</span>
+                </div>
+            </div>
+
+            <a href="jasa.html" class="btn-main">Coba Sekarang</a>
+        </div>
+
+        <!-- KANAN -->
+        <div class="hero-right">
+            <div class="hero-card-outer">
+
+                <!-- Kartu belakang (dokumen biasa) -->
+                <div class="hc-back">
+                    <div class="hc-oval"></div>
+                    <div class="hc-pagenum-corner">1</div>
+                    <div class="hc-header">
+                        <div class="hc-line hc-title"></div>
+                        <div class="hc-line hc-sub"></div>
+                    </div>
+                    <div class="hc-body">
+                        <div class="hc-line"></div>
+                        <div class="hc-line hc-s"></div>
+                        <div class="hc-line"></div>
+                        <div class="hc-line hc-m"></div>
+                        <div class="hc-line"></div>
+                        <div class="hc-line hc-s"></div>
+                        <div class="hc-line"></div>
+                        <div class="hc-line hc-m"></div>
+                        <div class="hc-line hc-s"></div>
+                        <div class="hc-line"></div>
+                    </div>
+                </div>
+
+                <!-- Kartu depan (highlight fitur) -->
+                <div class="hc-front">
+                    <div class="hc-header">
+                        <div class="hc-line hc-title"></div>
+                    </div>
+                    <p class="hc-cta-title">Lihat Hasil<br>Sebelum<br>Bayar!!!</p>
+                    <ul class="hc-cta-list">
+                        <li>Penomoran halaman jadi dalam 5 menit?</li>
+                        <li>Bisa kapanpun dan dimanapun?</li>
+                        <li>Tanpa nunggu admin online?</li>
+                        <li>Murah dan cepat juga?</li>
+                        <li>Buruan order!!!</li>
+                    </ul>
+                    <div class="hc-pagenum-bottom">1</div>
+                </div>
+
+                <!-- Dots dekoratif -->
+                <div class="hc-dots"><span></span><span></span><span></span></div>
+
+
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        function openMobileMenu()  { document.getElementById('mobileNav').classList.add('open'); document.body.style.overflow='hidden'; }
+        function closeMobileMenu() { document.getElementById('mobileNav').classList.remove('open'); document.body.style.overflow=''; }
+        function toggleJasaDrop()  { document.getElementById('jasaDrop').classList.toggle('open'); }
+        document.addEventListener('click', function(e) { var d = document.getElementById('jasaDrop'); if (d && !d.contains(e.target)) d.classList.remove('open'); });
+        document.addEventListener('contextmenu', e => e.preventDefault());
+        document.addEventListener('keydown', e => {
+            if ((e.ctrlKey || e.metaKey) && ['c','a','u','s'].includes(e.key.toLowerCase()))
+                e.preventDefault();
+        });
+    </script>
+</body>
+</html>
+
+
+

@@ -1,0 +1,596 @@
+﻿<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ADK - Penomoran Halaman</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="jasa.css">
+</head>
+
+<body>
+
+    <!-- Banner maintenance (ditampilkan via JS jika mode maintenance aktif) -->
+    <div id="maintenance-banner" style="display:none;background:#7f1d1d;color:#fca5a5;padding:12px 20px;text-align:center;font-size:14px;font-weight:600;position:sticky;top:0;z-index:9999;">
+        &#9888;&#65039; Server sedang maintenance &mdash; order baru sementara tidak dapat diproses.
+    </div>
+    <script>
+    fetch('/adk/api/maintenance_status.php')
+        .then(function(r){ return r.json(); })
+        .then(function(d){ if(d.maintenance) document.getElementById('maintenance-banner').style.display='block'; })
+        .catch(function(){});
+    </script>
+
+    <!-- NAVBAR -->
+    <div class="navbar">
+        <a href="Index.html" class="logo">
+            <img src="LOGO ADK.png" alt="ADK Logo">
+            <span>ADK PHOTOCOPY</span>
+        </a>
+        <div class="menu">
+            <a href="Index.html">Home</a>
+            <a href="tutorial.html">Tutorial</a>
+            <div class="dropdown">
+                <a href="#" class="dropdown-toggle">Jasa ADK <span class="dropdown-arrow">▾</span></a>
+                <div class="dropdown-menu">
+                    <a href="jasa.html">
+                        <div class="dropdown-item-icon">📄</div>
+                        <div class="dropdown-item-title">Penomoran Halaman</div>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="nav-right">
+            <a href="cek_pembelian.php" class="btn-nav">Cek Pembelian</a>
+        </div>
+        <div class="mobile-jasa-drop" id="jasaDrop">
+            <button class="mobile-jasa-link" onclick="toggleJasaDrop()">Jasa ADK <span class="mobile-jasa-arrow">▾</span></button>
+            <div class="mobile-jasa-menu">
+                <a href="jasa.html">📄 Penomoran Halaman</a>
+            </div>
+        </div>
+        <button class="hamburger" onclick="openMobileMenu()">
+            <span></span><span></span><span></span>
+        </button>
+    </div>
+
+    <div class="mobile-nav" id="mobileNav">
+        <div class="mobile-nav-header">
+            <a href="Index.html" class="logo">
+                <img src="LOGO ADK.png" alt="ADK Logo">
+                <span>ADK PHOTOCOPY</span>
+            </a>
+            <button class="mobile-nav-close" onclick="closeMobileMenu()">✕</button>
+        </div>
+        <div class="mobile-nav-links">
+            <a href="Index.html">Home</a>
+            <a href="tutorial.html">Tutorial</a>
+            <a href="jasa.html">Jasa ADK</a>
+        </div>
+        <div class="mobile-nav-footer">
+            <a href="cek_pembelian.php" class="btn-nav">Cek Pembelian</a>
+        </div>
+    </div>
+
+    <!-- PAGE TITLE -->
+    <div class="page-header">
+        <h2 class="page-title">Jasa ADK Penomoran Halaman</h2>
+    </div>
+
+    <!-- FORM UTAMA -->
+    <form method="POST" action="api/proses.php" enctype="multipart/form-data"
+          id="orderForm" onsubmit="return prepareSubmit(event)">
+
+        <input type="hidden" name="paket"        id="hidPaket"  value="paket1">
+        <input type="hidden" name="font"         id="hidFont"   value="">
+        <input type="hidden" name="size"         id="hidSize"   value="">
+        <input type="hidden" name="hidden_cover" id="hidHidden" value="">
+        <input type="hidden" name="posisi"       id="hidPosisi" value="">
+
+        <div class="order-wrapper">
+
+            <!-- ========== KIRI ========== -->
+            <div class="order-left">
+                <div class="order-panel">
+
+                    <!-- Upload -->
+                    <div class="upload-area" id="uploadArea"
+                         onclick="document.getElementById('fileInput').click()">
+                        <p><b>Pilih File</b></p>
+                        <span>Format Word (.docx)</span>
+                    </div>
+                    <input type="file" name="file" id="fileInput" accept=".docx"
+                           onchange="handleFile(this)">
+                    <div class="file-display" id="fileDisplay">
+                        <span id="fileNameDisplay"></span>
+                        <span class="file-remove"
+                              onclick="removeFile();event.stopPropagation();">✕</span>
+                    </div>
+
+                    <!-- Tab Pilih Paket -->
+                    <p class="pilih-paket-label">Pilih Paket:</p>
+
+                    <div class="paket-tabs">
+                        <div class="paket-tab active" data-paket="1" onclick="selectPaket(1)">
+                            <div class="tab-name">FULL ANGKA </div>
+                            <div class="tab-sub">Posisi Tetap</div>
+                            <div class="tab-format"></div>
+                        </div>
+                        <div class="paket-tab" data-paket="2" onclick="selectPaket(2)">
+                            <div class="tab-name">ROMAWI + ANGKA</div>
+                            <div class="tab-sub">Posisi Tetap</div>
+                            <div class="tab-format"></div>
+                        </div>
+                        <div class="paket-tab" data-paket="3" onclick="selectPaket(3)">
+                            <div class="tab-name">ROMAWI + ANGKA</div>
+                            <div class="tab-sub">Romawi Bawah Tengah<br>Bab Bawah Tengah<br>Isi Bab Kanan Atas</div>
+                            <div class="tab-format">🔥 Populer Skripsi</div>
+                        </div>
+                    </div>
+
+                    <!-- Panel Opsi (ganti isi sesuai paket aktif) -->
+                    <div class="paket-opts-panel">
+
+                        <!-- Paket 1 -->
+                        <div class="opts-panel" id="optsPanel1" data-paket="1">
+                            <div class="opts-grid opts-grid-4">
+                                <div class="opts-col">
+                                    <div class="opts-label">Posisi / Letak</div>
+                                    <div class="pos-grid">
+                                        <div class="opt-btn" data-group="p1h" data-value="Tengah" onclick="selectOpt(this)">Tengah</div>
+                                        <div class="opt-btn" data-group="p1v" data-value="Bawah"  onclick="selectOpt(this)">Bawah</div>
+                                        <div class="opt-btn" data-group="p1h" data-value="Kanan"  onclick="selectOpt(this)">Kanan</div>
+                                        <div class="opt-btn" data-group="p1v" data-value="Atas"   onclick="selectOpt(this)">Atas</div>
+                                        <div class="opt-btn" data-group="p1h" data-value="Kiri"   onclick="selectOpt(this)">Kiri</div>
+                                    </div>
+                                </div>
+                                <div class="opts-col">
+                                    <div class="opts-label">Font</div>
+                                    <div class="opt-btn" data-group="f1" data-value="Times New Roman" onclick="selectOpt(this)">Times New Roman</div>
+                                    <div class="opt-btn" data-group="f1" data-value="Arial"           onclick="selectOpt(this)">Arial</div>
+                                    <div class="opt-btn" data-group="f1" data-value="Calibri"         onclick="selectOpt(this)">Calibri</div>
+                                </div>
+                                <div class="opts-col">
+                                    <div class="opts-label">Size</div>
+                                    <div class="opt-btn" data-group="s1" data-value="11 pt" onclick="selectOpt(this)">11 pt</div>
+                                    <div class="opt-btn" data-group="s1" data-value="12 pt" onclick="selectOpt(this)">12 pt</div>
+                                    <div class="opt-btn" data-group="s1" data-value="14 pt" onclick="selectOpt(this)">14 pt</div>
+                                </div>
+                                <div class="opts-col">
+                                    <div class="opts-label">Sembunyikan Cover (1)</div>
+                                    <div class="opt-btn" data-group="h1" data-value="Ya"    onclick="selectOpt(this)">Ya</div>
+                                    <div class="opt-btn" data-group="h1" data-value="Tidak" onclick="selectOpt(this)">Tidak</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Paket 2 -->
+                        <div class="opts-panel" id="optsPanel2" data-paket="2" style="display:none">
+                            <div class="opts-grid opts-grid-4">
+                                <div class="opts-col">
+                                    <div class="opts-label">Posisi / Letak</div>
+                                    <div class="pos-grid">
+                                        <div class="opt-btn" data-group="p2h" data-value="Tengah" onclick="selectOpt(this)">Tengah</div>
+                                        <div class="opt-btn" data-group="p2v" data-value="Bawah"  onclick="selectOpt(this)">Bawah</div>
+                                        <div class="opt-btn" data-group="p2h" data-value="Kanan"  onclick="selectOpt(this)">Kanan</div>
+                                        <div class="opt-btn" data-group="p2v" data-value="Atas"   onclick="selectOpt(this)">Atas</div>
+                                        <div class="opt-btn" data-group="p2h" data-value="Kiri"   onclick="selectOpt(this)">Kiri</div>
+                                    </div>
+                                </div>
+                                <div class="opts-col">
+                                    <div class="opts-label">Font</div>
+                                    <div class="opt-btn" data-group="f2" data-value="Times New Roman" onclick="selectOpt(this)">Times New Roman</div>
+                                    <div class="opt-btn" data-group="f2" data-value="Arial"           onclick="selectOpt(this)">Arial</div>
+                                    <div class="opt-btn" data-group="f2" data-value="Calibri"         onclick="selectOpt(this)">Calibri</div>
+                                </div>
+                                <div class="opts-col">
+                                    <div class="opts-label">Size</div>
+                                    <div class="opt-btn" data-group="s2" data-value="11 pt" onclick="selectOpt(this)">11 pt</div>
+                                    <div class="opt-btn" data-group="s2" data-value="12 pt" onclick="selectOpt(this)">12 pt</div>
+                                    <div class="opt-btn" data-group="s2" data-value="14 pt" onclick="selectOpt(this)">14 pt</div>
+                                </div>
+                                <div class="opts-col">
+                                    <div class="opts-label">Sembunyikan Cover <span style="text-transform:none">(i)</span></div>
+                                    <div class="opt-btn" data-group="h2" data-value="Ya"    onclick="selectOpt(this)">Ya</div>
+                                    <div class="opt-btn" data-group="h2" data-value="Tidak" onclick="selectOpt(this)">Tidak</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Paket 3 -->
+                        <div class="opts-panel" id="optsPanel3" data-paket="3" style="display:none">
+                            <div class="opts-grid">
+                                <div class="opts-col">
+                                    <div class="opts-label">Font</div>
+                                    <div class="opt-btn" data-group="f3" data-value="Times New Roman" onclick="selectOpt(this)">Times New Roman</div>
+                                    <div class="opt-btn" data-group="f3" data-value="Arial"           onclick="selectOpt(this)">Arial</div>
+                                    <div class="opt-btn" data-group="f3" data-value="Calibri"         onclick="selectOpt(this)">Calibri</div>
+                                </div>
+                                <div class="opts-col">
+                                    <div class="opts-label">Size</div>
+                                    <div class="opt-btn" data-group="s3" data-value="11 pt" onclick="selectOpt(this)">11 pt</div>
+                                    <div class="opt-btn" data-group="s3" data-value="12 pt" onclick="selectOpt(this)">12 pt</div>
+                                    <div class="opt-btn" data-group="s3" data-value="14 pt" onclick="selectOpt(this)">14 pt</div>
+                                </div>
+                                <div class="opts-col">
+                                    <div class="opts-label">Sembunyikan Cover <span style="text-transform:none">(i)</span></div>
+                                    <div class="opt-btn" data-group="h3" data-value="Ya"    onclick="selectOpt(this)">Ya</div>
+                                    <div class="opt-btn" data-group="h3" data-value="Tidak" onclick="selectOpt(this)">Tidak</div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div><!-- /paket-opts-panel -->
+
+                    <div class="validation-msg" id="validMsg"></div>
+
+                    <!-- No. Telepon (Opsional) -->
+                    <div class="phone-field">
+                        <label class="phone-label">
+                            No. Telepon
+                            <span class="phone-optional-badge">Opsional</span>
+                        </label>
+                        <input type="tel" name="phone" id="phoneInput"
+                               class="phone-input" placeholder="Opsional — Contoh: 08123456789"
+                               autocomplete="off">
+                    </div>
+
+                    <div id="totalHarga" style="font-size:11px;color:#facc15;margin-bottom:8px;">
+                        Total: Rp 5.000
+                    </div>
+
+                    <button type="submit" class="btn-upload-main" id="btnUpload">
+                        <span class="spinner"></span>
+                        <span class="btn-label">UPLOAD</span>
+                    </button>
+
+                </div>
+            </div>
+
+            <!-- ========== KANAN ========== -->
+            <div class="order-right">
+
+                <div class="benefits-box">
+                    <h3 class="benefits-title">Kelebihan memakai jasa ADK Penomoran Halaman</h3>
+                    <ul class="benefits-list">
+                        <li>✓ Cepat, tanpa nunggu admin online.</li>
+                        <li>✓ Murah, terjangkau dengan hasil yang maksimal.</li>
+                        <li>✓ Dapat melihat PREVIEW sebelum BAYAR.</li>
+                        <li>✓ Upload dan Downloads kapanpun dan dimanapun.</li>
+                    </ul>
+                </div>
+
+                <div class="warning-box" id="warningBox">
+                    !! Sebelum Upload, Pastikan file anda memiliki:
+                    (COVER, BAB I, BAB II, BAB III, Dst)
+                </div>
+
+                <div class="preview-box">
+                    <div class="preview-label">Preview Paket Anda:</div>
+                    <div class="preview-paket-name" id="prevName">FULL ANGKA</div>
+                    <div class="preview-paket-sub"   id="prevSub">!! Posisi Dapat Dipilih</div>
+                    <ul class="preview-detail-list"  id="prevDetails">
+                        <li>—</li><li>—</li><li>—</li>
+                    </ul>
+                    <div class="preview-pages" id="prevPages">
+                        <div class="preview-page"><span class="page-label">COVER</span></div>
+                        <div class="preview-page"><span class="page-num-bottom">2</span></div>
+                        <div class="preview-page"><span class="page-num-bottom">3</span></div>
+                        <div class="preview-page"><span class="page-num-bottom">Dst..</span></div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </form>
+
+    <script src="otp.js?v=4"></script>
+    <script>
+        let currentPaket = 1;
+
+        const sel = {
+            p1h: '', p1v: '',
+            p2h: '', p2v: '',
+            f1: '', s1: '', h1: '',
+            f2: '', s2: '', h2: '',
+            f3: '', s3: '', h3: '',
+        };
+
+        // Map (horizontal + vertikal) → CSS class suffix
+        function getPosClass(ph, pv) {
+            const map = {
+                'TengahBawah': 'bottom',
+                'KananBawah':  'bottomright',
+                'KiriBawah':   'bottomleft',
+                'TengahAtas':  'topcenter',
+                'KananAtas':   'topright',
+                'KiriAtas':    'topleft',
+            };
+            return map[(ph || '') + (pv || '')] || 'bottom';
+        }
+
+        const paketInfo = {
+            1: {
+                val: 'paket1', name: 'FULL ANGKA',
+                sub: '!! Posisi Dapat Dipilih',
+                phk: 'p1h', pvk: 'p1v', fk: 'f1', sk: 's1', hk: 'h1',
+                pages(hidden, ph, pv) {
+                    const pos = getPosClass(ph, pv);
+                    if (hidden === 'Tidak') return [
+                        { label: 'COVER', num: '1',     pos: pos },
+                        { label: '',      num: '2',     pos: pos },
+                        { label: '',      num: '3',     pos: pos },
+                        { label: '',      num: 'Dst..', pos: pos },
+                    ];
+                    return [
+                        { label: 'COVER', num: '',      pos: '' },
+                        { label: '',      num: '2',     pos: pos },
+                        { label: '',      num: '3',     pos: pos },
+                        { label: '',      num: 'Dst..', pos: pos },
+                    ];
+                }
+            },
+            2: {
+                val: 'paket2', name: 'ROMAWI DAN ANGKA',
+                sub: '!! Posisi Dapat Dipilih',
+                phk: 'p2h', pvk: 'p2v', fk: 'f2', sk: 's2', hk: 'h2',
+                pages(hidden, ph, pv) {
+                    const pos = getPosClass(ph, pv);
+                    if (hidden === 'Tidak') return [
+                        { label: 'COVER', num: 'i',     pos: pos },
+                        { label: '',      num: 'ii',    pos: pos },
+                        { label: '',      num: 'iii',   pos: pos },
+                        { label: '',      num: 'Dst..', pos: pos },
+                        { label: 'BAB',   num: '1',     pos: pos },
+                        { label: '',      num: '2',     pos: pos },
+                        { label: '',      num: 'Dst..', pos: pos },
+                    ];
+                    return [
+                        { label: 'COVER', num: '',      pos: '' },
+                        { label: '',      num: 'ii',    pos: pos },
+                        { label: '',      num: 'iii',   pos: pos },
+                        { label: '',      num: 'Dst..', pos: pos },
+                        { label: 'BAB',   num: '1',     pos: pos },
+                        { label: '',      num: '2',     pos: pos },
+                        { label: '',      num: 'Dst..', pos: pos },
+                    ];
+                }
+            },
+            3: {
+                val: 'paket3', name: 'ROMAWI DAN ANGKA',
+                sub: 'Romawi: Bawah Tengah · BAB: Bawah Tengah · Isi: Kanan Atas',
+                fk: 'f3', sk: 's3', hk: 'h3',
+                pages(hidden) {
+                    if (hidden === 'Tidak') return [
+                        { label: 'COVER', num: 'i',     pos: 'bottom' },
+                        { label: '',      num: 'ii',    pos: 'bottom' },
+                        { label: '',      num: 'iii',   pos: 'bottom' },
+                        { label: '',      num: 'Dst..', pos: 'bottom' },
+                        { label: 'BAB',   num: '1',     pos: 'bottom' },
+                        { label: '',      num: '2',     pos: 'topright' },
+                        { label: '',      num: 'Dst..', pos: 'topright' },
+                    ];
+                    return [
+                        { label: 'COVER', num: '',      pos: '' },
+                        { label: '',      num: 'ii',    pos: 'bottom' },
+                        { label: '',      num: 'iii',   pos: 'bottom' },
+                        { label: '',      num: 'Dst..', pos: 'bottom' },
+                        { label: 'BAB',   num: '1',     pos: 'bottom' },
+                        { label: '',      num: '2',     pos: 'topright' },
+                        { label: '',      num: 'Dst..', pos: 'topright' },
+                    ];
+                }
+            }
+        };
+
+        const warningText = {
+            1: '✓ Paket Full Angka cocok untuk dokumen apapun..',
+            2: '!! Sebelum Upload, Pastikan file anda memiliki: (COVER, BAB I, BAB II, BAB III, Dst)',
+            3: '!! Sebelum Upload, Pastikan file anda memiliki: (COVER, BAB I, BAB II, BAB III, Dst)',
+        };
+        const warningClass = {
+            1: 'warning-box warning-ok',
+            2: 'warning-box',
+            3: 'warning-box',
+        };
+
+        function updateWarning() {
+            const el = document.getElementById('warningBox');
+            el.textContent = warningText[currentPaket];
+            el.className   = warningClass[currentPaket];
+        }
+
+        function selectPaket(n) {
+            if (currentPaket === n) return;
+
+            const prev = paketInfo[currentPaket];
+            [prev.fk, prev.sk, prev.hk].forEach(k => sel[k] = '');
+            if (prev.phk) { sel[prev.phk] = ''; sel[prev.pvk] = ''; }
+            document.getElementById('optsPanel' + currentPaket)
+                .querySelectorAll('.opt-btn.selected')
+                .forEach(b => b.classList.remove('selected'));
+
+            currentPaket = n;
+
+            const _h = window._harga || {paket1:5000, paket2:10000, paket3:10000};
+            const _hVal = n === 1 ? _h.paket1 : (n === 2 ? _h.paket2 : _h.paket3);
+            document.getElementById('totalHarga').textContent = 'Total: Rp ' + _hVal.toLocaleString('id-ID');
+
+            document.querySelectorAll('.paket-tab').forEach((t, i) => {
+                t.classList.toggle('active', i === n - 1);
+            });
+            document.querySelectorAll('.opts-panel').forEach((p, i) => {
+                p.style.display = i === n - 1 ? '' : 'none';
+            });
+
+            hideValidation();
+            updatePreview();
+            updateWarning();
+        }
+
+        function selectOpt(el) {
+            const panel    = el.closest('.opts-panel');
+            const paketNum = parseInt(panel.dataset.paket);
+            if (currentPaket !== paketNum) selectPaket(paketNum);
+
+            const group = el.dataset.group;
+            const value = el.dataset.value;
+            sel[group] = value;
+
+            panel.querySelectorAll(`[data-group="${group}"]`)
+                 .forEach(b => b.classList.remove('selected'));
+            el.classList.add('selected');
+
+            hideValidation();
+            updatePreview();
+        }
+
+        function updatePreview() {
+            const p      = paketInfo[currentPaket];
+            const font   = sel[p.fk]  || '—';
+            const size   = sel[p.sk]  || '—';
+            const hidden = sel[p.hk];
+            const ph     = p.phk ? sel[p.phk] : '';
+            const pv     = p.pvk ? sel[p.pvk] : '';
+
+            document.getElementById('prevName').textContent = p.name;
+            document.getElementById('prevSub').textContent  = p.sub;
+
+            let posLine = '';
+            if (p.phk) {
+                const posText = (ph && pv) ? `${ph} ${pv}` : '—';
+                posLine = `<li>Posisi: ${posText}</li>`;
+            }
+            document.getElementById('prevDetails').innerHTML =
+                `${posLine}<li>Font: ${font}</li><li>Size: ${size}</li>` +
+                `<li>Cover: ${hidden === 'Ya' ? 'Disembunyikan' : hidden === 'Tidak' ? 'Tampil' : '—'}</li>`;
+
+            const pages = p.pages(hidden, ph, pv);
+            document.getElementById('prevPages').innerHTML = pages.map(pg => {
+                let inner = '';
+                if (pg.label) inner += `<span class="page-label">${pg.label}</span>`;
+                if (pg.num && pg.pos) inner += `<span class="page-num-${pg.pos}">${pg.num}</span>`;
+                return `<div class="preview-page">${inner}</div>`;
+            }).join('');
+        }
+
+        function handleFile(input) {
+            if (!input.files[0]) return;
+            document.getElementById('fileNameDisplay').textContent = input.files[0].name;
+            document.getElementById('fileDisplay').style.display = 'flex';
+            document.getElementById('uploadArea').style.display  = 'none';
+            hideValidation();
+        }
+
+        function removeFile() {
+            document.getElementById('fileInput').value = '';
+            document.getElementById('fileDisplay').style.display = 'none';
+            document.getElementById('uploadArea').style.display  = '';
+        }
+
+        function hideValidation() {
+            document.getElementById('validMsg').classList.remove('show');
+        }
+
+        function showValidation(msgs) {
+            const el = document.getElementById('validMsg');
+            el.innerHTML = msgs.map(m => `• ${m}`).join('<br>');
+            el.classList.add('show');
+            el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        function prepareSubmit(e) {
+            e.preventDefault();
+            const p     = paketInfo[currentPaket];
+            const msgs  = [];
+            const phone = document.getElementById('phoneInput').value.trim();
+
+            // Jika email dimasukkan → cek server dulu, baru buka modal jika valid
+            if (phone && phone.includes('@')) {
+                fetch('api/send_otp.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone: phone })
+                })
+                .then(function (r) { return r.json(); })
+                .then(function (d) {
+                    if (d.admin_mode) {
+                        requireOTP(phone, function () {});
+                    } else {
+                        showValidation(['Nomor tidak valid']);
+                    }
+                })
+                .catch(function () { showValidation(['Nomor tidak valid']); });
+                return false;
+            }
+
+            // phone opsional — tidak divalidasi wajib isi
+
+            if (!document.getElementById('fileInput').files[0])
+                msgs.push('Anda belum upload file (.docx)');
+            if (currentPaket === 1 || currentPaket === 2) {
+                if (!sel[p.phk]) msgs.push('Posisi horizontal belum dipilih (Kiri / Tengah / Kanan)');
+                if (!sel[p.pvk]) msgs.push('Posisi vertikal belum dipilih (Atas / Bawah)');
+            }
+            if (!sel[p.fk]) msgs.push('Font belum dipilih');
+            if (!sel[p.sk]) msgs.push('Ukuran font belum dipilih');
+            if (!sel[p.hk]) msgs.push('Pilihan sembunyikan cover belum dipilih');
+
+            if (msgs.length > 0) { showValidation(msgs); return false; }
+
+            document.getElementById('hidPaket').value  = p.val;
+            document.getElementById('hidFont').value   = sel[p.fk];
+            document.getElementById('hidSize').value   = sel[p.sk];
+            document.getElementById('hidHidden').value = sel[p.hk];
+            if (p.phk) document.getElementById('hidPosisi').value = `${sel[p.phk]} ${sel[p.pvk]}`;
+
+            if (phone) {
+                // Mode login: verifikasi OTP terlebih dahulu
+                requireOTP(phone, function () {
+                    const btn = document.getElementById('btnUpload');
+                    btn.querySelector('.btn-label').textContent = 'Mengerjakan';
+                    btn.classList.add('loading');
+                    document.getElementById('orderForm').submit();
+                });
+            } else {
+                // Mode tamu: langsung submit tanpa OTP
+                const btn = document.getElementById('btnUpload');
+                btn.querySelector('.btn-label').textContent = 'Mengerjakan';
+                btn.classList.add('loading');
+                document.getElementById('orderForm').submit();
+            }
+        }
+
+        updatePreview();
+
+        function openMobileMenu()  { document.getElementById('mobileNav').classList.add('open'); document.body.style.overflow='hidden'; }
+        function closeMobileMenu() { document.getElementById('mobileNav').classList.remove('open'); document.body.style.overflow=''; }
+        function toggleJasaDrop()  { document.getElementById('jasaDrop').classList.toggle('open'); }
+        document.addEventListener('click', function(e) { var d = document.getElementById('jasaDrop'); if (d && !d.contains(e.target)) d.classList.remove('open'); });
+
+        document.addEventListener('contextmenu', e => e.preventDefault());
+        document.addEventListener('keydown', e => {
+            if ((e.ctrlKey || e.metaKey) && ['c','a','u','s'].includes(e.key.toLowerCase()))
+                e.preventDefault();
+        });
+
+        // Sync harga dari server agar selalu sesuai konfigurasi admin
+        (function() {
+            fetch('/adk/api/harga_info.php')
+                .then(function(r) { return r.json(); })
+                .then(function(d) {
+                    window._harga = d;
+                    var hargaVal = currentPaket === 1 ? d.paket1 : (currentPaket === 2 ? d.paket2 : d.paket3);
+                    document.getElementById('totalHarga').textContent = 'Total: Rp ' + hargaVal.toLocaleString('id-ID');
+                })
+                .catch(function() { window._harga = {paket1:5000, paket2:10000, paket3:10000}; });
+        })();
+    </script>
+
+</body>
+</html>
+
+
+

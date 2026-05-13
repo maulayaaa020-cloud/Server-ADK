@@ -1,0 +1,435 @@
+body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, rgb(14, 11, 40), #1a1443);
+    color: white;
+}
+
+/* NAVBAR */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 40px 60px;
+}
+@media (max-width: 768px) {
+    .navbar {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.logo img {
+    width: 60px;
+    height: 40px;
+    object-fit: cover;
+}
+
+.logo span {
+    font-size: 24px;
+    font-weight: bold;
+    color: #ffffff;
+}
+
+
+
+.menu a:not(.btn-nav) {
+    margin: 0 15px;
+    color: #ccc;
+    text-decoration: none;
+}
+
+.menu a:not(.btn-nav):hover {
+    color: white;
+}
+
+a.btn-nav, button.btn-nav {
+    background: #7c3aed;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 20px;
+    cursor: pointer;
+
+    text-decoration: none !important;
+    display: inline-block;
+    font-family: inherit;
+    transition: 0.3s;
+}
+
+/* HERO */
+.hero {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 80px 1000px;
+}
+
+/* KIRI */
+.hero-left {
+    max-width: 500px;
+}
+
+.hero-left h1 {
+    font-size: 40px;
+    margin-bottom: 20px;
+}
+
+.hero-left p {
+    font-size: 16px;
+    color: #ccc;
+    margin-bottom: 30px;
+}
+
+/* STATS */
+.stats {
+    display: flex;
+    gap: 40px;
+    margin-bottom: 30px;
+}
+
+.stats h2 {
+    margin: 0;
+}
+
+.stats span {
+    color: #aaa;
+    font-size: 14px;
+}
+
+/* BUTTON */
+.btn-main {
+    background: #7c3aed;
+    border: none;
+    padding: 15px 25px;
+    border-radius: 25px;
+    color: white;
+    cursor: pointer;
+}
+
+.btn-main:hover {
+    background: #a855f7;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(124, 58, 237, 0.5);
+}
+
+/* KANAN */
+.hero-right {
+    display: flex;
+    justify-content: center;
+}
+
+/* CARD */
+.card {
+    background: #f9fafb;
+    color: black;
+    padding: 25px;
+    border-radius: 20px;
+    width: 320px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+/* UPLOAD BOX */
+.upload-box {
+    border: 2px dashed #d1d5db;
+    padding: 40px;
+    text-align: center;
+    border-radius: 15px;
+    background: #f9fafb;
+    transition: 0.3s;
+}
+
+.upload-box p {
+    margin: 0;
+    font-weight: 500;
+}
+
+.upload-box span {
+    font-size: 12px;
+    color: #888;
+}
+
+/* efek hover (biar kerasa bisa diklik) */
+.upload-box:hover {
+    border-color: #7c3aed;
+    background: #f3f0ff;
+    cursor: pointer;
+}
+
+.file-input {
+    display: none;
+}
+
+
+
+/* BUTTON UPLOAD */
+.btn-Upload {
+    width: 100%;
+    padding: 12px;
+    background: #7c3aed;
+    border: none;
+    color: white;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: 0.3s;
+    margin-top: 10px;
+
+}
+
+/* SAAT DIHOVER */
+.btn-Upload:hover {
+    background: #a855f7;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(124, 58, 237, 0.5);
+}
+
+.paket {
+    margin-top: 15px;
+}
+
+.paket p {
+    font-size: 14px;
+    margin-bottom: 10px;
+}
+
+/* item paket */
+.paket-item {
+    display: block;
+    background: #f3f4f6;
+    padding: 10px;
+    border-radius: 10px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+/* hover */
+.paket-item:hover {
+    background: #e9d5ff;
+}
+
+/* sembunyikan radio asli */
+.paket-item input {
+    display: none;
+}
+
+/* kalau dipilih */
+.paket-item input:checked+span {
+    color: #7c3aed;
+    font-weight: bold;
+}
+
+/* POPUP BACKGROUND */
+.popup {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    justify-content: center;
+    align-items: center;
+}
+
+/* ISI POPUP */
+.popup-content {
+    background: white;
+    color: black;
+    padding: 25px;
+    border-radius: 15px;
+    width: 300px;
+    text-align: center;
+    animation: muncul 0.3s ease;
+}
+
+/* biar bisa jadi patokan posisi */
+.paket-item {
+    position: relative;
+}
+
+/* box info */
+.info-box {
+    position: absolute;
+    left: -410px;
+    top: 0;
+
+    width: 350px;
+    padding: 12px;
+    border-radius: 14px;
+
+    background: #f9f9ff;
+
+    /* 🔥 OUTLINE UNGU GELAP */
+    border: 2px solid #4c1d95;
+
+    /* 🔥 GLOW HALUS */
+    box-shadow:
+        0 10px 25px rgba(0, 0, 0, 0.3),
+        0 0 0 2px rgba(124, 58, 237, 0.2);
+
+    color: #111;
+    font-size: 12px;
+
+    opacity: 0;
+    transform: translateX(20px);
+    transition: 0.3s;
+}
+
+/* panah kecil */
+.info-box::after {
+    content: "";
+    position: absolute;
+    right: -50px;
+    top: 15px;
+
+    border-width: 8px;
+    border-style: solid;
+    border-color: transparent transparent transparent white;
+}
+
+/* muncul saat hover */
+.paket-item:hover .info-box {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* muncul saat dipilih */
+.paket-item input:checked~.info-box {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* default hidden */
+.info-box {
+    opacity: 0;
+    transform: translateX(30px);
+    pointer-events: none;
+    outline-color: rgb(14, 11, 40);
+    font-size: 16px;
+}
+
+/* tampil saat hover */
+.paket-item:hover .info-box {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* tampil saat dipilih */
+.paket-item input:checked~.info-box {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* 🔥 KUNCI: matikan hover lain kalau ada yang dipilih */
+.paket:has(input:checked) .paket-item:hover .info-box {
+    opacity: 0;
+    transform: translateX(20px);
+}
+
+/* tetap tampilkan yang dipilih */
+.paket-item input:checked~.info-box {
+    opacity: 1 !important;
+}
+
+.kategori {
+    margin-top: 20px;
+    margin-bottom: 10px;
+    font-size: 14px;
+    color: #555;
+}
+
+.paket-row {
+    display: flex;
+    gap: 10px;
+}
+
+.paket-item {
+    user-select: none;
+}
+
+/* MODE HP */
+@media (max-width: 768px) {
+
+    /* HERO jadi ke bawah */
+    .hero {
+        flex-direction: column;
+        padding: 40px 20px;
+        text-align: center;
+    }
+
+    /* kiri full */
+    .hero-left {
+        max-width: 100%;
+        margin-bottom: 30px;
+    }
+
+    /* card full */
+    .card {
+        width: 100%;
+    }
+
+    /* navbar dipadatkan */
+    .navbar {
+        padding: 15px 20px;
+    }
+
+    .menu {
+        display: none;
+        /* opsional: biar simpel di HP */
+    }
+
+    /* INFO BOX JANGAN KE SAMPING */
+    .info-box {
+        left: 50%;
+        top: 110%;
+        transform: translateX(-50%) translateY(10px);
+    }
+
+    /* panah pindah ke atas */
+    .info-box::after,
+    .info-box::before {
+        display: none;
+    }
+}
+
+.upload-box {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+}
+
+.btn-Upload {
+    display: block;
+    width: 93%;
+    text-align: center;
+    text-decoration: none;
+}
+.card h2 {
+    margin-bottom: 10px;
+}
+
+.card p {
+    color: #555;
+    margin-bottom: 20px;
+}
+.card {
+    animation: fadeUp 0.5s ease;
+}
+
+@keyframes fadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

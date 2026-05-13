@@ -1,0 +1,817 @@
+﻿<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tutorial Order – ADK PHOTOCOPY</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .tut-wrap {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 48px 24px 100px;
+        }
+
+        /* HEADER */
+        .tut-header {
+            text-align: center;
+            margin-bottom: 56px;
+        }
+
+        .tut-badge {
+            display: inline-block;
+            font-size: 11px;
+            font-weight: 700;
+            color: #a78bfa;
+            background: rgba(124,58,237,0.12);
+            border: 1px solid rgba(124,58,237,0.3);
+            border-radius: 20px;
+            padding: 4px 14px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 14px;
+        }
+
+        .tut-title {
+            font-size: 32px;
+            font-weight: 800;
+            color: white;
+            margin: 0 0 12px;
+        }
+
+        .tut-sub {
+            font-size: 15px;
+            color: #9ca3af;
+            line-height: 1.6;
+        }
+
+        /* STEP */
+        .step-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+
+        .step-item {
+            display: flex;
+            gap: 28px;
+            position: relative;
+        }
+
+        /* Garis vertikal penghubung */
+        .step-item:not(:last-child) .step-left::after {
+            content: '';
+            position: absolute;
+            left: 20px;
+            top: 44px;
+            bottom: -28px;
+            width: 2px;
+            background: linear-gradient(to bottom, rgba(124,58,237,0.5), rgba(124,58,237,0.1));
+        }
+
+        .step-left {
+            position: relative;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .step-num {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: #7c3aed;
+            color: white;
+            font-size: 16px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            box-shadow: 0 0 0 4px rgba(124,58,237,0.2);
+            z-index: 1;
+        }
+
+        .step-right {
+            flex: 1;
+            padding-bottom: 40px;
+        }
+
+        .step-title {
+            font-size: 17px;
+            font-weight: 800;
+            color: white;
+            margin: 8px 0 6px;
+        }
+
+        .step-desc {
+            font-size: 13px;
+            color: #9ca3af;
+            line-height: 1.75;
+            margin-bottom: 16px;
+        }
+
+        .step-desc strong { color: #e2e8f0; }
+
+        /* VISUAL CARD tiap step */
+        .step-visual {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(124,58,237,0.22);
+            border-radius: 14px;
+            overflow: hidden;
+        }
+
+        /* BAR TIRUAN BROWSER */
+        .vis-topbar {
+            background: rgba(124,58,237,0.12);
+            border-bottom: 1px solid rgba(124,58,237,0.18);
+            padding: 8px 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .vis-dot {
+            width: 9px; height: 9px;
+            border-radius: 50%;
+        }
+        .vis-dot.r { background: #ef4444; }
+        .vis-dot.y { background: #fbbf24; }
+        .vis-dot.g { background: #34d399; }
+
+        .vis-url {
+            margin-left: 8px;
+            font-size: 10px;
+            color: #6b7280;
+            background: rgba(255,255,255,0.05);
+            border-radius: 6px;
+            padding: 2px 10px;
+        }
+
+        .vis-body { padding: 16px 18px; }
+
+        /* UPLOAD mockup */
+        .vis-upload-area {
+            border: 2px dashed rgba(124,58,237,0.4);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            background: rgba(124,58,237,0.05);
+        }
+
+        .vis-upload-icon { font-size: 28px; margin-bottom: 6px; }
+        .vis-upload-label { font-size: 13px; font-weight: 700; color: #e2e8f0; margin-bottom: 3px; }
+        .vis-upload-sub { font-size: 11px; color: #6b7280; }
+
+        /* FILE CHIP */
+        .vis-file-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(124,58,237,0.15);
+            border: 1px solid rgba(124,58,237,0.35);
+            border-radius: 8px;
+            padding: 8px 14px;
+            font-size: 12px;
+            color: #a78bfa;
+            margin-top: 10px;
+        }
+
+        /* PAKET TABS mockup */
+        .vis-tabs {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 10px;
+        }
+
+        .vis-tab {
+            flex: 1;
+            border: 1.5px solid rgba(255,255,255,0.08);
+            border-radius: 8px 8px 0 0;
+            padding: 8px 6px;
+            text-align: center;
+            font-size: 10px;
+            color: #6b7280;
+            font-weight: 700;
+        }
+
+        .vis-tab.active {
+            border-color: #7c3aed;
+            background: rgba(124,58,237,0.15);
+            color: #a78bfa;
+        }
+
+        .vis-panel {
+            border: 1.5px solid #7c3aed;
+            border-radius: 0 0 8px 8px;
+            padding: 10px 12px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .vis-opt-col { flex: 1; }
+
+        .vis-opt-label {
+            font-size: 9px;
+            color: #6b7280;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .vis-opt-btn {
+            display: block;
+            font-size: 10px;
+            color: #9ca3af;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 4px;
+            padding: 4px 6px;
+            margin-bottom: 3px;
+            text-align: center;
+        }
+
+        .vis-opt-btn.sel {
+            background: #7c3aed;
+            color: white;
+            border-color: #7c3aed;
+        }
+
+        /* PHONE INPUT */
+        .vis-phone-wrap { margin-top: 12px; }
+        .vis-phone-label { font-size: 10px; color: #6b7280; font-weight: 700; margin-bottom: 4px; }
+        .vis-phone-input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1.5px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            background: rgba(255,255,255,0.05);
+            color: #e2e8f0;
+            font-size: 12px;
+            box-sizing: border-box;
+        }
+
+        /* BUTTON UPLOAD */
+        .vis-btn-upload {
+            display: block;
+            width: 100%;
+            margin-top: 10px;
+            padding: 10px;
+            background: #7c3aed;
+            color: white;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 700;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .vis-spinner {
+            width: 14px; height: 14px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            flex-shrink: 0;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* OTP MODAL */
+        .vis-otp-box {
+            background: #12102a;
+            border: 1px solid rgba(124,58,237,0.4);
+            border-radius: 14px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .vis-otp-title { font-size: 14px; font-weight: 700; color: white; margin-bottom: 6px; }
+        .vis-otp-sub { font-size: 11px; color: #9ca3af; margin-bottom: 14px; }
+
+        .vis-otp-inputs {
+            display: flex;
+            gap: 6px;
+            justify-content: center;
+            margin-bottom: 12px;
+        }
+
+        .vis-otp-digit {
+            width: 36px; height: 42px;
+            border: 1.5px solid rgba(124,58,237,0.4);
+            border-radius: 8px;
+            background: rgba(255,255,255,0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: 700;
+            color: #a78bfa;
+        }
+
+        .vis-otp-digit.filled { border-color: #7c3aed; background: rgba(124,58,237,0.12); }
+
+        .vis-otp-btn {
+            display: block;
+            width: 100%;
+            padding: 9px;
+            background: #7c3aed;
+            color: white;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 700;
+            text-align: center;
+        }
+
+        /* PREVIEW MODAL */
+        .vis-preview-box {
+            border: 1px solid rgba(124,58,237,0.3);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .vis-preview-header {
+            background: rgba(124,58,237,0.12);
+            padding: 8px 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .vis-preview-title { font-size: 11px; color: white; font-weight: 700; }
+        .vis-wm-tag {
+            font-size: 9px;
+            color: #fbbf24;
+            background: rgba(251,191,36,0.1);
+            border: 1px solid rgba(251,191,36,0.25);
+            border-radius: 10px;
+            padding: 2px 8px;
+        }
+
+        .vis-preview-doc {
+            background: white;
+            padding: 14px 16px;
+            position: relative;
+        }
+
+        .vis-wm-overlay {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            overflow: hidden;
+        }
+
+        .vis-wm-row {
+            display: flex;
+            gap: 40px;
+            transform: rotate(-30deg) translateX(-10px);
+            white-space: nowrap;
+            opacity: 0.12;
+        }
+
+        .vis-wm-text {
+            font-size: 13px;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .vis-doc-lines { position: relative; z-index: 1; }
+        .vis-doc-line {
+            height: 7px;
+            background: #e5e7eb;
+            border-radius: 3px;
+            margin-bottom: 7px;
+        }
+
+        /* PAYMENT */
+        .vis-pay-methods {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .vis-pay-item {
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            padding: 10px 8px;
+            text-align: center;
+            font-size: 10px;
+            color: #9ca3af;
+            font-weight: 600;
+        }
+
+        .vis-pay-item.highlight {
+            border-color: rgba(124,58,237,0.4);
+            background: rgba(124,58,237,0.1);
+            color: #a78bfa;
+        }
+
+        .vis-pay-icon { font-size: 20px; display: block; margin-bottom: 4px; }
+
+        /* DOWNLOAD */
+        .vis-dl-row {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .vis-dl-btn {
+            flex: 1;
+            padding: 10px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 700;
+            text-align: center;
+        }
+
+        .vis-dl-docx {
+            background: rgba(124,58,237,0.15);
+            border: 1px solid rgba(124,58,237,0.4);
+            color: #a78bfa;
+        }
+
+        .vis-dl-pdf {
+            background: #7c3aed;
+            color: white;
+        }
+
+        /* TIPS */
+        .step-tip {
+            background: rgba(251,191,36,0.06);
+            border: 1px solid rgba(251,191,36,0.2);
+            border-radius: 10px;
+            padding: 10px 14px;
+            font-size: 12px;
+            color: #fbbf24;
+            margin-top: 12px;
+            line-height: 1.6;
+        }
+
+        .step-tip strong { color: #fde68a; }
+
+        /* DONE BANNER */
+        .tut-done {
+            margin-top: 56px;
+            background: rgba(52,211,153,0.06);
+            border: 1px solid rgba(52,211,153,0.2);
+            border-radius: 16px;
+            padding: 32px 24px;
+            text-align: center;
+        }
+
+        .tut-done-icon { font-size: 40px; margin-bottom: 12px; }
+        .tut-done-title { font-size: 18px; font-weight: 800; color: white; margin-bottom: 8px; }
+        .tut-done-sub { font-size: 13px; color: #9ca3af; line-height: 1.7; margin-bottom: 20px; }
+
+        .btn-coba {
+            display: inline-block;
+            padding: 12px 28px;
+            background: #7c3aed;
+            color: white;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 700;
+            text-decoration: none;
+            transition: 0.2s;
+        }
+
+        .btn-coba:hover {
+            background: #a855f7;
+            box-shadow: 0 6px 20px rgba(124,58,237,0.45);
+        }
+
+        @media (max-width: 640px) {
+            .tut-title { font-size: 24px; }
+            .step-item { gap: 16px; }
+            .vis-tabs { flex-direction: column; }
+            .vis-tab { border-radius: 8px; }
+            .vis-panel { flex-wrap: wrap; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="navbar">
+        <a href="Index.html" class="logo">
+            <img src="LOGO ADK.png" alt="ADK Logo">
+            <span>ADK PHOTOCOPY</span>
+        </a>
+        <div class="menu">
+            <a href="Index.html">Home</a>
+            <a href="tutorial.html" class="active">Tutorial</a>
+            <div class="dropdown">
+                <a href="#" class="dropdown-toggle">Jasa ADK <span class="dropdown-arrow">▾</span></a>
+                <div class="dropdown-menu">
+                    <a href="jasa.html">
+                        <div class="dropdown-item-icon">📄</div>
+                        <div class="dropdown-item-title">Penomoran Halaman</div>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="nav-right">
+            <a href="cek_pembelian.php" class="btn-nav">Cek Pembelian</a>
+        </div>
+        <div class="mobile-jasa-drop" id="jasaDrop">
+            <button class="mobile-jasa-link" onclick="toggleJasaDrop()">Jasa ADK <span class="mobile-jasa-arrow">▾</span></button>
+            <div class="mobile-jasa-menu">
+                <a href="jasa.html">📄 Penomoran Halaman</a>
+            </div>
+        </div>
+        <button class="hamburger" onclick="openMobileMenu()">
+            <span></span><span></span><span></span>
+        </button>
+    </div>
+
+    <div class="mobile-nav" id="mobileNav">
+        <div class="mobile-nav-header">
+            <a href="Index.html" class="logo">
+                <img src="LOGO ADK.png" alt="ADK Logo">
+                <span>ADK PHOTOCOPY</span>
+            </a>
+            <button class="mobile-nav-close" onclick="closeMobileMenu()">✕</button>
+        </div>
+        <div class="mobile-nav-links">
+            <a href="Index.html">Home</a>
+            <a href="tutorial.html">Tutorial</a>
+            <a href="jasa.html">Jasa ADK</a>
+        </div>
+        <div class="mobile-nav-footer">
+            <a href="cek_pembelian.php" class="btn-nav">Cek Pembelian</a>
+        </div>
+    </div>
+
+    <div class="tut-wrap">
+
+        <div class="tut-header">
+            <div class="tut-badge">Panduan</div>
+            <h1 class="tut-title">Cara Order Penomoran Halaman</h1>
+            <p class="tut-sub">Ikuti langkah-langkah berikut. Proses selesai dalam kurang dari 5 menit.</p>
+        </div>
+
+        <div class="step-list">
+
+            <!-- STEP 1 -->
+            <div class="step-item">
+                <div class="step-left">
+                    <div class="step-num">1</div>
+                </div>
+                <div class="step-right">
+                    <div class="step-title">Upload File Word (.docx)</div>
+                    <p class="step-desc">
+                        Klik area upload atau drag &amp; drop file <strong>.docx</strong> kamu ke sana.
+                        File harus berformat Word — bukan PDF, bukan gambar.
+                    </p>
+                    <div class="step-visual">
+                        <div class="vis-topbar">
+                            <div class="vis-dot r"></div>
+                            <div class="vis-dot y"></div>
+                            <div class="vis-dot g"></div>
+                            <div class="vis-url">adk.photocopy/jasa.html</div>
+                        </div>
+                        <div class="vis-body">
+                            <div class="vis-upload-area">
+                                <div class="vis-upload-icon">📂</div>
+                                <div class="vis-upload-label">Pilih File</div>
+                                <div class="vis-upload-sub">Format Word (.docx)</div>
+                            </div>
+                            <div class="vis-file-chip">
+                                📄 Skripsi_Farizal.docx &nbsp;✓
+                            </div>
+                        </div>
+                    </div>
+                    <div class="step-tip"><strong>Tips:</strong> Untuk Paket Romawi &amp; Angka, pastikan dokumenmu punya COVER dan BAB I, BAB II, dst. Paket Full Angka bisa untuk dokumen apapun.</div>
+                </div>
+            </div>
+
+            <!-- STEP 2 -->
+            <div class="step-item">
+                <div class="step-left">
+                    <div class="step-num">2</div>
+                </div>
+                <div class="step-right">
+                    <div class="step-title">Pilih Paket</div>
+                    <p class="step-desc">
+                        Pilih paket sesuai kebutuhan dokumenmu:<br>
+                        <strong>Full Angka</strong> — untuk dokumen umum, posisi nomor bisa dipilih bebas.<br>
+                        <strong>Romawi + Angka (Posisi Tetap)</strong> — halaman awal romawi, BAB dst angka.<br>
+                        <strong>Romawi + Angka (Skripsi)</strong> — standar kampus: cover tanpa nomor, romawi tengah bawah, BAB tengah bawah, isi BAB kanan atas.
+                    </p>
+                    <div class="step-visual">
+                        <div class="vis-body">
+                            <div class="vis-tabs">
+                                <div class="vis-tab">FULL ANGKA</div>
+                                <div class="vis-tab">ROMAWI + ANGKA</div>
+                                <div class="vis-tab active">ROMAWI + ANGKA<br><small style="color:#6b7280;font-weight:400">🔥 Populer Skripsi</small></div>
+                            </div>
+                            <div class="vis-panel">
+                                <div class="vis-opt-col">
+                                    <div class="vis-opt-label">Font</div>
+                                    <div class="vis-opt-btn sel">Times New Roman</div>
+                                    <div class="vis-opt-btn">Arial</div>
+                                    <div class="vis-opt-btn">Calibri</div>
+                                </div>
+                                <div class="vis-opt-col">
+                                    <div class="vis-opt-label">Size</div>
+                                    <div class="vis-opt-btn">11 pt</div>
+                                    <div class="vis-opt-btn sel">12 pt</div>
+                                    <div class="vis-opt-btn">14 pt</div>
+                                </div>
+                                <div class="vis-opt-col">
+                                    <div class="vis-opt-label">Cover</div>
+                                    <div class="vis-opt-btn sel">Ya</div>
+                                    <div class="vis-opt-btn">Tidak</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEP 3 -->
+            <div class="step-item">
+                <div class="step-left">
+                    <div class="step-num">3</div>
+                </div>
+                <div class="step-right">
+                    <div class="step-title">Masukkan Nomor HP &amp; Klik UPLOAD</div>
+                    <p class="step-desc">
+                        Isi <strong>nomor HP aktif</strong> kamu — nomor ini digunakan untuk mengidentifikasi orderanmu
+                        dan menerima kode OTP verifikasi. Lalu klik tombol <strong>UPLOAD</strong>.
+                    </p>
+                    <div class="step-visual">
+                        <div class="vis-body">
+                            <div class="vis-phone-wrap">
+                                <div class="vis-phone-label">No. Telepon</div>
+                                <input class="vis-phone-input" value="0812 3456 7890" readonly>
+                            </div>
+                            <div class="vis-btn-upload">
+                                UPLOAD
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEP 4 -->
+            <div class="step-item">
+                <div class="step-left">
+                    <div class="step-num">4</div>
+                </div>
+                <div class="step-right">
+                    <div class="step-title">Verifikasi OTP</div>
+                    <p class="step-desc">
+                        Kode OTP 6 digit dikirim ke nomor HP kamu via <strong>WhatsApp / SMS</strong>.
+                        Masukkan kode tersebut dalam 5 menit. Perangkat yang sudah terverifikasi
+                        tidak perlu OTP lagi selama 30 hari.
+                    </p>
+                    <div class="step-visual">
+                        <div class="vis-body">
+                            <div class="vis-otp-box">
+                                <div class="vis-otp-title">Verifikasi Nomor</div>
+                                <div class="vis-otp-sub">Kode OTP dikirim ke 0812 3456 7890</div>
+                                <div class="vis-otp-inputs">
+                                    <div class="vis-otp-digit filled">4</div>
+                                    <div class="vis-otp-digit filled">8</div>
+                                    <div class="vis-otp-digit filled">2</div>
+                                    <div class="vis-otp-digit filled">1</div>
+                                    <div class="vis-otp-digit">_</div>
+                                    <div class="vis-otp-digit">_</div>
+                                </div>
+                                <div class="vis-otp-btn">Verifikasi</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="step-tip"><strong>Tidak menerima OTP?</strong> Pastikan nomor HP aktif dan bisa menerima pesan. Klik "Kirim Ulang" setelah 60 detik.</div>
+                </div>
+            </div>
+
+            <!-- STEP 5 -->
+            <div class="step-item">
+                <div class="step-left">
+                    <div class="step-num">5</div>
+                </div>
+                <div class="step-right">
+                    <div class="step-title">Cek Preview Hasil (Sebelum Bayar)</div>
+                    <p class="step-desc">
+                        Setelah file diproses, kamu bisa melihat <strong>preview lengkap</strong> hasil penomoran
+                        dengan watermark <em>"PREVIEW HASIL ADK"</em>. Pastikan penomoran sudah sesuai
+                        sebelum melanjutkan ke pembayaran.
+                    </p>
+                    <div class="step-visual">
+                        <div class="vis-body">
+                            <div class="vis-preview-box">
+                                <div class="vis-preview-header">
+                                    <div class="vis-preview-title">Skripsi_Farizal.docx</div>
+                                    <div class="vis-wm-tag">🔍 WATERMARK PREVIEW</div>
+                                </div>
+                                <div class="vis-preview-doc" style="height:100px">
+                                    <div class="vis-wm-overlay">
+                                        <div class="vis-wm-row">
+                                            <span class="vis-wm-text">PREVIEW HASIL ADK</span>
+                                            <span class="vis-wm-text">PREVIEW HASIL ADK</span>
+                                            <span class="vis-wm-text">PREVIEW HASIL ADK</span>
+                                        </div>
+                                        <div class="vis-wm-row" style="transform:rotate(-30deg) translateX(30px)">
+                                            <span class="vis-wm-text">PREVIEW HASIL ADK</span>
+                                            <span class="vis-wm-text">PREVIEW HASIL ADK</span>
+                                        </div>
+                                    </div>
+                                    <div class="vis-doc-lines">
+                                        <div class="vis-doc-line" style="width:40%;margin:0 auto 8px;background:#e5e7eb"></div>
+                                        <div class="vis-doc-line" style="width:100%"></div>
+                                        <div class="vis-doc-line" style="width:85%"></div>
+                                        <div class="vis-doc-line" style="width:70%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="step-tip"><strong>Penting:</strong> Preview adalah representasi akurat dari hasil akhir. Setelah bayar, file yang kamu unduh identik dengan preview — tanpa watermark.</div>
+                </div>
+            </div>
+
+            <!-- STEP 6 -->
+            <div class="step-item">
+                <div class="step-left">
+                    <div class="step-num">6</div>
+                </div>
+                <div class="step-right">
+                    <div class="step-title">Lakukan Pembayaran</div>
+                    <p class="step-desc">
+                        Klik tombol <strong>Bayar</strong> di halaman riwayat order. Tersedia berbagai metode pembayaran:
+                        QRIS, Transfer Bank, Virtual Account, dan lainnya melalui platform <strong>Midtrans</strong> yang aman.
+                        Order berlaku selama <strong>1 jam</strong>.
+                    </p>
+                    <div class="step-visual">
+                        <div class="vis-body">
+                            <div style="font-size:12px;color:#9ca3af;margin-bottom:10px">Pilih metode pembayaran:</div>
+                            <div style="border:1.5px solid rgba(124,58,237,0.4);border-radius:12px;padding:16px;text-align:center;background:rgba(124,58,237,0.08)">
+                                <div style="font-size:32px;margin-bottom:8px">📱</div>
+                                <div style="font-size:14px;font-weight:800;color:white;margin-bottom:4px">QRIS</div>
+                                <div style="font-size:11px;color:#9ca3af">Scan QR code dengan aplikasi apapun</div>
+                                <div style="margin-top:12px;background:white;border-radius:8px;width:72px;height:72px;margin-left:auto;margin-right:auto;display:flex;align-items:center;justify-content:center">
+                                    <div style="font-size:10px;color:#333;font-weight:700;text-align:center;line-height:1.3">QR<br>CODE</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEP 7 -->
+            <div class="step-item">
+                <div class="step-left">
+                    <div class="step-num">7</div>
+                </div>
+                <div class="step-right">
+                    <div class="step-title">Download File Hasil</div>
+                    <p class="step-desc">
+                        Setelah pembayaran dikonfirmasi, tombol download langsung aktif di halaman riwayat.
+                        Tersedia dua format: <strong>Docx</strong> (bisa diedit) dan <strong>PDF</strong> (siap cetak).
+                    </p>
+                    <div class="step-visual">
+                        <div class="vis-body">
+                            <div style="font-size:12px;color:#34d399;font-weight:700;margin-bottom:8px">✓ Pembayaran Berhasil</div>
+                            <div class="vis-dl-row">
+                                <div class="vis-dl-btn vis-dl-docx">⬇ Download Docx</div>
+                                <div class="vis-dl-btn vis-dl-pdf">⬇ Download PDF</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="step-tip"><strong>File tersimpan 30 hari</strong> di server kami. Unduh dan simpan file kamu sebelum masa simpan habis.</div>
+                </div>
+            </div>
+
+        </div><!-- /step-list -->
+
+        <div class="tut-done">
+            <div class="tut-done-icon">🎉</div>
+            <div class="tut-done-title">Mudah, kan?</div>
+            <div class="tut-done-sub">
+                Seluruh proses selesai dalam kurang dari 5 menit.<br>
+                Masih ada pertanyaan? Hubungi ADK PHOTOCOPY langsung.
+            </div>
+            <a href="jasa.html" class="btn-coba">Mulai Order Sekarang →</a>
+        </div>
+
+    </div>
+
+    <script>
+        function openMobileMenu()  { document.getElementById('mobileNav').classList.add('open'); document.body.style.overflow='hidden'; }
+        function closeMobileMenu() { document.getElementById('mobileNav').classList.remove('open'); document.body.style.overflow=''; }
+        function toggleJasaDrop()  { document.getElementById('jasaDrop').classList.toggle('open'); }
+        document.addEventListener('click', function(e) { var d = document.getElementById('jasaDrop'); if (d && !d.contains(e.target)) d.classList.remove('open'); });
+        document.addEventListener('contextmenu', e => e.preventDefault());
+    </script>
+</body>
+</html>
+
+
+

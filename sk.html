@@ -1,0 +1,424 @@
+﻿<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Syarat & Ketentuan – ADK PHOTOCOPY</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .sk-wrap {
+            max-width: 820px;
+            margin: 0 auto;
+            padding: 40px 24px 80px;
+        }
+
+        .sk-header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 28px;
+            border-bottom: 1px solid rgba(124,58,237,0.2);
+        }
+
+        .sk-badge {
+            display: inline-block;
+            font-size: 11px;
+            font-weight: 700;
+            color: #a78bfa;
+            background: rgba(124,58,237,0.12);
+            border: 1px solid rgba(124,58,237,0.3);
+            border-radius: 20px;
+            padding: 4px 14px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 14px;
+        }
+
+        .sk-title {
+            font-size: 28px;
+            font-weight: 800;
+            color: white;
+            margin: 0 0 10px;
+        }
+
+        .sk-updated {
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        .sk-intro {
+            background: rgba(124,58,237,0.08);
+            border: 1px solid rgba(124,58,237,0.22);
+            border-radius: 14px;
+            padding: 18px 22px;
+            font-size: 13px;
+            color: #d1d5db;
+            line-height: 1.8;
+            margin-bottom: 32px;
+        }
+
+        .sk-intro strong { color: #a78bfa; }
+
+        .sk-section {
+            margin-bottom: 32px;
+        }
+
+        .sk-section-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 15px;
+            font-weight: 800;
+            color: white;
+            margin: 0 0 14px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(124,58,237,0.15);
+        }
+
+        .sk-num {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 26px;
+            height: 26px;
+            background: #7c3aed;
+            color: white;
+            border-radius: 50%;
+            font-size: 12px;
+            font-weight: 800;
+            flex-shrink: 0;
+        }
+
+        .sk-list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .sk-list li {
+            display: flex;
+            gap: 10px;
+            font-size: 13px;
+            color: #d1d5db;
+            line-height: 1.7;
+        }
+
+        .sk-list li::before {
+            content: '›';
+            color: #7c3aed;
+            font-size: 16px;
+            font-weight: 700;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+        .sk-list li strong { color: #e2e8f0; }
+
+        .sk-highlight {
+            background: rgba(251,191,36,0.06);
+            border: 1px solid rgba(251,191,36,0.2);
+            border-radius: 10px;
+            padding: 14px 18px;
+            margin-top: 12px;
+        }
+
+        .sk-highlight p {
+            margin: 0;
+            font-size: 13px;
+            color: #fbbf24;
+            line-height: 1.7;
+        }
+
+        .sk-highlight p strong { color: #fde68a; }
+
+        .sk-danger {
+            background: rgba(239,68,68,0.06);
+            border: 1px solid rgba(239,68,68,0.2);
+            border-radius: 10px;
+            padding: 14px 18px;
+            margin-top: 12px;
+        }
+
+        .sk-danger p {
+            margin: 0;
+            font-size: 13px;
+            color: #f87171;
+            line-height: 1.7;
+        }
+
+        .sk-contact {
+            background: rgba(52,211,153,0.06);
+            border: 1px solid rgba(52,211,153,0.2);
+            border-radius: 14px;
+            padding: 20px 22px;
+            margin-top: 40px;
+            text-align: center;
+        }
+
+        .sk-contact p {
+            margin: 0 0 6px;
+            font-size: 13px;
+            color: #6b7280;
+        }
+
+        .sk-contact a {
+            color: #34d399;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .sk-contact a:hover { color: #6ee7b7; }
+
+        .sk-footer-note {
+            text-align: center;
+            margin-top: 36px;
+            font-size: 12px;
+            color: #4b5563;
+            line-height: 1.8;
+        }
+
+        .btn-back-sk {
+            display: inline-block;
+            margin-top: 24px;
+            padding: 10px 22px;
+            background: rgba(124,58,237,0.15);
+            color: #a78bfa;
+            border: 1px solid rgba(124,58,237,0.35);
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 700;
+            text-decoration: none;
+            transition: 0.2s;
+        }
+
+        .btn-back-sk:hover {
+            background: rgba(124,58,237,0.28);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="navbar">
+        <a href="Index.html" class="logo">
+            <img src="LOGO ADK.png" alt="ADK Logo">
+            <span>ADK PHOTOCOPY</span>
+        </a>
+        <div class="menu">
+            <a href="Index.html">Home</a>
+            <a href="tutorial.html">Tutorial</a>
+            <div class="dropdown">
+                <a href="#" class="dropdown-toggle">Jasa ADK <span class="dropdown-arrow">▾</span></a>
+                <div class="dropdown-menu">
+                    <a href="jasa.html">
+                        <div class="dropdown-item-icon">📄</div>
+                        <div class="dropdown-item-title">Penomoran Halaman</div>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="nav-right">
+            <a href="cek_pembelian.php" class="btn-nav">Cek Pembelian</a>
+        </div>
+        <div class="mobile-jasa-drop" id="jasaDrop">
+            <button class="mobile-jasa-link" onclick="toggleJasaDrop()">Jasa ADK <span class="mobile-jasa-arrow">▾</span></button>
+            <div class="mobile-jasa-menu">
+                <a href="jasa.html">📄 Penomoran Halaman</a>
+            </div>
+        </div>
+        <button class="hamburger" onclick="openMobileMenu()">
+            <span></span><span></span><span></span>
+        </button>
+    </div>
+
+    <div class="mobile-nav" id="mobileNav">
+        <div class="mobile-nav-header">
+            <a href="Index.html" class="logo">
+                <img src="LOGO ADK.png" alt="ADK Logo">
+                <span>ADK PHOTOCOPY</span>
+            </a>
+            <button class="mobile-nav-close" onclick="closeMobileMenu()">✕</button>
+        </div>
+        <div class="mobile-nav-links">
+            <a href="Index.html">Home</a>
+            <a href="tutorial.html">Tutorial</a>
+            <a href="jasa.html">Jasa ADK</a>
+        </div>
+        <div class="mobile-nav-footer">
+            <a href="cek_pembelian.php" class="btn-nav">Cek Pembelian</a>
+        </div>
+    </div>
+    <script>
+        function openMobileMenu()  { document.getElementById('mobileNav').classList.add('open'); document.body.style.overflow='hidden'; }
+        function closeMobileMenu() { document.getElementById('mobileNav').classList.remove('open'); document.body.style.overflow=''; }
+        function toggleJasaDrop()  { document.getElementById('jasaDrop').classList.toggle('open'); }
+        document.addEventListener('click', function(e) { var d = document.getElementById('jasaDrop'); if (d && !d.contains(e.target)) d.classList.remove('open'); });
+    </script>
+
+    <div class="sk-wrap">
+
+        <div class="sk-header">
+            <div class="sk-badge">Legal</div>
+            <h1 class="sk-title">Syarat &amp; Ketentuan Layanan</h1>
+            <p class="sk-updated">ADK PHOTOCOPY · Berlaku sejak: Mei 2025</p>
+        </div>
+
+        <div class="sk-intro">
+            Dengan menggunakan layanan <strong>ADK PHOTOCOPY</strong>, Anda dianggap telah membaca,
+            memahami, dan <strong>menyetujui seluruh syarat dan ketentuan</strong> yang tercantum di bawah ini.
+            Harap baca dengan seksama sebelum melakukan upload file atau pembayaran.
+        </div>
+
+        <!-- 1 -->
+        <div class="sk-section">
+            <h2 class="sk-section-title"><span class="sk-num">1</span> Definisi Layanan</h2>
+            <ul class="sk-list">
+                <li>ADK PHOTOCOPY menyediakan layanan <strong>penomoran halaman otomatis</strong> untuk dokumen Microsoft Word (.docx) secara digital.</li>
+                <li>Layanan diproses sepenuhnya oleh sistem secara otomatis, tanpa campur tangan admin secara manual.</li>
+                <li>Tersedia tiga paket layanan: <strong>Full Angka</strong>, <strong>Romawi &amp; Angka (Posisi Tetap)</strong>, dan <strong>Romawi &amp; Angka (Skripsi)</strong>.</li>
+                <li>Pengguna dapat memilih jenis font, ukuran, posisi penomoran, serta pengaturan halaman cover sesuai kebutuhan.</li>
+            </ul>
+        </div>
+
+        <!-- 2 -->
+        <div class="sk-section">
+            <h2 class="sk-section-title"><span class="sk-num">2</span> Persyaratan File yang Diupload</h2>
+            <ul class="sk-list">
+                <li>File yang diupload <strong>harus berformat .docx</strong> (Microsoft Word 2007 ke atas).</li>
+                <li>File wajib memiliki struktur dokumen yang jelas: setidaknya terdapat halaman <strong>Cover</strong> dan minimal satu <strong>BAB</strong>.</li>
+                <li>Untuk paket Romawi &amp; Angka, dokumen harus memiliki penanda bab yang terbaca sistem (judul BAB I, BAB II, dst.).</li>
+                <li>Ukuran file maksimum yang dapat diproses adalah <strong>20 MB</strong>.</li>
+                <li>ADK PHOTOCOPY <strong>tidak bertanggung jawab</strong> atas hasil yang tidak sesuai jika struktur dokumen tidak memenuhi syarat di atas.</li>
+            </ul>
+            <div class="sk-highlight">
+                <p><strong>Tips:</strong> Sebelum upload, pastikan dokumen Anda telah memiliki halaman COVER, DAFTAR ISI (opsional), dan BAB I hingga BAB terakhir agar sistem dapat memproses dengan benar.</p>
+            </div>
+        </div>
+
+        <!-- 3 -->
+        <div class="sk-section">
+            <h2 class="sk-section-title"><span class="sk-num">3</span> Proses dan Hasil Kerja</h2>
+            <ul class="sk-list">
+                <li>Setelah file berhasil diupload, sistem akan memproses penomoran halaman secara otomatis dalam waktu kurang dari <strong>5 menit</strong>.</li>
+                <li>Hasil berupa file <strong>.docx</strong> dan <strong>.pdf</strong> yang dapat diunduh setelah pembayaran berhasil.</li>
+                <li>Pengguna dapat melihat <strong>preview hasil</strong> (dengan watermark) sebelum melakukan pembayaran untuk memastikan kebenaran penomoran.</li>
+                <li>Preview yang ditampilkan adalah <strong>representasi akurat dari hasil akhir</strong>. File yang dapat diunduh setelah bayar identik dengan preview, tanpa watermark.</li>
+                <li>Tidak ada jaminan kesesuaian format jika dokumen menggunakan template, macro, atau elemen khusus yang tidak standar.</li>
+            </ul>
+        </div>
+
+        <!-- 4 -->
+        <div class="sk-section">
+            <h2 class="sk-section-title"><span class="sk-num">4</span> Pembayaran</h2>
+            <ul class="sk-list">
+                <li>Pembayaran dilakukan melalui platform <strong>Midtrans</strong> yang mendukung berbagai metode: QRIS, Transfer Bank, Virtual Account, kartu kredit/debit, dan lainnya.</li>
+                <li>Harga layanan tercantum jelas pada saat pembuatan order dan bersifat <strong>tetap</strong> hingga masa berlaku order (1 jam) habis.</li>
+                <li>Order yang belum dibayar dalam <strong>1 jam</strong> sejak dibuat akan otomatis dibatalkan oleh sistem.</li>
+                <li>Pembayaran yang telah berhasil dikonfirmasi bersifat <strong>final</strong> dan tidak dapat dibatalkan.</li>
+                <li>Bukti pembayaran disimpan oleh penyedia layanan pembayaran (Midtrans) dan dapat dikonfirmasi melalui email yang terdaftar.</li>
+            </ul>
+        </div>
+
+        <!-- 5 -->
+        <div class="sk-section">
+            <h2 class="sk-section-title"><span class="sk-num">5</span> Kebijakan Pengembalian Dana (Refund)</h2>
+            <ul class="sk-list">
+                <li>ADK PHOTOCOPY <strong>tidak menyediakan refund</strong> setelah pembayaran berhasil dikonfirmasi dan file hasil telah tersedia untuk diunduh.</li>
+                <li>Pengguna diberikan fasilitas <strong>preview sebelum bayar</strong> justru untuk memastikan hasil sesuai sebelum melakukan pembayaran — gunakan fasilitas ini dengan baik.</li>
+                <li>Refund hanya dapat dipertimbangkan apabila: sistem gagal memproses file sama sekali, atau file hasil tidak dapat diunduh setelah lebih dari 24 jam pembayaran berhasil.</li>
+                <li>Permintaan refund wajib disertai <strong>bukti pembayaran</strong> dan <strong>nomor order</strong>, disampaikan melalui kontak resmi ADK.</li>
+            </ul>
+            <div class="sk-danger">
+                <p><strong>Penting:</strong> Tidak ada refund atas alasan "hasil tidak sesuai selera" apabila penomoran sudah sesuai dengan pengaturan yang dipilih pengguna saat upload.</p>
+            </div>
+        </div>
+
+        <!-- 6 -->
+        <div class="sk-section">
+            <h2 class="sk-section-title"><span class="sk-num">6</span> Kerahasiaan dan Keamanan File</h2>
+            <ul class="sk-list">
+                <li>File yang diupload oleh pengguna hanya digunakan untuk keperluan <strong>pemrosesan layanan</strong> dan tidak dibagikan kepada pihak ketiga manapun.</li>
+                <li>File input (asli) dan output (hasil) disimpan di server ADK selama <strong>maksimal 30 hari</strong> sejak tanggal upload, setelah itu akan dihapus secara otomatis.</li>
+                <li>Akses ke file hasil hanya dapat dilakukan oleh pemilik nomor telepon yang terdaftar pada order tersebut.</li>
+                <li>Nomor telepon pengguna digunakan <strong>hanya</strong> sebagai identitas order dan tidak akan digunakan untuk keperluan pemasaran atau dibagikan kepada pihak lain.</li>
+                <li>ADK PHOTOCOPY menggunakan sistem OTP (One-Time Password) untuk memverifikasi kepemilikan nomor telepon.</li>
+            </ul>
+        </div>
+
+        <!-- 7 -->
+        <div class="sk-section">
+            <h2 class="sk-section-title"><span class="sk-num">7</span> Tanggung Jawab Pengguna</h2>
+            <ul class="sk-list">
+                <li>Pengguna <strong>bertanggung jawab penuh</strong> atas isi dan legalitas dokumen yang diupload.</li>
+                <li>Pengguna menyatakan bahwa dokumen yang diupload adalah <strong>milik sendiri</strong> atau telah mendapat izin dari pemilik dokumen.</li>
+                <li>ADK PHOTOCOPY <strong>tidak bertanggung jawab</strong> atas segala konsekuensi hukum yang timbul akibat konten dokumen yang diupload pengguna.</li>
+                <li>Pengguna dilarang mengupload dokumen yang mengandung konten ilegal, SARA, pornografi, atau melanggar perundang-undangan yang berlaku di Indonesia.</li>
+                <li>Penyalahgunaan layanan (termasuk upload massal untuk tujuan komersial tanpa izin) dapat mengakibatkan pemblokiran akses.</li>
+            </ul>
+        </div>
+
+        <!-- 8 -->
+        <div class="sk-section">
+            <h2 class="sk-section-title"><span class="sk-num">8</span> Hak Kekayaan Intelektual</h2>
+            <ul class="sk-list">
+                <li>Seluruh sistem, tampilan, desain, dan algoritma pemrosesan di ADK PHOTOCOPY adalah <strong>milik eksklusif</strong> ADK PHOTOCOPY.</li>
+                <li>Pengguna tidak diperkenankan <strong>menduplikasi, mendistribusikan ulang, atau menjual kembali</strong> layanan ADK PHOTOCOPY tanpa izin tertulis.</li>
+                <li>Hak cipta atas dokumen yang diupload tetap sepenuhnya menjadi milik <strong>pengguna</strong> — ADK PHOTOCOPY tidak mengklaim kepemilikan atas konten dokumen.</li>
+                <li>Preview hasil (berupa PDF watermark) tidak boleh disebarluaskan atau digunakan sebagai pengganti file final yang sah.</li>
+            </ul>
+        </div>
+
+        <!-- 9 -->
+        <div class="sk-section">
+            <h2 class="sk-section-title"><span class="sk-num">9</span> Batasan Tanggung Jawab Layanan</h2>
+            <ul class="sk-list">
+                <li>ADK PHOTOCOPY tidak menjamin layanan tersedia <strong>24/7 tanpa gangguan</strong>. Pemeliharaan server dapat menyebabkan downtime sementara.</li>
+                <li>ADK PHOTOCOPY tidak bertanggung jawab atas kerugian yang timbul akibat keterlambatan pemrosesan yang disebabkan oleh gangguan teknis di luar kendali sistem.</li>
+                <li>Dalam kondisi server overload, proses penomoran dapat memakan waktu lebih lama dari estimasi. Pengguna akan tetap dapat mengakses hasilnya setelah proses selesai.</li>
+                <li>ADK PHOTOCOPY berhak melakukan perbaikan, pembaruan, atau penghentian sementara layanan tanpa pemberitahuan sebelumnya.</li>
+            </ul>
+        </div>
+
+        <!-- 10 -->
+        <div class="sk-section">
+            <h2 class="sk-section-title"><span class="sk-num">10</span> Perubahan Syarat &amp; Ketentuan</h2>
+            <ul class="sk-list">
+                <li>ADK PHOTOCOPY berhak mengubah syarat dan ketentuan ini sewaktu-waktu tanpa pemberitahuan terlebih dahulu.</li>
+                <li>Perubahan yang berlaku akan dicantumkan di halaman ini dengan tanggal pembaruan terbaru.</li>
+                <li>Penggunaan layanan setelah perubahan S&amp;K diterbitkan dianggap sebagai <strong>persetujuan atas perubahan tersebut</strong>.</li>
+                <li>Pengguna disarankan untuk memeriksa halaman ini secara berkala.</li>
+            </ul>
+        </div>
+
+        <!-- 11 -->
+        <div class="sk-section">
+            <h2 class="sk-section-title"><span class="sk-num">11</span> Hukum yang Berlaku</h2>
+            <ul class="sk-list">
+                <li>Syarat dan ketentuan ini tunduk pada <strong>hukum yang berlaku di Republik Indonesia</strong>.</li>
+                <li>Segala sengketa yang timbul dari penggunaan layanan ini akan diselesaikan secara musyawarah terlebih dahulu.</li>
+                <li>Apabila tidak tercapai kesepakatan, sengketa diselesaikan melalui jalur hukum yang berlaku di Indonesia.</li>
+            </ul>
+        </div>
+
+        <!-- Kontak -->
+        <div class="sk-contact">
+            <p>Ada pertanyaan seputar S&amp;K ini?</p>
+            <p>Hubungi kami melalui WhatsApp atau langsung kunjungi lokasi ADK PHOTOCOPY.</p>
+            <p style="margin-top:10px; color:#34d399; font-weight:700;">ADK PHOTOCOPY — Balikpapan</p>
+        </div>
+
+        <div class="sk-footer-note">
+            Dengan menggunakan layanan ADK PHOTOCOPY, Anda telah membaca dan menyetujui<br>
+            seluruh syarat dan ketentuan yang berlaku di atas.<br><br>
+            <a href="history.php" class="btn-back-sk">← Kembali ke Riwayat Order</a>
+        </div>
+
+    </div>
+
+</body>
+</html>
+
+
+
