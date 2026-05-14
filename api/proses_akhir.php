@@ -33,7 +33,7 @@ $hidden = $_SESSION['hidden_cover'] ?? 'Ya';
 $posisi = $_SESSION['posisi']       ?? 'Tengah Bawah';
 
 $python = PYTHON_EXE;
-$script = PYTHON_SCRIPT_DIR . '\\proses.py';
+$script = PYTHON_SCRIPT_DIR . '/proses.py';
 
 $hasilDir = __DIR__ . '/../hasil';
 if (!is_dir($hasilDir)) {
@@ -70,7 +70,7 @@ $dbId = $_SESSION['order_db_id'] ?? null;
 // ── Konversi ke PDF via Microsoft Word ──────────────────
 $pdfRel      = preg_replace('/\.(docx?)$/i', '.pdf', $outputRel);
 $pdf_full    = __DIR__ . '/../' . $pdfRel;
-$pdfScript   = "D:\\Freelaces\\Server\\htdocs\\adk\\python\\convert_pdf.py";
+$pdfScript   = PYTHON_SCRIPT_DIR . '/convert_pdf.py';
 $pdfCmd      = "\"$python\" \"$pdfScript\" " .
                escapeshellarg($output_full) . " " .
                escapeshellarg($pdf_full) . " 2>&1";
