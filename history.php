@@ -992,9 +992,9 @@ if (!empty($orders)) {
             <div class="pv-wm-overlay">
                 <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
                     <defs>
-                        <pattern id="wm-pattern" x="0" y="0" width="105" height="24"
+                        <pattern id="wm-pattern" x="0" y="0" width="210" height="48"
                                  patternUnits="userSpaceOnUse" patternTransform="rotate(-35)">
-                            <text x="5" y="16" font-family="Arial,sans-serif" font-size="15"
+                            <text x="8" y="28" font-family="Arial,sans-serif" font-size="15"
                                   font-weight="bold" fill="rgba(0,0,0,0.18)" letter-spacing="2">
                                 PREVIEW HASIL ADK
                             </text>
