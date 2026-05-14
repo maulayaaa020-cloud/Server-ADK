@@ -174,12 +174,12 @@ $chipText  = $isPaid ? 'Lunas' : ($order['status'] === 'failed' ? 'Gagal' : 'Men
 </head>
 <body>
     <div class="navbar">
-        <a href="Index.html" class="logo">
+        <a href="index.html" class="logo">
             <img src="LOGO ADK.png" alt="ADK Logo">
             <span>ADK PHOTOCOPY</span>
         </a>
         <div class="menu">
-            <a href="Index.html">Home</a>
+            <a href="index.html">Home</a>
             <a href="tutorial.html">Tutorial</a>
             <div class="dropdown">
                 <a href="#" class="dropdown-toggle">Jasa ADK <span class="dropdown-arrow">▾</span></a>
@@ -207,14 +207,14 @@ $chipText  = $isPaid ? 'Lunas' : ($order['status'] === 'failed' ? 'Gagal' : 'Men
 
     <div class="mobile-nav" id="mobileNav">
         <div class="mobile-nav-header">
-            <a href="Index.html" class="logo">
+            <a href="index.html" class="logo">
                 <img src="LOGO ADK.png" alt="ADK Logo">
                 <span>ADK PHOTOCOPY</span>
             </a>
             <button class="mobile-nav-close" onclick="closeMobileMenu()">✕</button>
         </div>
         <div class="mobile-nav-links">
-            <a href="Index.html">Home</a>
+            <a href="index.html">Home</a>
             <a href="tutorial.html">Tutorial</a>
             <a href="jasa.html">Jasa ADK</a>
         </div>
