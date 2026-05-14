@@ -1200,7 +1200,7 @@ if (!empty($orders)) {
             fetch('api/get_preview_url.php', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({db_id: dbId})
+                body: JSON.stringify({db_id: dbId, vw: window.innerWidth})
             })
             .then(function(r) { return r.json(); })
             .then(function(data) {
