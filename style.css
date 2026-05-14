@@ -1080,6 +1080,7 @@ body {
 }
 @media (max-width: 600px) {
     .site-footer { padding: 36px 16px 20px; margin-top: 40px; }
-    .footer-inner { gap: 28px 32px; }
-    .footer-col { flex: 1 1 120px; }
+    .footer-inner { gap: 24px 16px; }
+    .footer-brand { flex: 0 0 100%; }
+    .footer-col { flex: 0 0 calc(50% - 8px); min-width: 0; }
 }
