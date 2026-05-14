@@ -12,6 +12,7 @@ import re
 import json
 import os
 import zipfile
+import tempfile
 
 # Pastikan folder python/ ada di sys.path agar import utils/paket* bisa berjalan
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -25,6 +26,92 @@ from utils import DocProcessor
 def _fail(code, message):
     print(json.dumps({"status": "error", "code": code, "message": message}))
     sys.exit(1)
+
+
+# ── LibreOffice artifact cleaner ──────────────────────────────────────────────
+_W14_NS         = 'http://schemas.microsoft.com/office/word/2010/wordml'
+_MC_NS          = 'http://schemas.openxmlformats.org/markup-compatibility/2006'
+_LO_NS_PREFIXES = ('urn:org:documentfoundation', 'com.sun.star', 'urn:openoffice')
+
+_CLEAN_XML_FILES = frozenset([
+    'word/document.xml', 'word/settings.xml', 'word/styles.xml',
+    'word/endnotes.xml', 'word/footnotes.xml',
+])
+
+
+def _strip_lo_artifacts(input_path):
+    """
+    Preprocess DOCX: strip LibreOffice-specific XML yang menyebabkan
+    peringatan 'unreadable content' di Microsoft Word.
+    Returns path ke temp file yang sudah bersih (caller harus unlink).
+    """
+    from lxml import etree
+
+    def _is_lo_tag(tag):
+        if not isinstance(tag, str) or not tag.startswith('{'):
+            return False
+        ns = tag[1:tag.index('}')]
+        return any(ns.startswith(p) for p in _LO_NS_PREFIXES)
+
+    def _clean_xml(data, is_settings=False):
+        try:
+            root = etree.fromstring(data)
+        except Exception:
+            return data  # biarkan python-docx menangani jika parse gagal
+
+        # 1. Hapus w14:conflictMode dari settings.xml — paling sering menyebabkan warning
+        if is_settings:
+            for elem in list(root.iter('{%s}conflictMode' % _W14_NS)):
+                p = elem.getparent()
+                if p is not None:
+                    p.remove(elem)
+
+        # 2. Hapus elemen dengan namespace LibreOffice-specific (bottom-up)
+        for elem in reversed(list(root.iter())):
+            if _is_lo_tag(elem.tag):
+                p = elem.getparent()
+                if p is not None:
+                    p.remove(elem)
+
+        # 3. Unwrap mc:AlternateContent → ambil isi mc:Fallback (lebih kompatibel)
+        AC = '{%s}AlternateContent' % _MC_NS
+        FB = '{%s}Fallback' % _MC_NS
+        CH = '{%s}Choice' % _MC_NS
+        changed = True
+        while changed:
+            changed = False
+            for ac in list(root.iter(AC)):
+                parent = ac.getparent()
+                if parent is None:
+                    continue
+                idx = list(parent).index(ac)
+                src = ac.find(FB) or ac.find(CH)
+                if src is not None:
+                    for i, child in enumerate(list(src)):
+                        parent.insert(idx + i, child)
+                parent.remove(ac)
+                changed = True
+                break
+
+        return etree.tostring(root, xml_declaration=True, encoding='UTF-8', standalone=True)
+
+    tmp_fd, tmp_path = tempfile.mkstemp(suffix='.docx')
+    os.close(tmp_fd)
+
+    with zipfile.ZipFile(input_path, 'r') as zin, \
+         zipfile.ZipFile(tmp_path, 'w', zipfile.ZIP_DEFLATED) as zout:
+        for item in zin.infolist():
+            raw = zin.read(item.filename)
+            fn  = item.filename
+            if fn.endswith('.xml') and (
+                fn in _CLEAN_XML_FILES or
+                fn.startswith('word/header') or
+                fn.startswith('word/footer')
+            ):
+                raw = _clean_xml(raw, is_settings=(fn == 'word/settings.xml'))
+            zout.writestr(item, raw)
+
+    return tmp_path
 
 
 def validate_file(path):
@@ -84,12 +171,25 @@ def main():
 
     validate_file(input_file)
 
-    # ── Buka dokumen ─────────────────────────────────────
+    # ── Bersihkan artifact LibreOffice, lalu buka dokumen ────────────────────
+    _temp_cleaned = None
+    try:
+        _temp_cleaned = _strip_lo_artifacts(input_file)
+        open_target   = _temp_cleaned
+    except Exception:
+        open_target   = input_file  # fallback ke file asli jika strip gagal
+
     try:
         from docx import Document
-        doc = Document(input_file)
+        doc = Document(open_target)
     except Exception as e:
         _fail("FILE_READ_ERROR", f"Gagal membuka file: {e}")
+    finally:
+        if _temp_cleaned and _temp_cleaned != input_file:
+            try:
+                os.unlink(_temp_cleaned)
+            except OSError:
+                pass
 
     # ── Proses ───────────────────────────────────────────
     try:
