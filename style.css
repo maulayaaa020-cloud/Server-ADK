@@ -954,16 +954,10 @@ body {
         display: flex;
         width: 100%;
         justify-content: center;
-        overflow: hidden;
-        /* tambah ruang visual agar card tidak terpotong vertikal */
-        padding-bottom: 20px;
     }
 
     .hero-card-outer {
-        transform: scale(0.72);
-        transform-origin: center top;
-        margin-bottom: -90px; /* kompensasi space kosong akibat scale */
-        flex-shrink: 0;
+        zoom: 0.72; /* zoom mengubah layout box sekaligus — lebih reliable di mobile */
     }
 
     .hero-left h1 {
