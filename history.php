@@ -1006,9 +1006,9 @@ if (!empty($orders)) {
 
             <div class="pv-footer">
                 <div class="pv-footer-note">
-                    Dokumen ini ditampilkan dengan watermark.<br>
-                    Download tanpa watermark setelah pembayaran.<br>
-                    Jika ada kesalahan, Silahkan Laporkan Bug
+                    Preview hanya untuk cek posisi nomor halaman.<br>
+                    Tampilan teks mungkin sedikit berbeda — file asli tetap sempurna.<br>
+                    Jika nomor halaman salah, silahkan Laporkan Bug.
                 </div>
                 <button class="btn-bayar-pv" id="pvBayarBtn" style="display:none">
                     Bayar Sekarang →
