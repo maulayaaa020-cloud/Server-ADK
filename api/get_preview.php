@@ -60,9 +60,15 @@ if (!is_dir($cacheDir)) mkdir($cacheDir, 0755, true);
 $tmpDir = sys_get_temp_dir() . '/adk_pv_' . $db_id . '_' . getmypid();
 if (!is_dir($tmpDir)) mkdir($tmpDir, 0755, true);
 
-// Step 1: DOCX → PDF via LibreOffice
+// Salin file ke tmpDir agar LibreOffice tidak menyentuh file asli
+$tmpDocx = $tmpDir . '/' . basename($docxPath);
+if (!copy($docxPath, $tmpDocx)) {
+    echo json_encode(['ok' => false, 'error' => 'Gagal menyalin file untuk konversi']); exit;
+}
+
+// Step 1: DOCX → PDF via LibreOffice (dari salinan, bukan file asli)
 $cmd1 = 'HOME=/tmp libreoffice --headless --convert-to pdf '
-      . escapeshellarg($docxPath) . ' --outdir ' . escapeshellarg($tmpDir)
+      . escapeshellarg($tmpDocx) . ' --outdir ' . escapeshellarg($tmpDir)
       . ' 2>&1';
 exec($cmd1, $out1, $ret1);
 
@@ -84,6 +90,7 @@ exec($cmd2, $out2, $ret2);
 
 // Bersihkan file temp
 @unlink($pdfPath);
+@unlink($tmpDocx);
 @rmdir($tmpDir);
 
 if ($ret2 !== 0) {
