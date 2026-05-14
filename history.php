@@ -1002,9 +1002,9 @@ if (!empty($orders)) {
 
             <div class="pv-footer">
                 <div class="pv-footer-note">
-                    Preview hanya untuk cek posisi nomor halaman.<br>
-                    Tampilan teks mungkin sedikit berbeda — file asli tetap sempurna.<br>
-                    Jika nomor halaman salah, silahkan Laporkan Bug.
+                    Preview adalah file docx hasil asli.<br>
+                    Watermark akan hilang jika sudah dibayar.<br>
+                    Jika ada kesalahan, silahkan Laporkan Bug!!
                 </div>
                 <button class="btn-bayar-pv" id="pvBayarBtn" style="display:none">
                     Bayar Sekarang →
