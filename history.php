@@ -1128,7 +1128,7 @@ if (!empty($orders)) {
             })
             .then(r => r.json())
             .then(data => {
-                if (!data.url) { alert('Gagal membuat halaman pembayaran. Silakan coba lagi.'); return; }
+                if (!data.url) { alert('Gagal: ' + (data.error || 'tidak ada respon dari server')); return; }
                 // Buka halaman pembayaran DOKU di tab baru, lalu mulai polling
                 window.open(data.url, '_blank');
                 startPolling(dbId, orderId);
