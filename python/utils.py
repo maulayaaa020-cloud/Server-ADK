@@ -20,6 +20,8 @@ ROMAN_START_KEYWORDS = [
     "lembar pengesahan", "lembar persetujuan", "halaman pengesahan",
     "pengesahan", "persetujuan",
     "lembar pernyataan", "pernyataan keaslian",
+    "halaman pernyataan",
+    "rekomendasi",
     "halaman persembahan", "persembahan", "motto",
     "ringkasan",
     "daftar isi",
@@ -50,7 +52,7 @@ def is_bab_heading(text):
     if BAB_HEAD_RE.match(text):
         return True
     if re.match(
-        r'^\s*(daftar\s+pustaka|referensi|references?|reference\s+list|bibliography|'
+        r'^\s*(daftar\s+pust?aka|referensi|references?|reference\s+list|bibliography|'
         r'bibliographies|works?\s+cited|literature\s+cited)\s*$', text, re.IGNORECASE
     ):
         return True
@@ -75,7 +77,7 @@ def is_false_bab(para):
         if sisa and any(s in style for s in non_heading):
             return True
     for pattern in [
-        r'^\s*(daftar\s+pustaka|referensi|references?|reference\s+list|bibliography|'
+        r'^\s*(daftar\s+pust?aka|referensi|references?|reference\s+list|bibliography|'
         r'bibliographies|works?\s+cited|literature\s+cited)\s+\S',
         r'^\s*(lampiran|appendix|appendices|attachment)\s+[^\n]{60,}',
     ]:
@@ -99,8 +101,15 @@ def is_toc_heading(text):
 
 
 def is_toc_entry(text):
+    # Multi-line (soft return): TOC entry hanya jika ada pola nomor halaman di salah satu baris.
+    # "BAB I\nPENDAHULUAN" tidak punya nomor → bukan TOC entry.
     if '\n' in text:
-        return True
+        for line in text.split('\n'):
+            if re.search(r'\t\s*[\divxlcdmIVXLCDM]+\s*$', line):
+                return True
+            if re.search(r'\.{3,}.*\d+\s*$', line):
+                return True
+        return False
     if re.search(r'\t\s*[\divxlcdmIVXLCDM]+\s*$', text):
         return True
     if re.search(r'\.{3,}.*\d+\s*$', text):
@@ -413,6 +422,7 @@ class DocProcessor:
         lampiran_found     = False
         last_bab_para_idx  = None
         found_numbered_bab = False
+        seen_bab_numbers   = set()   # cegah BAB dengan nomor sama terdeteksi dua kali
         inside_toc         = False
         all_paras          = list(self.doc.paragraphs)
 
@@ -448,21 +458,35 @@ class DocProcessor:
                     lampiran_found = True
                 if is_numbered_bab:
                     found_numbered_bab = True
+                    m_num = BAB_HEAD_RE.match(text)
+                    bab_num_key = m_num.group(2).strip().lower() if m_num else None
+                    if bab_num_key and bab_num_key in seen_bab_numbers:
+                        continue  # Nomor BAB sudah terdeteksi → duplikat, skip
+                else:
+                    bab_num_key = None
                 if last_bab_para_idx is not None:
                     has_break = self._has_page_break_before(all_paras, last_bab_para_idx + 1, para_idx)
                     if not has_break:
                         has_break = self._para_has_page_break_before(para)
                     if not has_break:
-                        forward_count = 0
-                        for _k in range(para_idx + 1, len(all_paras)):
-                            _nt = all_paras[_k].text.strip()
-                            if is_bab_heading(_nt) and not is_false_bab(all_paras[_k]):
-                                break
-                            if _nt:
-                                forward_count += 1
-                        if forward_count < 10:
-                            continue
+                        # Lampiran & Daftar Pustaka dibebaskan dari forward_count:
+                        # keduanya ada di akhir dokumen sehingga isinya sedikit.
+                        _is_endpoint = bool(re.match(
+                            r'^\s*(lampiran|daftar\s+pust?aka)', text, re.IGNORECASE
+                        ))
+                        if not _is_endpoint:
+                            forward_count = 0
+                            for _k in range(para_idx + 1, len(all_paras)):
+                                _nt = all_paras[_k].text.strip()
+                                if is_bab_heading(_nt) and not is_false_bab(all_paras[_k]):
+                                    break
+                                if _nt:
+                                    forward_count += 1
+                            if forward_count < 5:
+                                continue
                 bab_p_list.append(para._p)
+                if bab_num_key:
+                    seen_bab_numbers.add(bab_num_key)
                 last_bab_para_idx = para_idx
 
         return roman_start_p, bab_p_list

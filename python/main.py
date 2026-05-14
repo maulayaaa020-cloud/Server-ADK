@@ -81,6 +81,7 @@ def main():
         proc = DocProcessor(doc, font_arg, font_size_pt)
         proc.purge_all_headers_footers()
 
+        detected_bab_texts = []
         if paket == 'paket1':
             # Paket 1: tidak butuh deteksi zona
             paket1.apply(proc, hidden_cov, posisi)
@@ -88,6 +89,9 @@ def main():
         else:
             # Paket 2 & 3: butuh deteksi zona → Phase 1-3 dulu
             roman_start_p, bab_p_list = proc.scan_zones()
+            detected_bab_texts = [
+                DocProcessor._p_text(p)[:60] for p in bab_p_list
+            ]
             roman_start_p             = proc.insert_breaks(roman_start_p, bab_p_list)
             roman_sec, bab_sec_list, n_sections = proc.build_section_map(
                 roman_start_p, bab_p_list
@@ -127,6 +131,7 @@ def main():
         "status":         "success",
         "paket":          paket,
         "total_sections": len(doc.sections),
+        "detected_bab":   detected_bab_texts if paket != 'paket1' else [],
         "sections":       sections_info
     }))
 
