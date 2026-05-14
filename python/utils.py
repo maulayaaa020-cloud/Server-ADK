@@ -18,6 +18,7 @@ ROMAN_START_KEYWORDS = [
     "kata pengantar", "prakata", "ucapan terima kasih",
     "abstrak",
     "lembar pengesahan", "lembar persetujuan", "halaman pengesahan",
+    "pengesahan", "persetujuan",
     "lembar pernyataan", "pernyataan keaslian",
     "halaman persembahan", "persembahan", "motto",
     "ringkasan",
