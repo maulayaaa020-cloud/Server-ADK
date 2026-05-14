@@ -61,10 +61,25 @@
 
         window.openInExtBrowser = function() {
             var url = location.href;
-            document.getElementById('inapp-url-text').textContent = url;
-            document.getElementById('inapp-modal').style.display = 'flex';
-            // Coba salin ke clipboard otomatis
-            if (navigator.clipboard) navigator.clipboard.writeText(url).catch(function(){});
+            var isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
+
+            // Coba buka Chrome otomatis
+            if (isIOS) {
+                // iOS: scheme Chrome
+                window.location = 'googlechrome://navigate?url=' + encodeURIComponent(url);
+            } else {
+                // Android: intent → Chrome, fallback ke default browser
+                window.location = 'intent://' + url.replace(/^https?:\/\//, '')
+                    + '#Intent;scheme=https;package=com.android.chrome;'
+                    + 'S.browser_fallback_url=' + encodeURIComponent(url) + ';end';
+            }
+
+            // Jika redirect diblokir (masih di halaman ini), tampilkan modal setelah 1.5 detik
+            setTimeout(function() {
+                document.getElementById('inapp-url-text').textContent = url;
+                document.getElementById('inapp-modal').style.display = 'flex';
+                if (navigator.clipboard) navigator.clipboard.writeText(url).catch(function(){});
+            }, 1500);
         };
 
         window.copyInappUrl = function() {
