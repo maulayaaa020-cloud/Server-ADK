@@ -1,6 +1,6 @@
 <?php
 // Jika maintenance tidak aktif, redirect ke halaman utama
-if (!file_exists(__DIR__ . '/maintenance.flag')) {
+if (!file_exists(__DIR__ . '/config/maintenance.flag')) {
     header('Location: jasa.html');
     exit;
 }

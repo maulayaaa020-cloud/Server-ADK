@@ -38,14 +38,29 @@ def validate_file(path):
     except OSError:
         _fail("FILE_READ_ERROR", "Tidak dapat membaca ukuran file.")
 
-    if size > 20 * 1024 * 1024:
+    if size > 30 * 1024 * 1024:
         _fail("FILE_TOO_LARGE",
-              f"Ukuran file ({size // (1024*1024)} MB) melebihi batas maksimal 20 MB.")
+              f"Ukuran file ({size // (1024*1024)} MB) melebihi batas maksimal 30 MB.")
 
     try:
         with zipfile.ZipFile(path, 'r') as z:
-            if 'word/document.xml' not in z.namelist():
+            names = z.namelist()
+
+            if 'word/document.xml' not in names:
                 _fail("INVALID_DOCX", "File bukan dokumen Word (.docx) yang valid.")
+
+            # Tolak file bermacro (docm yang diganti ekstensi ke docx)
+            if 'word/vbaProject.bin' in names:
+                _fail("MACRO_DETECTED",
+                      "File mengandung macro VBA dan tidak dapat diproses. "
+                      "Simpan ulang sebagai .docx biasa (bukan .docm).")
+
+            # Zip bomb: total ukuran isi tidak boleh melebihi 200 MB
+            total_uncompressed = sum(info.file_size for info in z.infolist())
+            if total_uncompressed > 200 * 1024 * 1024:
+                _fail("FILE_TOO_LARGE",
+                      "Konten file terlalu besar untuk diproses (melebihi 200 MB tidak terkompresi).")
+
     except zipfile.BadZipFile:
         _fail("INVALID_DOCX", "File rusak atau bukan format .docx yang valid.")
 

@@ -50,5 +50,6 @@ try {
     echo json_encode(['ok' => true]);
 
 } catch (Exception $e) {
-    echo json_encode(['ok' => false, 'error' => $e->getMessage()]);
+    error_log('send_otp error: ' . $e->getMessage());
+    echo json_encode(['ok' => false, 'error' => 'Gagal mengirim OTP. Coba lagi.']);
 }

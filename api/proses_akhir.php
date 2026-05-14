@@ -54,7 +54,7 @@ exec($cmd, $out, $status);
 if ($status !== 0 || !file_exists($output_full)) {
     $logDir = __DIR__ . '/../logs';
     if (!is_dir($logDir)) mkdir($logDir, 0775, true);
-    $logLine = date('Y-m-d H:i:s') . " | order={$orderId} | status={$status}\n" . implode("\n", $out) . "\n---\n";
+    $logLine = date('Y-m-d H:i:s') . " | order=" . ($_SESSION['order_db_id'] ?? 'unknown') . " | status={$status}\n" . implode("\n", $out) . "\n---\n";
     file_put_contents($logDir . '/error.log', $logLine, FILE_APPEND | LOCK_EX);
 
     echo "<div style='font-family:sans-serif;padding:40px;text-align:center;color:white;background:#0d0b1e;min-height:100vh'>";

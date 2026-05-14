@@ -39,13 +39,30 @@ if (isset($_FILES['file']) && isset($_POST['paket'])) {
         die("Format harus doc/docx");
     }
 
+    if ($_FILES['file']['size'] > 30 * 1024 * 1024) {
+        die("Ukuran file maksimal 30MB.");
+    }
+
+    $finfo = finfo_open(FILEINFO_MIME_TYPE);
+    $mime  = finfo_file($finfo, $tmpFile);
+    finfo_close($finfo);
+    $allowedMime = [
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    ];
+    if (!in_array($mime, $allowedMime)) {
+        die("Format file tidak valid.");
+    }
+
     $uploadDir = __DIR__ . '/../upload';
     if (!is_dir($uploadDir)) {
         mkdir($uploadDir, 0775, true);
     }
 
     $namaBaru = time() . "_" . preg_replace("/[^a-zA-Z0-9._]/", "", $namaFile);
-    move_uploaded_file($tmpFile, $uploadDir . "/" . $namaBaru);
+    if (!move_uploaded_file($tmpFile, $uploadDir . "/" . $namaBaru)) {
+        die("Gagal menyimpan file. Coba lagi.");
+    }
 
     $hargaConfig = @json_decode(@file_get_contents(__DIR__ . '/../config/harga.json'), true) ?: [];
     if ($paket == 'paket1')     $harga = $hargaConfig['paket1'] ?? 5000;
