@@ -133,6 +133,8 @@
 
 .upload-area {
     display: block;
+    width: 100%;
+    box-sizing: border-box;
     border: 2px dashed rgba(124,58,237,0.4);
     border-radius: 12px;
     padding: 26px 20px;
