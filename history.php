@@ -897,7 +897,6 @@ if (!empty($orders)) {
                     <?php if (!empty($o['file_output']) && !$isFailed && !$isPaid): ?>
                     <button class="btn-preview" onclick="openPreview(
                         '<?= addslashes(htmlspecialchars($namaFile)) ?>',
-                        '<?= addslashes($o['file_output']) ?>',
                         <?= $isPending ? 'true' : 'false' ?>,
                         <?= $o['id'] ?>,
                         '<?= addslashes($o['order_id']) ?>',
@@ -1172,7 +1171,7 @@ if (!empty($orders)) {
         }
 
         /* ── Preview Modal ── */
-        function openPreview(fileName, fileOutput, isPending, dbId, ordId, harga) {
+        function openPreview(fileName, isPending, dbId, ordId, harga) {
             var overlay  = document.getElementById('pvOverlay');
             var wrapper  = document.getElementById('pvFrameWrapper');
             var frame    = document.getElementById('pvFrame');
@@ -1197,15 +1196,27 @@ if (!empty($orders)) {
             overlay.classList.add('open');
             document.body.style.overflow = 'hidden';
 
-            var absoluteUrl = 'https://adkphotocopy.com/' + fileOutput;
-            var viewerUrl   = 'https://view.officeapps.live.com/op/embed.aspx?src='
-                            + encodeURIComponent(absoluteUrl) + '&wdScale=PageWidth';
-
-            frame.onload = function() {
-                loading.style.display = 'none';
-                wrapper.style.display = 'flex';
-            };
-            frame.src = viewerUrl;
+            // Ambil viewer URL via AJAX — file path tidak pernah ada di HTML
+            fetch('api/get_preview_url.php', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({db_id: dbId})
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (!data.ok) {
+                    loading.innerHTML = '<span style="color:#f87171">Gagal memuat preview.</span>';
+                    return;
+                }
+                frame.onload = function() {
+                    loading.style.display = 'none';
+                    wrapper.style.display = 'flex';
+                };
+                frame.src = data.viewer_url;
+            })
+            .catch(function() {
+                loading.innerHTML = '<span style="color:#f87171">Gagal terhubung ke server.</span>';
+            });
         }
 
         function closePreview() {
