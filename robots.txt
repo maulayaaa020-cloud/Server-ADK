@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+
+Disallow: /admin/
+Disallow: /api/
+Disallow: /upload/
+Disallow: /hasil/
+Disallow: /python/
+Disallow: /includes/
+Disallow: /config/
+Disallow: /vendor/
+
+Sitemap: https://adkphotocopy.com/sitemap.xml
