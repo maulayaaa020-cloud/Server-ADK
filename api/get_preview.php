@@ -46,8 +46,8 @@ $perlu_generate = !file_exists($preview_full)
                || filemtime($pdf_full) > filemtime($preview_full);
 
 if ($perlu_generate) {
-    $python = "D:\\Freelaces\\Server\\python.exe";
-    $script = "D:\\Freelaces\\Server\\htdocs\\adk\\python\\add_watermark.py";
+    $python = PYTHON_EXE;
+    $script = PYTHON_SCRIPT_DIR . '/add_watermark.py';
     $cmd    = "\"$python\" \"$script\" " .
               escapeshellarg($pdf_full) . " " .
               escapeshellarg($preview_full) . " 2>&1";
