@@ -3,7 +3,7 @@ session_start();
 require_once __DIR__ . '/../includes/config.php';
 require_once __DIR__ . '/../includes/db.php';
 
-if (file_exists(__DIR__ . '/../maintenance.flag')) {
+if (file_exists(__DIR__ . '/../config/maintenance.flag')) {
     header('Location: ../maintenance.php');
     exit;
 }

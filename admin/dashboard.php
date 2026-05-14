@@ -3,7 +3,7 @@ date_default_timezone_set('Asia/Jakarta');
 require_once __DIR__ . '/_guard.php';
 
 // ── Maintenance mode toggle ───────────────────────────────────────────────────
-$maintenanceFlag  = __DIR__ . '/../maintenance.flag';
+$maintenanceFlag  = __DIR__ . '/../config/maintenance.flag';
 $isMaintenance    = file_exists($maintenanceFlag);
 $maintenanceError = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['toggle_maintenance'])) {
@@ -15,8 +15,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['toggle_maintenance'])
             @unlink($maintenanceFlag);
             $isMaintenance = false;
         } else {
-            file_put_contents($maintenanceFlag, date('Y-m-d H:i:s'));
-            $isMaintenance = true;
+            $written = file_put_contents($maintenanceFlag, date('Y-m-d H:i:s'));
+            if ($written !== false) {
+                $isMaintenance = true;
+            } else {
+                $maintenanceError = 'Gagal mengaktifkan maintenance. Periksa izin folder config/.';
+            }
         }
     }
 }
