@@ -764,6 +764,10 @@ if (!empty($orders)) {
             display: flex; align-items: center; justify-content: center; gap: 6px;
         }
         .bug-send:hover { background: #a855f7; box-shadow: 0 4px 14px rgba(124,58,237,0.4); }
+        @media (max-width: 600px) {
+            .footer-inner { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 24px 16px !important; }
+            .footer-brand { grid-column: 1 / -1 !important; }
+        }
     </style>
 </head>
 <body>
