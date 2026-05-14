@@ -1174,7 +1174,7 @@ if (!empty($orders)) {
 
             // Office Online Viewer — kualitas sama persis dengan Microsoft Word
             var absoluteUrl = 'https://adkphotocopy.com/' + fileOutput;
-            var viewerUrl   = 'https://view.officeapps.live.com/op/embed.aspx?src=' + encodeURIComponent(absoluteUrl);
+            var viewerUrl   = 'https://view.officeapps.live.com/op/embed.aspx?src=' + encodeURIComponent(absoluteUrl) + '&wdScale=PageWidth';
 
             frame.onload = function() {
                 loading.style.display = 'none';
