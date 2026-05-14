@@ -951,7 +951,15 @@ body {
     }
 
     .hero-right {
-        display: none;   /* gambar hilang, teks full lebar */
+        display: flex;
+        width: 100%;
+        justify-content: center;
+    }
+
+    .hero-card-outer {
+        transform: scale(0.78);
+        transform-origin: center top;
+        margin-bottom: -70px; /* kompensasi space kosong akibat scale */
     }
 
     .hero-left h1 {
