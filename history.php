@@ -917,17 +917,10 @@ if (!empty($orders)) {
                     <div class="download-row">
                         <span>Download:</span>
                         <?php if ($isPaid && $o['file_output']): ?>
-                        <a href="<?= BASE_PATH ?>/download.php?id=<?= $o['id'] ?>&type=docx"
+                        <a href="<?= BASE_PATH ?>/download.php?id=<?= $o['id'] ?>"
                            class="btn-dl active" download>Docx</a>
-                        <?php if (!empty($o['file_output_pdf'])): ?>
-                        <a href="<?= BASE_PATH ?>/download.php?id=<?= $o['id'] ?>&type=pdf"
-                           class="btn-dl active" download>PDF</a>
-                        <?php else: ?>
-                        <span class="btn-dl locked">PDF</span>
-                        <?php endif; ?>
                         <?php else: ?>
                         <span class="btn-dl locked">Docx</span>
-                        <span class="btn-dl locked">PDF</span>
                         <?php endif; ?>
                     </div>
                 </div>

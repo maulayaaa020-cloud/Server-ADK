@@ -67,31 +67,16 @@ if ($status !== 0 || !file_exists($output_full)) {
 
 $dbId = $_SESSION['order_db_id'] ?? null;
 
-// ── Konversi ke PDF via Microsoft Word ──────────────────
-$pdfRel      = preg_replace('/\.(docx?)$/i', '.pdf', $outputRel);
-$pdf_full    = __DIR__ . '/../' . $pdfRel;
-$pdfScript   = PYTHON_SCRIPT_DIR . '/convert_pdf.py';
-$pdfCmd      = "\"$python\" \"$pdfScript\" " .
-               escapeshellarg($output_full) . " " .
-               escapeshellarg($pdf_full) . " 2>&1";
-exec($pdfCmd, $pdfOut, $pdfStatus);
-$pdfOk = ($pdfStatus === 0 && file_exists($pdf_full));
-
 // ── Simpan ke DB ─────────────────────────────────────────
 if ($dbId) {
     try {
         $db = getDB();
-        $db->prepare("UPDATE orders SET file_output = :out, file_output_pdf = :pdf WHERE id = :id")
-           ->execute([
-               ':out' => $outputRel,
-               ':pdf' => $pdfOk ? $pdfRel : null,
-               ':id'  => $dbId,
-           ]);
+        $db->prepare("UPDATE orders SET file_output = :out WHERE id = :id")
+           ->execute([':out' => $outputRel, ':id' => $dbId]);
     } catch (Exception $e) {}
 }
 
-$_SESSION['file_output']     = $outputRel;
-$_SESSION['file_output_pdf'] = $pdfOk ? $pdfRel : null;
+$_SESSION['file_output'] = $outputRel;
 
 header("Location: ../history.php");
 exit;
