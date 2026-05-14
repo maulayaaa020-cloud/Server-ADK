@@ -47,7 +47,7 @@ if ($phone === ADMIN_EMAIL) {
         file_put_contents($lockFile, json_encode(['attempts' => 0, 'lockout_until' => 0]));
         session_regenerate_id(true);
         $_SESSION['adk_admin'] = true;
-        echo json_encode(['ok' => true, 'redirect' => '/adk/admin/dashboard.php']);
+        echo json_encode(['ok' => true, 'redirect' => BASE_PATH . '/admin/dashboard.php']);
     } else {
         $attempts++;
         if ($attempts >= 3) {

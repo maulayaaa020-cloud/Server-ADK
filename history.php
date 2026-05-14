@@ -794,7 +794,7 @@ if (!empty($orders)) {
                 <span>🔑</span>
                 <span class="phone-masked" style="color:#a78bfa">Admin — Semua Order</span>
                 <span class="phone-divider"></span>
-                <a href="/adk/admin/dashboard.php">Dashboard</a>
+                <a href="<?= BASE_PATH ?>/admin/dashboard.php">Dashboard</a>
             </div>
             <?php elseif ($isGuest): ?>
             <!-- Mode Tamu -->
@@ -908,10 +908,10 @@ if (!empty($orders)) {
                     <div class="download-row">
                         <span>Download:</span>
                         <?php if ($isPaid && $o['file_output']): ?>
-                        <a href="/adk/download.php?id=<?= $o['id'] ?>&type=docx"
+                        <a href="<?= BASE_PATH ?>/download.php?id=<?= $o['id'] ?>&type=docx"
                            class="btn-dl active" download>Docx</a>
                         <?php if (!empty($o['file_output_pdf'])): ?>
-                        <a href="/adk/download.php?id=<?= $o['id'] ?>&type=pdf"
+                        <a href="<?= BASE_PATH ?>/download.php?id=<?= $o['id'] ?>&type=pdf"
                            class="btn-dl active" download>PDF</a>
                         <?php else: ?>
                         <span class="btn-dl locked">PDF</span>

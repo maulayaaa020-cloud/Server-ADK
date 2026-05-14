@@ -55,7 +55,7 @@ if (!file_exists(__DIR__ . '/maintenance.flag')) {
   <h1>Server Sedang Maintenance</h1>
   <p>Kami sedang melakukan perbaikan sistem. Order baru sementara tidak dapat diproses.</p>
   <p>Jika Anda sudah memiliki order, Anda masih dapat melihat status, melakukan pembayaran, dan mengunduh hasil di halaman History.</p>
-  <a href="/adk/history.php" class="btn">Cek Order Saya</a>
+  <a href="history.php" class="btn">Cek Order Saya</a>
 </div>
 </body>
 </html>

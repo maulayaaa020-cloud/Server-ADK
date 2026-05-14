@@ -72,7 +72,7 @@ data-client-key="<?= MIDTRANS_CLIENT_KEY ?>"></script>
 document.getElementById('pay-button').onclick = function () {
     snap.pay('<?= $snapToken ?>', {
         onSuccess: function(result){
-            window.location.href = "/adk/proses_akhir.php";
+            window.location.href = "<?= BASE_PATH ?>/proses_akhir.php";
         },
         onPending: function(result){
             alert("Menunggu pembayaran");

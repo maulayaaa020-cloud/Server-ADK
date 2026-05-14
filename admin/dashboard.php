@@ -528,12 +528,12 @@ function tglAdmin(string $dt): string {
 
     <ul class="sidebar-nav">
         <li>
-            <a href="/adk/admin/dashboard.php" class="active">
+            <a href="<?= BASE_PATH ?>/admin/dashboard.php" class="active">
                 <span class="nav-icon">📊</span> Dashboard
             </a>
         </li>
         <li>
-            <a href="/adk/history.php">
+            <a href="<?= BASE_PATH ?>/history.php">
                 <span class="nav-icon">📋</span> Semua Order
             </a>
         </li>
@@ -543,28 +543,28 @@ function tglAdmin(string $dt): string {
             </a>
         </li>
         <li>
-            <a href="/adk/admin/harga.php">
+            <a href="<?= BASE_PATH ?>/admin/harga.php">
                 <span class="nav-icon">💰</span> Harga Paket
             </a>
         </li>
         <li>
-            <a href="/adk/admin/cleanup.php">
+            <a href="<?= BASE_PATH ?>/admin/cleanup.php">
                 <span class="nav-icon">🗑</span> Cleanup File
             </a>
         </li>
         <li>
-            <a href="/adk/admin/logs.php">
+            <a href="<?= BASE_PATH ?>/admin/logs.php">
                 <span class="nav-icon">📄</span> Log Error
             </a>
         </li>
         <li>
-            <a href="/adk/admin/export.php">
+            <a href="<?= BASE_PATH ?>/admin/export.php">
                 <span class="nav-icon">📥</span> Export CSV
             </a>
         </li>
     </ul>
 
-    <a href="/adk/admin/logout.php" class="btn-logout">Keluar</a>
+    <a href="<?= BASE_PATH ?>/admin/logout.php" class="btn-logout">Keluar</a>
 </nav>
 
 <!-- MAIN -->
@@ -687,21 +687,21 @@ function tglAdmin(string $dt): string {
                         <td>
                             <div class="actions-cell">
                                 <?php if ($inputFile): ?>
-                                <a href="/adk/upload/<?= htmlspecialchars(basename($inputFile)) ?>"
+                                <a href="<?= BASE_PATH ?>/upload/<?= htmlspecialchars(basename($inputFile)) ?>"
                                    class="action-btn" download title="Download file upload asli">Input</a>
                                 <?php else: ?>
                                 <span class="action-btn disabled">Input</span>
                                 <?php endif; ?>
 
                                 <?php if ($outputFile): ?>
-                                <a href="/adk/<?= htmlspecialchars($outputFile) ?>"
+                                <a href="<?= BASE_PATH ?>/<?= htmlspecialchars($outputFile) ?>"
                                    class="action-btn green" download title="Download hasil .docx">Docx</a>
                                 <?php else: ?>
                                 <span class="action-btn disabled">Docx</span>
                                 <?php endif; ?>
 
                                 <?php if ($pdfFile): ?>
-                                <a href="/adk/<?= htmlspecialchars($pdfFile) ?>"
+                                <a href="<?= BASE_PATH ?>/<?= htmlspecialchars($pdfFile) ?>"
                                    class="action-btn green" target="_blank" title="Lihat PDF hasil">PDF</a>
                                 <?php else: ?>
                                 <span class="action-btn disabled">PDF</span>

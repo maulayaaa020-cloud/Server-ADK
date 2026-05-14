@@ -3,7 +3,7 @@ session_start();
 require_once __DIR__ . '/../includes/config.php';
 
 if (!empty($_SESSION['adk_admin'])) {
-    header('Location: /adk/admin/dashboard.php');
+    header('Location: ' . BASE_PATH . '/admin/dashboard.php');
     exit;
 }
 
@@ -16,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($email === ADMIN_EMAIL && password_verify($password, ADMIN_PASSWORD_HASH)) {
         session_regenerate_id(true);
         $_SESSION['adk_admin'] = true;
-        header('Location: /adk/admin/dashboard.php');
+        header('Location: ' . BASE_PATH . '/admin/dashboard.php');
         exit;
     } else {
         $error = 'Login gagal.';
