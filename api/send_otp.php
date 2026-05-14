@@ -34,8 +34,20 @@ try {
     $db->prepare("INSERT INTO otp_codes (phone, code, expires_at) VALUES (:p, :c, NOW() + INTERVAL 5 MINUTE)")
        ->execute([':p' => $phone, ':c' => $code]);
 
-    // TODO: Kirim via WhatsApp/SMS
-    echo json_encode(['ok' => true, 'otp' => $code, 'dev' => true]);
+    $ch = curl_init('https://api.fonnte.com/send');
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_POST           => true,
+        CURLOPT_HTTPHEADER     => ['Authorization: ' . FONNTE_TOKEN],
+        CURLOPT_POSTFIELDS     => http_build_query([
+            'target'  => $phone,
+            'message' => "Kode OTP ADK Photocopy kamu: *{$code}*\n\nBerlaku 5 menit. Jangan berikan ke siapapun.",
+        ]),
+    ]);
+    curl_exec($ch);
+    curl_close($ch);
+
+    echo json_encode(['ok' => true]);
 
 } catch (Exception $e) {
     echo json_encode(['ok' => false, 'error' => $e->getMessage()]);
