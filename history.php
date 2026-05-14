@@ -620,6 +620,18 @@ if (!empty($orders)) {
             background: white;
         }
 
+        /* Mobile: scale-down iframe agar lebar halaman A4 muat di layar sempit.
+           scale(0.45) → iframe harus render 222% lebar agar visual = 100% container.
+           Tinggi: (100%+60px)/0.45 → setelah scale, visual = wrapper_height + 60px (toolbar ter-clip). */
+        @media (max-width: 767px) {
+            .pv-frame {
+                transform-origin: top left;
+                transform: scale(0.45);
+                width: 222%;
+                height: calc(222% + 133px);
+            }
+        }
+
         .pv-footer {
             display: flex; align-items: center;
             justify-content: space-between;

@@ -48,9 +48,7 @@ $sig     = hash_hmac('sha256', $db_id . ':' . $expires, DOKU_SECRET_KEY);
 $fileUrl = 'https://adkphotocopy.com/api/serve_preview.php'
          . '?id=' . $db_id . '&t=' . $expires . '&sig=' . urlencode($sig);
 
-$vw = (int)($input['vw'] ?? 1200);
-$wdScale = ($vw < 768) ? '50' : 'PageWidth';
 $viewerUrl = 'https://view.officeapps.live.com/op/embed.aspx?src='
-           . urlencode($fileUrl) . '&wdScale=' . $wdScale;
+           . urlencode($fileUrl) . '&wdScale=PageWidth';
 
 echo json_encode(['ok' => true, 'viewer_url' => $viewerUrl]);
