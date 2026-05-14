@@ -30,7 +30,6 @@ def _fail(code, message):
 
 # ── LibreOffice artifact cleaner ──────────────────────────────────────────────
 _W14_NS         = 'http://schemas.microsoft.com/office/word/2010/wordml'
-_MC_NS          = 'http://schemas.openxmlformats.org/markup-compatibility/2006'
 _LO_NS_PREFIXES = ('urn:org:documentfoundation', 'com.sun.star', 'urn:openoffice')
 
 _CLEAN_XML_FILES = frozenset([
@@ -72,26 +71,6 @@ def _strip_lo_artifacts(input_path):
                 p = elem.getparent()
                 if p is not None:
                     p.remove(elem)
-
-        # 3. Unwrap mc:AlternateContent → ambil isi mc:Fallback (lebih kompatibel)
-        AC = '{%s}AlternateContent' % _MC_NS
-        FB = '{%s}Fallback' % _MC_NS
-        CH = '{%s}Choice' % _MC_NS
-        changed = True
-        while changed:
-            changed = False
-            for ac in list(root.iter(AC)):
-                parent = ac.getparent()
-                if parent is None:
-                    continue
-                idx = list(parent).index(ac)
-                src = ac.find(FB) or ac.find(CH)
-                if src is not None:
-                    for i, child in enumerate(list(src)):
-                        parent.insert(idx + i, child)
-                parent.remove(ac)
-                changed = True
-                break
 
         return etree.tostring(root, xml_declaration=True, encoding='UTF-8', standalone=True)
 
