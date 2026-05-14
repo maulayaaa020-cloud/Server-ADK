@@ -132,19 +132,27 @@
 #fileInput { display: none; }
 
 .upload-area {
+    display: block;
     border: 2px dashed rgba(124,58,237,0.4);
     border-radius: 12px;
     padding: 26px 20px;
     text-align: center;
     cursor: pointer;
-    transition: 0.25s;
+    transition: border-color 0.25s, background 0.25s, transform 0.15s;
     margin-bottom: 18px;
     background: rgba(124,58,237,0.06);
+    user-select: none;
 }
 
 .upload-area:hover {
     border-color: #7c3aed;
     background: rgba(124,58,237,0.12);
+}
+
+.upload-area.drag-over {
+    border-color: #a78bfa;
+    background: rgba(124,58,237,0.22);
+    transform: scale(1.01);
 }
 
 .upload-area p {

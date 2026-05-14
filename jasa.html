@@ -23,6 +23,36 @@
         .catch(function(){});
     </script>
 
+    <!-- Banner in-app browser (TikTok, Instagram, dll tidak support file picker) -->
+    <div id="inapp-banner" style="display:none;background:#78350f;color:#fcd34d;padding:11px 16px;text-align:center;font-size:13px;font-weight:600;position:sticky;top:0;z-index:9998;">
+        Browser aplikasi tidak mendukung upload file.
+        <button onclick="openInExtBrowser()" style="background:#fcd34d;color:#78350f;border:none;border-radius:6px;padding:4px 14px;font-weight:700;cursor:pointer;margin-left:8px;font-size:13px;">Buka di Browser</button>
+    </div>
+    <script>
+    (function(){
+        var ua = navigator.userAgent || '';
+        if (/BytedanceWebview|TikTok|musical_ly|Instagram|FBAN|FBAV|Line\/|Snapchat|MicroMessenger/i.test(ua)) {
+            document.getElementById('inapp-banner').style.display = 'block';
+        }
+        window.openInExtBrowser = function() {
+            var url = location.href;
+            if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(url)
+                        .then(function(){ alert('Link sudah disalin!\nBuka Safari atau Chrome, lalu tempel link-nya.'); })
+                        .catch(function(){ alert('Salin link ini, lalu buka di Safari atau Chrome:\n' + url); });
+                } else {
+                    alert('Salin link ini, lalu buka di Safari atau Chrome:\n' + url);
+                }
+            } else {
+                location.href = 'intent://' + url.replace(/^https?:\/\//, '')
+                    + '#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url='
+                    + encodeURIComponent(url) + ';end';
+            }
+        };
+    })();
+    </script>
+
     <!-- NAVBAR -->
     <div class="navbar">
         <a href="index.html" class="logo">
@@ -111,11 +141,10 @@
                 <div class="order-panel">
 
                     <!-- Upload -->
-                    <div class="upload-area" id="uploadArea"
-                         onclick="document.getElementById('fileInput').click()">
-                        <p><b>Pilih File</b></p>
-                        <span>Format Word (.docx)</span>
-                    </div>
+                    <label class="upload-area" id="uploadArea" for="fileInput">
+                        <p><b>Pilih atau Seret File</b></p>
+                        <span>Format Word (.docx) &mdash; klik atau drag &amp; drop</span>
+                    </label>
                     <input type="file" name="file" id="fileInput" accept=".docx"
                            onchange="handleFile(this)">
                     <div class="file-display" id="fileDisplay">
@@ -492,19 +521,45 @@
             }).join('');
         }
 
-        function handleFile(input) {
-            if (!input.files[0]) return;
-            document.getElementById('fileNameDisplay').textContent = input.files[0].name;
+        function applyFile(file) {
+            if (!file) return;
+            if (!file.name.toLowerCase().endsWith('.docx')) {
+                alert('Hanya file .docx yang diterima.'); return;
+            }
+            // Set file pada input agar form submission menyertakannya
+            try { var dt = new DataTransfer(); dt.items.add(file); document.getElementById('fileInput').files = dt.files; } catch(e) {}
+            document.getElementById('fileNameDisplay').textContent = file.name;
             document.getElementById('fileDisplay').style.display = 'flex';
             document.getElementById('uploadArea').style.display  = 'none';
             hideValidation();
         }
+
+        function handleFile(input) { applyFile(input.files[0]); }
 
         function removeFile() {
             document.getElementById('fileInput').value = '';
             document.getElementById('fileDisplay').style.display = 'none';
             document.getElementById('uploadArea').style.display  = '';
         }
+
+        // Drag & drop
+        (function(){
+            var area = document.getElementById('uploadArea');
+            area.addEventListener('dragover', function(e) {
+                e.preventDefault(); e.stopPropagation();
+                this.classList.add('drag-over');
+            });
+            area.addEventListener('dragleave', function(e) {
+                e.preventDefault();
+                if (!this.contains(e.relatedTarget)) this.classList.remove('drag-over');
+            });
+            area.addEventListener('drop', function(e) {
+                e.preventDefault(); e.stopPropagation();
+                this.classList.remove('drag-over');
+                var file = e.dataTransfer.files[0];
+                if (file) applyFile(file);
+            });
+        })();
 
         function hideValidation() {
             document.getElementById('validMsg').classList.remove('show');
