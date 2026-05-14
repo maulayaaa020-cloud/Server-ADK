@@ -578,7 +578,7 @@
 
         // Sync harga dari server agar selalu sesuai konfigurasi admin
         (function() {
-            fetch('/adk/api/harga_info.php')
+            fetch('api/harga_info.php')
                 .then(function(r) { return r.json(); })
                 .then(function(d) {
                     window._harga = d;

@@ -15,9 +15,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($p1 < 1000 || $p2 < 1000 || $p3 < 1000) {
         $error = 'Harga minimal Rp 1.000 per paket.';
     } else {
-        $harga = ['paket1' => $p1, 'paket2' => $p2, 'paket3' => $p3];
-        file_put_contents($configPath, json_encode($harga, JSON_PRETTY_PRINT));
-        $success = true;
+        $harga   = ['paket1' => $p1, 'paket2' => $p2, 'paket3' => $p3];
+        $written = file_put_contents($configPath, json_encode($harga, JSON_PRETTY_PRINT));
+        if ($written !== false) {
+            $success = true;
+        } else {
+            $error = 'Gagal menyimpan file harga. Pastikan direktori config/ dapat ditulis oleh server (chmod 775 atau chown www-data).';
+        }
     }
 }
 
