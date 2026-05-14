@@ -112,17 +112,16 @@ def purge_all_headers_footers():
     Also removes <w:sdt> Content Control elements and collapses multi-paragraph
     headers/footers to a single paragraph."""
     for section in doc.sections:
-        for part in [
-            section.header, section.footer,
-            section.first_page_header, section.first_page_footer,
-        ]:
+        parts = [section.header, section.footer]
+        if section.different_first_page_header_footer:
+            parts += [section.first_page_header, section.first_page_footer]
+        for part in parts:
             part.is_linked_to_previous = False
             elem = part._element
             for sdt in list(elem.findall(qn('w:sdt'))):
                 elem.remove(sdt)
             paras = list(elem.findall(qn('w:p')))
             if paras:
-                # Clear first paragraph, remove all extra ones
                 for child in list(paras[0]):
                     paras[0].remove(child)
                 for extra in paras[1:]:
