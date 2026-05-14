@@ -41,23 +41,13 @@
         </div>
     </div>
 
-    <!-- Banner in-app browser -->
-    <div id="inapp-banner" style="display:none;background:#78350f;color:#fcd34d;padding:11px 16px;text-align:center;font-size:13px;font-weight:600;position:sticky;top:0;z-index:9998;">
-        Browser aplikasi tidak mendukung upload file.
-        <button onclick="openInExtBrowser()" style="background:#fcd34d;color:#78350f;border:none;border-radius:6px;padding:4px 14px;font-weight:700;cursor:pointer;margin-left:8px;font-size:13px;">Buka di Browser</button>
-    </div>
     <script>
     (function(){
         var ua = navigator.userAgent || '';
-        // Deteksi named apps + generic Android WebView (wv flag) + iOS tanpa Safari
         window._isInApp =
             /BytedanceWebview|TikTok|musical_ly|Instagram|FBAN|FBAV|Line\/|Snapchat|MicroMessenger/i.test(ua) ||
             (/Android/.test(ua) && /; wv\)/.test(ua)) ||
             (/iPhone|iPad/.test(ua) && !/Safari\//.test(ua));
-
-        if (window._isInApp) {
-            document.getElementById('inapp-banner').style.display = 'block';
-        }
 
         window.openInExtBrowser = function() {
             var url = location.href;
