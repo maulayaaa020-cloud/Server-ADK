@@ -271,6 +271,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <hr class="footer-divider">
         <p class="footer-bottom">© 2025 ADK PHOTOCOPY · All Rights Reserved.</p>
     </footer>
+    <script src="nocopy.js"></script>
 </body>
 </html>
 
