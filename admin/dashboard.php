@@ -3,26 +3,34 @@ date_default_timezone_set('Asia/Jakarta');
 require_once __DIR__ . '/_guard.php';
 
 // ── Maintenance mode toggle ───────────────────────────────────────────────────
-$maintenanceFlag  = __DIR__ . '/../config/maintenance.flag';
-$isMaintenance    = file_exists($maintenanceFlag);
-$maintenanceError = '';
+$maintenanceFlag = __DIR__ . '/../config/maintenance.flag';
+$isMaintenance   = file_exists($maintenanceFlag);
+
+// Ambil flash message dari session (hasil redirect sebelumnya)
+$maintenanceError   = $_SESSION['maint_error']   ?? '';
+$maintenanceSuccess = $_SESSION['maint_success'] ?? '';
+unset($_SESSION['maint_error'], $_SESSION['maint_success']);
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['toggle_maintenance'])) {
     $pwd = $_POST['maintenance_password'] ?? '';
     if (!password_verify($pwd, ADMIN_PASSWORD_HASH)) {
-        $maintenanceError = 'Sandi salah.';
+        $_SESSION['maint_error'] = 'Sandi salah.';
     } else {
         if ($isMaintenance) {
             @unlink($maintenanceFlag);
-            $isMaintenance = false;
+            $_SESSION['maint_success'] = 'Maintenance mode dinonaktifkan.';
         } else {
             $written = file_put_contents($maintenanceFlag, date('Y-m-d H:i:s'));
             if ($written !== false) {
-                $isMaintenance = true;
+                $_SESSION['maint_success'] = 'Maintenance mode diaktifkan.';
             } else {
-                $maintenanceError = 'Gagal mengaktifkan maintenance. Periksa izin folder config/.';
+                $_SESSION['maint_error'] = 'Gagal mengaktifkan. Periksa izin folder config/.';
             }
         }
     }
+    // PRG: redirect supaya refresh tidak memicu resubmit form
+    header('Location: dashboard.php');
+    exit;
 }
 
 $db = getDB();
@@ -808,6 +816,15 @@ document.getElementById('maintOverlay').addEventListener('click', function(e){
 });
 <?php if ($maintenanceError): ?>
 openMaintModal();
+<?php endif; ?>
+<?php if ($maintenanceSuccess): ?>
+(function(){
+    var t = document.createElement('div');
+    t.textContent = <?= json_encode($maintenanceSuccess) ?>;
+    t.style.cssText = 'position:fixed;top:20px;right:20px;background:#065f46;color:#6ee7b7;padding:12px 20px;border-radius:10px;font-size:14px;font-weight:600;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.4)';
+    document.body.appendChild(t);
+    setTimeout(function(){ t.remove(); }, 3000);
+})();
 <?php endif; ?>
 </script>
 </body>
