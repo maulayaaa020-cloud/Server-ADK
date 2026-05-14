@@ -625,6 +625,14 @@ def is_false_bab(para):
                 re.search(r'\.{3,}.*\d+\s*$', text) or
                 re.search(r'\s{4,}\d+\s*$', text)):
             return True
+    # LAMPIRAN / DAFTAR PUSTAKA sebagai sub-heading (Heading 2+) bukan section mandiri
+    _endpoint_pat = (
+        r'^\s*(lampiran|appendix|appendices|attachment|'
+        r'daftar\s+pust?aka|referensi|references?|bibliography)'
+    )
+    if re.match(_endpoint_pat, text, re.IGNORECASE):
+        if re.search(r'heading\s*[2-9]', style, re.IGNORECASE):
+            return True
     return False
 
 
@@ -767,10 +775,13 @@ try:
             else:
                 bab_num_key = None
             if last_bab_para_idx is not None:
-                has_break = _has_page_break_before(all_paras, last_bab_para_idx + 1, para_idx)
+                _window = max(last_bab_para_idx + 1, para_idx - 15)
+                has_break = _has_page_break_before(all_paras, _window, para_idx)
                 if not has_break:
-                    has_break = _para_has_page_break_before(para)  # "Page Break Before" formatting
-                if not has_break:
+                    has_break = _para_has_page_break_before(para)
+                _style_lower = (para.style.name.lower() if para.style else "")
+                _trusted = has_break and bool(re.search(r'heading', _style_lower))
+                if not _trusted:
                     _is_endpoint = bool(re.match(
                         r'^\s*(lampiran|daftar\s+pust?aka)', text, re.IGNORECASE
                     ))
@@ -782,7 +793,8 @@ try:
                                 break
                             if _nt:
                                 forward_count += 1
-                        if forward_count < 5:
+                        _threshold = 2 if has_break else 5
+                        if forward_count < _threshold:
                             continue
             bab_p_list.append(para._p)
             if bab_num_key:
