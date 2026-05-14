@@ -33,7 +33,7 @@ $hidden = $_SESSION['hidden_cover'] ?? 'Ya';
 $posisi = $_SESSION['posisi']       ?? 'Tengah Bawah';
 
 $python = PYTHON_EXE;
-$script = PYTHON_SCRIPT_DIR . '/proses.py';
+$script = PYTHON_SCRIPT_DIR . '/main.py';
 
 $hasilDir = __DIR__ . '/../hasil';
 if (!is_dir($hasilDir)) {
