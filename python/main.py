@@ -11,6 +11,7 @@ import sys
 import re
 import json
 import os
+import zipfile
 
 # Pastikan folder python/ ada di sys.path agar import utils/paket* bisa berjalan
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -24,6 +25,29 @@ from utils import DocProcessor
 def _fail(code, message):
     print(json.dumps({"status": "error", "code": code, "message": message}))
     sys.exit(1)
+
+
+def validate_file(path):
+    ext = os.path.splitext(path)[1].lower()
+    if ext == '.doc':
+        _fail("FORMAT_NOT_SUPPORTED",
+              "Format .doc tidak didukung. Buka di Microsoft Word lalu simpan ulang sebagai .docx.")
+
+    try:
+        size = os.path.getsize(path)
+    except OSError:
+        _fail("FILE_READ_ERROR", "Tidak dapat membaca ukuran file.")
+
+    if size > 20 * 1024 * 1024:
+        _fail("FILE_TOO_LARGE",
+              f"Ukuran file ({size // (1024*1024)} MB) melebihi batas maksimal 20 MB.")
+
+    try:
+        with zipfile.ZipFile(path, 'r') as z:
+            if 'word/document.xml' not in z.namelist():
+                _fail("INVALID_DOCX", "File bukan dokumen Word (.docx) yang valid.")
+    except zipfile.BadZipFile:
+        _fail("INVALID_DOCX", "File rusak atau bukan format .docx yang valid.")
 
 
 def main():
@@ -42,6 +66,8 @@ def main():
 
     m            = re.search(r'\d+', size_arg)
     font_size_pt = int(m.group()) if m else 12
+
+    validate_file(input_file)
 
     # ── Buka dokumen ─────────────────────────────────────
     try:

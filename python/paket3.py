@@ -20,31 +20,35 @@ def apply(proc, roman_sec, bab_sec_list, n_sections, hidden_cov):
     first_bab_sec = bab_sec_list[0] if bab_sec_list else None
 
     for i, section in enumerate(proc.doc.sections):
+        try:
+            # ── Cover zone ──
+            if roman_sec is not None and i < roman_sec:
+                proc.fmt_cover(section, first_cover=(i == 0), show_pos=cov_show)
+                continue
+            if roman_sec is None and i == 0:
+                proc.fmt_cover(section, first_cover=True, show_pos=cov_show)
+                continue
 
-        # ── Cover zone ──
-        if roman_sec is not None and i < roman_sec:
-            proc.fmt_cover(section, first_cover=(i == 0), show_pos=cov_show)
-            continue
-        if roman_sec is None and i == 0:
-            proc.fmt_cover(section, first_cover=True, show_pos=cov_show)
-            continue
+            # ── Romawi zone ──
+            if first_bab_sec is None or i < first_bab_sec:
+                proc.fmt_roman(section)
+                continue
 
-        # ── Romawi zone ──
-        if first_bab_sec is None or i < first_bab_sec:
-            proc.fmt_roman(section)
-            continue
+            # ── BAB zone ──
+            zone_idx      = -1
+            is_zone_first = False
+            for k, bab_sec in enumerate(bab_sec_list):
+                next_sec = bab_sec_list[k + 1] if k + 1 < len(bab_sec_list) else n_sections
+                if bab_sec <= i < next_sec:
+                    zone_idx      = k
+                    is_zone_first = (i == bab_sec)
+                    break
 
-        # ── BAB zone ──
-        zone_idx      = -1
-        is_zone_first = False
-        for k, bab_sec in enumerate(bab_sec_list):
-            next_sec = bab_sec_list[k + 1] if k + 1 < len(bab_sec_list) else n_sections
-            if bab_sec <= i < next_sec:
-                zone_idx      = k
-                is_zone_first = (i == bab_sec)
-                break
+            if is_zone_first:
+                proc.fmt_bab_first(section, reset_to_1=(zone_idx == 0))
+            else:
+                proc.fmt_bab_continuation(section)
 
-        if is_zone_first:
-            proc.fmt_bab_first(section, reset_to_1=(zone_idx == 0))
-        else:
-            proc.fmt_bab_continuation(section)
+        except Exception:
+            # Section bermasalah dilewati — section lain tetap diproses
+            pass
