@@ -198,10 +198,15 @@ class DocProcessor:
 
     def purge_all_headers_footers(self):
         for section in self.doc.sections:
-            for part in [
-                section.header, section.footer,
-                section.first_page_header, section.first_page_footer,
-            ]:
+            # Hanya akses first_page_header/footer jika memang dipakai di section ini.
+            # Mengakses part yang tidak dipakai membuat python-docx membuat relationship
+            # w:headerReference type="first" yang kemudian jadi yatim piatu saat
+            # fmt_roman/fmt_bab_continuation set different_first_page_header_footer=False,
+            # sehingga Word melaporkan "unreadable content".
+            parts = [section.header, section.footer]
+            if section.different_first_page_header_footer:
+                parts += [section.first_page_header, section.first_page_footer]
+            for part in parts:
                 part.is_linked_to_previous = False
                 elem = part._element
                 for sdt in list(elem.findall(qn('w:sdt'))):
