@@ -31,7 +31,8 @@
     <script>
     (function(){
         var ua = navigator.userAgent || '';
-        if (/BytedanceWebview|TikTok|musical_ly|Instagram|FBAN|FBAV|Line\/|Snapchat|MicroMessenger/i.test(ua)) {
+        window._isInApp = /BytedanceWebview|TikTok|musical_ly|Instagram|FBAN|FBAV|Line\/|Snapchat|MicroMessenger/i.test(ua);
+        if (window._isInApp) {
             document.getElementById('inapp-banner').style.display = 'block';
         }
         window.openInExtBrowser = function() {
@@ -542,9 +543,18 @@
             document.getElementById('uploadArea').style.display  = '';
         }
 
-        // Drag & drop
+        // Drag & drop + in-app browser intercept
         (function(){
             var area = document.getElementById('uploadArea');
+
+            // In-app browser: klik area → langsung buka di browser eksternal
+            if (window._isInApp) {
+                area.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    openInExtBrowser();
+                });
+            }
+
             area.addEventListener('dragover', function(e) {
                 e.preventDefault(); e.stopPropagation();
                 this.classList.add('drag-over');
