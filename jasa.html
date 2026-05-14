@@ -23,7 +23,25 @@
         .catch(function(){});
     </script>
 
-<script>
+    <!-- Modal in-app browser -->
+    <div id="inapp-modal" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.88);align-items:center;justify-content:center;padding:20px;">
+        <div style="background:#1e1b4b;border:1px solid rgba(124,58,237,0.45);border-radius:18px;padding:28px 22px;max-width:340px;width:100%;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,0.7);">
+            <div style="font-size:36px;margin-bottom:12px;">🌐</div>
+            <div style="font-size:15px;font-weight:700;color:#e2e8f0;margin-bottom:10px;">Buka di Browser Lain</div>
+            <div style="font-size:13px;color:#94a3b8;margin-bottom:18px;line-height:1.6;">
+                Browser bawaan aplikasi ini tidak mendukung upload file.<br>
+                Salin link di bawah, lalu buka di <b style="color:#e2e8f0;">Chrome</b> atau <b style="color:#e2e8f0;">Safari</b>.
+            </div>
+            <div style="background:#12102a;border-radius:8px;padding:10px 12px;margin-bottom:14px;font-size:11px;color:#a78bfa;word-break:break-all;text-align:left;user-select:all;" id="inapp-url-text"></div>
+            <button onclick="copyInappUrl()" id="inapp-copy-btn" style="background:#7c3aed;color:white;border:none;border-radius:10px;padding:12px 0;font-weight:700;cursor:pointer;width:100%;font-size:14px;margin-bottom:10px;transition:background 0.2s;">
+                Salin Link
+            </button>
+            <div style="font-size:12px;color:#6b7280;margin-bottom:14px;">Atau tap <b style="color:#c4b5fd;">&#8942;</b> &rarr; <b style="color:#c4b5fd;">Open in browser</b> di pojok kanan atas</div>
+            <button onclick="document.getElementById('inapp-modal').style.display='none'" style="background:none;border:1px solid rgba(124,58,237,0.3);color:#6b7280;border-radius:8px;padding:8px 20px;cursor:pointer;font-size:13px;">Tutup</button>
+        </div>
+    </div>
+
+    <script>
     (function(){
         var ua = navigator.userAgent || '';
         window._isInApp =
@@ -31,7 +49,48 @@
             (/Android/.test(ua) && /; wv\)/.test(ua)) ||
             (/iPhone|iPad/.test(ua) && !/Safari\//.test(ua));
 
+        window.openInExtBrowser = function() {
+            var url = location.href;
+            var isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
 
+            // Coba buka Chrome otomatis
+            if (isIOS) {
+                // iOS: scheme Chrome
+                window.location = 'googlechrome://navigate?url=' + encodeURIComponent(url);
+            } else {
+                // Android: intent → Chrome, fallback ke default browser
+                window.location = 'intent://' + url.replace(/^https?:\/\//, '')
+                    + '#Intent;scheme=https;package=com.android.chrome;'
+                    + 'S.browser_fallback_url=' + encodeURIComponent(url) + ';end';
+            }
+
+            // Jika redirect diblokir (masih di halaman ini), tampilkan modal setelah 1.5 detik
+            setTimeout(function() {
+                document.getElementById('inapp-url-text').textContent = url;
+                document.getElementById('inapp-modal').style.display = 'flex';
+                if (navigator.clipboard) navigator.clipboard.writeText(url).catch(function(){});
+            }, 1500);
+        };
+
+        window.copyInappUrl = function() {
+            var url = location.href;
+            var btn = document.getElementById('inapp-copy-btn');
+            function onSuccess() {
+                btn.textContent = 'Tersalin!';
+                btn.style.background = '#059669';
+                setTimeout(function(){ btn.textContent = 'Salin Link'; btn.style.background = '#7c3aed'; }, 2500);
+            }
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(url).then(onSuccess).catch(fallback);
+            } else { fallback(); }
+            function fallback() {
+                var t = document.createElement('textarea');
+                t.value = url; t.style.position = 'fixed'; t.style.opacity = '0';
+                document.body.appendChild(t); t.focus(); t.select();
+                try { document.execCommand('copy'); onSuccess(); } catch(e) {}
+                document.body.removeChild(t);
+            }
+        };
     })();
     </script>
 
@@ -528,7 +587,13 @@
         (function(){
             var area = document.getElementById('uploadArea');
 
-
+            // In-app browser: klik file input → redirect ke browser eksternal
+            if (window._isInApp) {
+                document.getElementById('fileInput').addEventListener('click', function(e) {
+                    e.preventDefault();
+                    openInExtBrowser();
+                });
+            }
 
             area.addEventListener('dragover', function(e) {
                 e.preventDefault(); e.stopPropagation();
