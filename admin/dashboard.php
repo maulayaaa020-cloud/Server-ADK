@@ -555,11 +555,6 @@ function tglAdmin(string $dt): string {
             </a>
         </li>
         <li>
-            <a href="<?= BASE_PATH ?>/admin/test.php">
-                <span class="nav-icon">🧪</span> Test Dokumen
-            </a>
-        </li>
-        <li>
             <a href="<?= BASE_PATH ?>/admin/harga.php">
                 <span class="nav-icon">💰</span> Harga Paket
             </a>
