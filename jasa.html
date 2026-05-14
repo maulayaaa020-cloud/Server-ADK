@@ -17,7 +17,7 @@
         &#9888;&#65039; Server sedang maintenance &mdash; order baru sementara tidak dapat diproses.
     </div>
     <script>
-    fetch('/adk/api/maintenance_status.php')
+    fetch('api/maintenance_status.php')
         .then(function(r){ return r.json(); })
         .then(function(d){ if(d.maintenance) document.getElementById('maintenance-banner').style.display='block'; })
         .catch(function(){});
