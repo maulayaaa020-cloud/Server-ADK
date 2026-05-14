@@ -76,9 +76,19 @@ try {
         CURLOPT_CAINFO         => CACERT_PATH,
         CURLOPT_TIMEOUT        => 15,
     ]);
-    $resp   = curl_exec($ch);
-    $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $resp      = curl_exec($ch);
+    $curlErr   = curl_error($ch);
+    $curlErrNo = curl_errno($ch);
+    $status    = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     curl_close($ch);
+
+    if ($resp === false || $curlErrNo) {
+        error_log("[DOKU] curl error #{$curlErrNo}: {$curlErr}");
+        echo json_encode(['url' => null, 'error' => "curl #{$curlErrNo}: {$curlErr}"]);
+        exit;
+    }
+
+    error_log("[DOKU] HTTP {$status} response: " . $resp);
 
     $result = json_decode($resp, true);
 
