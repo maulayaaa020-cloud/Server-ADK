@@ -541,6 +541,15 @@ if (!empty($orders)) {
             display: flex; flex-direction: column;
             overflow: hidden;
             box-shadow: 0 28px 72px rgba(0,0,0,0.65);
+            position: relative;
+        }
+
+        .pv-wm-overlay {
+            position: absolute;
+            top: 50px; bottom: 50px;
+            left: 0; right: 0;
+            pointer-events: none;
+            z-index: 10;
         }
 
         .pv-header {
@@ -857,10 +866,10 @@ if (!empty($orders)) {
                          id="badge-<?= $o['id'] ?>">
                         <?= $isPaid ? 'Sukses' : ($isFailed ? 'Failed' : 'Waiting Payment') ?>
                     </div>
-                    <?php if (!empty($o['file_output_pdf']) && !$isFailed && !$isPaid): ?>
+                    <?php if (!empty($o['file_output']) && !$isFailed && !$isPaid): ?>
                     <button class="btn-preview" onclick="openPreview(
-                        <?= $o['id'] ?>,
                         '<?= addslashes(htmlspecialchars($namaFile)) ?>',
+                        '<?= addslashes($o['file_output']) ?>',
                         <?= $isPending ? 'true' : 'false' ?>,
                         <?= $o['id'] ?>,
                         '<?= addslashes($o['order_id']) ?>',
@@ -947,11 +956,27 @@ if (!empty($orders)) {
                 <button class="pv-close" onclick="closePreview()">✕</button>
             </div>
 
+            <!-- Watermark overlay -->
+            <div class="pv-wm-overlay">
+                <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <pattern id="wm-pattern" x="0" y="0" width="260" height="110"
+                                 patternUnits="userSpaceOnUse" patternTransform="rotate(-35)">
+                            <text x="10" y="58" font-family="Arial,sans-serif" font-size="17"
+                                  font-weight="bold" fill="rgba(0,0,0,0.13)" letter-spacing="2">
+                                PREVIEW HASIL ADK
+                            </text>
+                        </pattern>
+                    </defs>
+                    <rect width="100%" height="100%" fill="url(#wm-pattern)"/>
+                </svg>
+            </div>
+
             <div class="pv-loading" id="pvLoading">
                 <div class="pv-spinner"></div>
                 <span>Memuat preview...</span>
             </div>
-            <iframe class="pv-frame" id="pvFrame"></iframe>
+            <iframe class="pv-frame" id="pvFrame" allowfullscreen></iframe>
 
             <div class="pv-footer">
                 <div class="pv-footer-note">
@@ -1124,9 +1149,7 @@ if (!empty($orders)) {
         }
 
         /* ── Preview Modal ── */
-        let _pvBlobUrl = null;
-
-        function openPreview(orderId, fileName, isPending, dbId, ordId, harga) {
+        function openPreview(fileName, fileOutput, isPending, dbId, ordId, harga) {
             const overlay  = document.getElementById('pvOverlay');
             const frame    = document.getElementById('pvFrame');
             const loading  = document.getElementById('pvLoading');
@@ -1138,27 +1161,17 @@ if (!empty($orders)) {
             frame.style.display   = 'none';
             loading.style.display = 'flex';
             loading.innerHTML     = '<div class="pv-spinner"></div><span>Memuat preview...</span>';
-            if (_pvBlobUrl) { URL.revokeObjectURL(_pvBlobUrl); _pvBlobUrl = null; }
             frame.src = '';
 
-            // Fetch PDF sebagai blob — toolbar download browser tidak muncul
-            fetch('api/get_preview.php?id=' + orderId, { credentials: 'same-origin' })
-                .then(function(r) {
-                    if (!r.ok) throw new Error('Preview tidak tersedia');
-                    return r.blob();
-                })
-                .then(function(blob) {
-                    _pvBlobUrl = URL.createObjectURL(blob);
-                    frame.onload = function() {
-                        loading.style.display = 'none';
-                        frame.style.display   = 'block';
-                    };
-                    // #toolbar=0 menyembunyikan toolbar PDF di Firefox
-                    frame.src = _pvBlobUrl + '#toolbar=0&navpanes=0';
-                })
-                .catch(function(err) {
-                    loading.innerHTML = '<span style="color:#f87171">Gagal memuat preview.<br>' + err.message + '</span>';
-                });
+            // Office Online Viewer — kualitas sama persis dengan Microsoft Word
+            var absoluteUrl = 'https://adkphotocopy.com/' + fileOutput;
+            var viewerUrl   = 'https://view.officeapps.live.com/op/embed.aspx?src=' + encodeURIComponent(absoluteUrl);
+
+            frame.onload = function() {
+                loading.style.display = 'none';
+                frame.style.display   = 'block';
+            };
+            frame.src = viewerUrl;
 
             // Tombol bayar (hanya muncul jika masih pending)
             if (isPending) {
@@ -1182,7 +1195,6 @@ if (!empty($orders)) {
             document.getElementById('pvLoading').innerHTML =
                 '<div class="pv-spinner"></div><span>Memuat preview...</span>';
             document.body.style.overflow = '';
-            if (_pvBlobUrl) { URL.revokeObjectURL(_pvBlobUrl); _pvBlobUrl = null; }
         }
 
         function handleOverlayClick(e) {
