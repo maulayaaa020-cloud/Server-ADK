@@ -129,12 +129,8 @@
 }
 
 /* Upload Area */
-#fileInput { display: none; }
-
 .upload-area {
-    display: block;
-    width: 100%;
-    box-sizing: border-box;
+    position: relative;
     border: 2px dashed rgba(124,58,237,0.4);
     border-radius: 12px;
     padding: 26px 20px;
@@ -144,6 +140,17 @@
     margin-bottom: 18px;
     background: rgba(124,58,237,0.06);
     user-select: none;
+}
+
+/* Input transparan menutupi seluruh area — native click, bukan JS .click() */
+#fileInput {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+    z-index: 2;
 }
 
 .upload-area:hover {

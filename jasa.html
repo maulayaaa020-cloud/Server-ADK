@@ -192,12 +192,12 @@
                 <div class="order-panel">
 
                     <!-- Upload -->
-                    <label class="upload-area" id="uploadArea" for="fileInput">
+                    <div class="upload-area" id="uploadArea">
                         <p><b>Pilih / Seret File</b></p>
                         <span>Format Word (.docx)</span>
-                    </label>
-                    <input type="file" name="file" id="fileInput" accept=".docx"
-                           onchange="handleFile(this)">
+                        <input type="file" name="file" id="fileInput" accept=".docx"
+                               onchange="handleFile(this)">
+                    </div>
                     <div class="file-display" id="fileDisplay">
                         <span id="fileNameDisplay"></span>
                         <span class="file-remove"
@@ -597,9 +597,9 @@
         (function(){
             var area = document.getElementById('uploadArea');
 
-            // In-app browser: klik area → langsung buka di browser eksternal
+            // In-app browser: klik file input → redirect ke browser eksternal
             if (window._isInApp) {
-                area.addEventListener('click', function(e) {
+                document.getElementById('fileInput').addEventListener('click', function(e) {
                     e.preventDefault();
                     openInExtBrowser();
                 });
