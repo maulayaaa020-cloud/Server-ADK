@@ -602,10 +602,27 @@ if (!empty($orders)) {
         }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        .pv-frame {
-            flex: 1; width: 100%;
-            border: none; display: none;
-            background: white;
+        .pv-img-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px 14px;
+            background: #0f0d20;
+            display: none;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .pv-img-container img {
+            width: 100%;
+            display: block;
+            margin-bottom: 8px;
+            border-radius: 3px;
+            pointer-events: none;
+            user-select: none;
+            -webkit-user-drag: none;
+        }
+
+        @media (max-width: 640px) {
+            .pv-img-container { padding: 6px; }
         }
 
         .pv-footer {
@@ -985,7 +1002,7 @@ if (!empty($orders)) {
                 <div class="pv-spinner"></div>
                 <span>Memuat preview...</span>
             </div>
-            <iframe class="pv-frame" id="pvFrame" allowfullscreen></iframe>
+            <div class="pv-img-container" id="pvImgContainer"></div>
 
             <div class="pv-footer">
                 <div class="pv-footer-note">
@@ -1159,30 +1176,19 @@ if (!empty($orders)) {
 
         /* ── Preview Modal ── */
         function openPreview(fileName, fileOutput, isPending, dbId, ordId, harga) {
-            const overlay  = document.getElementById('pvOverlay');
-            const frame    = document.getElementById('pvFrame');
-            const loading  = document.getElementById('pvLoading');
-            const bayarBtn = document.getElementById('pvBayarBtn');
+            var overlay  = document.getElementById('pvOverlay');
+            var imgCont  = document.getElementById('pvImgContainer');
+            var loading  = document.getElementById('pvLoading');
+            var bayarBtn = document.getElementById('pvBayarBtn');
 
             document.getElementById('pvTitle').textContent = fileName;
 
             // Reset
-            frame.style.display   = 'none';
+            imgCont.innerHTML     = '';
+            imgCont.style.display = 'none';
             loading.style.display = 'flex';
-            loading.innerHTML     = '<div class="pv-spinner"></div><span>Memuat preview...</span>';
-            frame.src = '';
+            loading.innerHTML     = '<div class="pv-spinner"></div><span>Menyiapkan preview...</span>';
 
-            // Office Online Viewer — kualitas sama persis dengan Microsoft Word
-            var absoluteUrl = 'https://adkphotocopy.com/' + fileOutput;
-            var viewerUrl   = 'https://view.officeapps.live.com/op/embed.aspx?src=' + encodeURIComponent(absoluteUrl) + '&wdScale=PageWidth';
-
-            frame.onload = function() {
-                loading.style.display = 'none';
-                frame.style.display   = 'block';
-            };
-            frame.src = viewerUrl;
-
-            // Tombol bayar (hanya muncul jika masih pending)
             if (isPending) {
                 bayarBtn.style.display = 'inline-block';
                 bayarBtn.onclick = function() { closePreview(); bayar(dbId, ordId, harga); };
@@ -1192,17 +1198,53 @@ if (!empty($orders)) {
 
             overlay.classList.add('open');
             document.body.style.overflow = 'hidden';
+
+            // Update pesan jika konversi lama (pertama kali)
+            var msgTimer = setTimeout(function() {
+                var sp = loading.querySelector('span');
+                if (sp) sp.textContent = 'Mengkonversi dokumen... (pertama kali ~10–20 detik)';
+            }, 3000);
+
+            fetch('api/get_preview.php', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({db_id: dbId})
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                clearTimeout(msgTimer);
+                if (!data.ok) {
+                    loading.innerHTML = '<span style="color:#f87171">Gagal memuat preview.<br>'
+                        + (data.error || '') + '</span>';
+                    return;
+                }
+                loading.style.display = 'none';
+                imgCont.innerHTML     = '';
+                imgCont.style.display = 'block';
+
+                for (var p = 1; p <= data.pages; p++) {
+                    var img = document.createElement('img');
+                    img.src       = 'api/preview_image.php?id=' + dbId + '&page=' + p;
+                    img.draggable = false;
+                    img.addEventListener('contextmenu', function(e) { e.preventDefault(); });
+                    imgCont.appendChild(img);
+                }
+            })
+            .catch(function() {
+                clearTimeout(msgTimer);
+                loading.innerHTML = '<span style="color:#f87171">Gagal terhubung ke server.</span>';
+            });
         }
 
         function closePreview() {
-            const overlay = document.getElementById('pvOverlay');
-            const frame   = document.getElementById('pvFrame');
+            var overlay = document.getElementById('pvOverlay');
+            var imgCont = document.getElementById('pvImgContainer');
             overlay.classList.remove('open');
-            frame.src = '';
-            frame.style.display = 'none';
+            imgCont.innerHTML     = '';
+            imgCont.style.display = 'none';
             document.getElementById('pvLoading').style.display = 'flex';
             document.getElementById('pvLoading').innerHTML =
-                '<div class="pv-spinner"></div><span>Memuat preview...</span>';
+                '<div class="pv-spinner"></div><span>Menyiapkan preview...</span>';
             document.body.style.overflow = '';
         }
 

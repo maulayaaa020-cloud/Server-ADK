@@ -2,68 +2,100 @@
 session_start();
 require_once __DIR__ . '/../includes/config.php';
 require_once __DIR__ . '/../includes/db.php';
+header('Content-Type: application/json');
 
+$isAdmin    = !empty($_SESSION['adk_admin']);
 $phone      = $_SESSION['phone'] ?? $_SESSION['cek_phone'] ?? null;
-if (empty($phone)) $phone = null;
-if (!empty($_SESSION['is_guest'])) $phone = null;
 $guestToken = $_SESSION['guest_token'] ?? $_COOKIE['adk_guest'] ?? null;
 
-if (!$phone && !$guestToken) { http_response_code(401); exit; }
+if (!$isAdmin && !$phone && !$guestToken) {
+    echo json_encode(['ok' => false, 'error' => 'Unauthorized']); exit;
+}
 
-$id = (int)($_GET['id'] ?? 0);
-if (!$id) { http_response_code(400); exit; }
+$input = json_decode(file_get_contents('php://input'), true);
+$db_id = (int)($input['db_id'] ?? 0);
+if (!$db_id) { echo json_encode(['ok' => false, 'error' => 'Invalid ID']); exit; }
 
 try {
     $db = getDB();
-    if ($phone) {
-        $stmt = $db->prepare("SELECT * FROM orders WHERE id = :id AND phone = :phone");
-        $stmt->execute([':id' => $id, ':phone' => $phone]);
+    if ($isAdmin) {
+        $stmt = $db->prepare("SELECT * FROM orders WHERE id = ?");
+        $stmt->execute([$db_id]);
+    } elseif ($phone) {
+        $stmt = $db->prepare("SELECT * FROM orders WHERE id = ? AND phone = ?");
+        $stmt->execute([$db_id, $phone]);
     } else {
-        $stmt = $db->prepare("SELECT * FROM orders WHERE id = :id AND guest_token = :gt");
-        $stmt->execute([':id' => $id, ':gt' => $guestToken]);
+        $stmt = $db->prepare("SELECT * FROM orders WHERE id = ? AND guest_token = ?");
+        $stmt->execute([$db_id, $guestToken]);
     }
     $order = $stmt->fetch();
-} catch (Exception $e) { http_response_code(500); exit; }
-
-if (!$order || empty($order['file_output_pdf'])) {
-    http_response_code(404); exit;
+} catch (Exception $e) {
+    echo json_encode(['ok' => false, 'error' => 'Database error']); exit;
 }
 
-$pdf_full = __DIR__ . '/../' . $order['file_output_pdf'];
-if (!file_exists($pdf_full)) {
-    http_response_code(404); exit;
+if (!$order || empty($order['file_output'])) {
+    echo json_encode(['ok' => false, 'error' => 'Order tidak ditemukan']); exit;
 }
 
-// Folder preview watermark
-$preview_dir  = __DIR__ . '/../hasil/preview';
-if (!is_dir($preview_dir)) mkdir($preview_dir, 0775, true);
+$docxPath = __DIR__ . '/../' . $order['file_output'];
+if (!file_exists($docxPath)) {
+    echo json_encode(['ok' => false, 'error' => 'File belum tersedia']); exit;
+}
 
-$preview_name = 'wm_' . $id . '.pdf';
-$preview_full = $preview_dir . '/' . $preview_name;
+$cacheDir = __DIR__ . '/../preview_cache/' . $db_id;
 
-// Generate watermark jika belum ada atau PDF asli lebih baru
-$perlu_generate = !file_exists($preview_full)
-               || filemtime($pdf_full) > filemtime($preview_full);
-
-if ($perlu_generate) {
-    $python = PYTHON_EXE;
-    $script = PYTHON_SCRIPT_DIR . '/add_watermark.py';
-    $cmd    = "\"$python\" \"$script\" " .
-              escapeshellarg($pdf_full) . " " .
-              escapeshellarg($preview_full) . " 2>&1";
-    exec($cmd, $out, $status);
-
-    if ($status !== 0 || !file_exists($preview_full)) {
-        // Fallback: serve PDF asli jika watermark gagal
-        $preview_full = $pdf_full;
+// Kembalikan cache jika sudah ada
+if (is_dir($cacheDir)) {
+    $pages = glob($cacheDir . '/page-*.png');
+    natsort($pages);
+    $pages = array_values($pages);
+    if (count($pages) > 0) {
+        echo json_encode(['ok' => true, 'pages' => count($pages)]); exit;
     }
 }
 
-// Stream PDF ke browser (inline — supaya iframe bisa tampilkan)
-header('Content-Type: application/pdf');
-header('Content-Disposition: inline; filename="preview.pdf"');
-header('Content-Length: ' . filesize($preview_full));
-header('Cache-Control: private, max-age=600');
-header('X-Frame-Options: SAMEORIGIN');
-readfile($preview_full);
-exit;
+if (!is_dir($cacheDir)) mkdir($cacheDir, 0755, true);
+
+// Dir temp per proses agar tidak konflik antar request
+$tmpDir = sys_get_temp_dir() . '/adk_pv_' . $db_id . '_' . getmypid();
+if (!is_dir($tmpDir)) mkdir($tmpDir, 0755, true);
+
+// Step 1: DOCX → PDF via LibreOffice
+$cmd1 = 'HOME=/tmp libreoffice --headless --convert-to pdf '
+      . escapeshellarg($docxPath) . ' --outdir ' . escapeshellarg($tmpDir)
+      . ' 2>&1';
+exec($cmd1, $out1, $ret1);
+
+if ($ret1 !== 0) {
+    @rmdir($tmpDir);
+    echo json_encode(['ok' => false, 'error' => 'Gagal konversi ke PDF', 'log' => implode("\n", $out1)]); exit;
+}
+
+$pdfFiles = glob($tmpDir . '/*.pdf');
+if (empty($pdfFiles)) {
+    echo json_encode(['ok' => false, 'error' => 'PDF tidak ditemukan setelah konversi']); exit;
+}
+$pdfPath = $pdfFiles[0];
+
+// Step 2: PDF → PNG per halaman via pdftoppm
+$pageBase = $cacheDir . '/page';
+$cmd2 = 'pdftoppm -r 130 -png ' . escapeshellarg($pdfPath) . ' ' . escapeshellarg($pageBase) . ' 2>&1';
+exec($cmd2, $out2, $ret2);
+
+// Bersihkan file temp
+@unlink($pdfPath);
+@rmdir($tmpDir);
+
+if ($ret2 !== 0) {
+    echo json_encode(['ok' => false, 'error' => 'Gagal konversi ke gambar', 'log' => implode("\n", $out2)]); exit;
+}
+
+$pages = glob($cacheDir . '/page-*.png');
+natsort($pages);
+$pages = array_values($pages);
+
+if (count($pages) === 0) {
+    echo json_encode(['ok' => false, 'error' => 'Tidak ada halaman yang dihasilkan']); exit;
+}
+
+echo json_encode(['ok' => true, 'pages' => count($pages)]);
