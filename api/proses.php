@@ -133,7 +133,6 @@ if (isset($_FILES['file']) && isset($_POST['paket'])) {
     // Hapus sisa session nomor lama agar history tidak tumpang tindih dengan mode tamu
     if ($isGuest) {
         unset($_SESSION['cek_phone']);
-        unset($_SESSION['adk_admin']);
     }
     $_SESSION['order_id']     = $orderId;
     $_SESSION['order_db_id']  = $dbId;

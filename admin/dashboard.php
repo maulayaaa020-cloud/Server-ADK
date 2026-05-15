@@ -574,6 +574,11 @@ function tglAdmin(string $dt): string {
                 <span class="nav-icon">📥</span> Export CSV
             </a>
         </li>
+        <li>
+            <a href="<?= BASE_PATH ?>/jasa.html" target="_blank">
+                <span class="nav-icon">👁</span> Preview Halaman
+            </a>
+        </li>
     </ul>
 
     <a href="<?= BASE_PATH ?>/admin/logout.php" class="btn-logout">Keluar</a>
