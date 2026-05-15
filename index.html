@@ -16,13 +16,94 @@
     <meta property="og:url"         content="https://adkphotocopy.com/">
     <meta property="og:title"       content="ADK Photocopy — Penomoran Halaman Otomatis">
     <meta property="og:description" content="Penomoran halaman skripsi & laporan otomatis. Romawi + Angka sesuai standar kampus. Preview sebelum bayar. Mulai Rp 5.000.">
-    <meta property="og:image"       content="https://adkphotocopy.com/LOGO ADK.png">
+    <meta property="og:image"       content="https://adkphotocopy.com/favicon.png">
 
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="favicon.png">
     <link rel="apple-touch-icon"      href="favicon.png">
 
     <link rel="stylesheet" href="style.css?v=3">
+
+    <!-- Schema Markup -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "LocalBusiness",
+          "name": "ADK Photocopy",
+          "url": "https://adkphotocopy.com",
+          "logo": "https://adkphotocopy.com/favicon.png",
+          "image": "https://adkphotocopy.com/favicon.png",
+          "description": "Layanan penomoran halaman otomatis untuk skripsi, laporan, dan dokumen kampus sesuai standar. Proses cepat, preview sebelum bayar. Mulai Rp 5.000.",
+          "telephone": "+6281228790091",
+          "priceRange": "Rp 5.000 - Rp 50.000",
+          "address": {
+            "@type": "PostalAddress",
+            "addressLocality": "Rowosari",
+            "addressCountry": "ID"
+          },
+          "sameAs": [
+            "https://www.instagram.com/adk_rowosari",
+            "https://www.tiktok.com/@adk_rowosari"
+          ]
+        },
+        {
+          "@type": "Service",
+          "name": "Penomoran Halaman Otomatis",
+          "provider": { "@type": "LocalBusiness", "name": "ADK Photocopy" },
+          "description": "Penomoran halaman skripsi dan laporan secara otomatis sesuai pedoman kampus. Romawi untuk bagian awal, angka untuk bagian isi. Preview hasil sebelum bayar.",
+          "offers": {
+            "@type": "Offer",
+            "price": "5000",
+            "priceCurrency": "IDR",
+            "description": "Mulai Rp 5.000 per dokumen"
+          },
+          "areaServed": "ID",
+          "availableChannel": {
+            "@type": "ServiceChannel",
+            "serviceUrl": "https://adkphotocopy.com/jasa.html",
+            "availableLanguage": "Indonesian"
+          }
+        },
+        {
+          "@type": "FAQPage",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "Berapa biaya penomoran halaman di ADK Photocopy?",
+              "acceptedAnswer": { "@type": "Answer", "text": "Mulai dari Rp 5.000 per dokumen. Harga bervariasi tergantung jumlah halaman." }
+            },
+            {
+              "@type": "Question",
+              "name": "Berapa lama proses penomoran halaman?",
+              "acceptedAnswer": { "@type": "Answer", "text": "Rata-rata selesai dalam 5 menit. Prosesnya otomatis tanpa perlu menunggu admin." }
+            },
+            {
+              "@type": "Question",
+              "name": "Apakah bisa preview sebelum bayar?",
+              "acceptedAnswer": { "@type": "Answer", "text": "Ya, Anda bisa melihat hasil penomoran terlebih dahulu sebelum melakukan pembayaran." }
+            },
+            {
+              "@type": "Question",
+              "name": "Apakah perlu install software tambahan?",
+              "acceptedAnswer": { "@type": "Answer", "text": "Tidak perlu. Semua proses dilakukan secara online langsung di browser, tanpa perlu install software apapun." }
+            },
+            {
+              "@type": "Question",
+              "name": "Dokumen apa saja yang bisa diproses?",
+              "acceptedAnswer": { "@type": "Answer", "text": "Skripsi, laporan kerja praktik, tugas akhir, dan dokumen kampus lainnya yang memerlukan penomoran halaman romawi dan angka." }
+            },
+            {
+              "@type": "Question",
+              "name": "Apakah layanan tersedia 24 jam?",
+              "acceptedAnswer": { "@type": "Answer", "text": "Ya, bisa order kapanpun dan dimanapun tanpa perlu menunggu admin online karena prosesnya otomatis." }
+            }
+          ]
+        }
+      ]
+    }
+    </script>
 </head>
 
 <body>
@@ -206,6 +287,39 @@
         });
     </script>
 
+    <!-- FAQ Section -->
+    <section class="faq-section" id="faq">
+        <div class="faq-wrap">
+            <h2>Pertanyaan yang Sering Ditanyakan</h2>
+            <div class="faq-list">
+                <div class="faq-item">
+                    <button class="faq-q" onclick="toggleFaq(this)">Berapa biaya penomoran halaman? <span class="faq-arrow">▾</span></button>
+                    <div class="faq-a">Mulai dari <strong>Rp 5.000</strong> per dokumen. Harga bervariasi tergantung jumlah halaman.</div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-q" onclick="toggleFaq(this)">Berapa lama proses penomoran halaman? <span class="faq-arrow">▾</span></button>
+                    <div class="faq-a">Rata-rata selesai dalam <strong>5 menit</strong>. Prosesnya otomatis tanpa perlu menunggu admin.</div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-q" onclick="toggleFaq(this)">Apakah bisa preview sebelum bayar? <span class="faq-arrow">▾</span></button>
+                    <div class="faq-a">Ya, Anda bisa melihat hasil penomoran terlebih dahulu <strong>sebelum melakukan pembayaran</strong>.</div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-q" onclick="toggleFaq(this)">Apakah perlu install software tambahan? <span class="faq-arrow">▾</span></button>
+                    <div class="faq-a">Tidak perlu. Semua proses dilakukan <strong>langsung di browser</strong>, tanpa install software apapun.</div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-q" onclick="toggleFaq(this)">Dokumen apa saja yang bisa diproses? <span class="faq-arrow">▾</span></button>
+                    <div class="faq-a">Skripsi, laporan kerja praktik, tugas akhir, dan dokumen kampus lainnya yang memerlukan penomoran halaman romawi dan angka.</div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-q" onclick="toggleFaq(this)">Apakah layanan tersedia 24 jam? <span class="faq-arrow">▾</span></button>
+                    <div class="faq-a">Ya, bisa order <strong>kapanpun dan dimanapun</strong> tanpa perlu menunggu admin online karena prosesnya otomatis.</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <footer class="site-footer">
         <div class="footer-inner">
             <div class="footer-brand">
@@ -238,6 +352,14 @@
         <hr class="footer-divider">
         <p class="footer-bottom">© 2025 ADK PHOTOCOPY · All Rights Reserved.</p>
     </footer>
+    <script>
+    function toggleFaq(btn) {
+        var a = btn.nextElementSibling;
+        var isOpen = btn.classList.contains('open');
+        document.querySelectorAll('.faq-q.open').forEach(function(b){ b.classList.remove('open'); b.nextElementSibling.classList.remove('open'); });
+        if (!isOpen) { btn.classList.add('open'); a.classList.add('open'); }
+    }
+    </script>
     <script src="nocopy.js"></script>
 </body>
 </html>
