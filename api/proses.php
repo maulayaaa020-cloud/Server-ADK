@@ -78,13 +78,25 @@ if (isset($_FILES['file']) && isset($_POST['paket'])) {
 
     $orderId = 'ADK-' . time() . '-' . bin2hex(random_bytes(3));
 
+    // Paket 4: kumpulkan data extra sebagai JSON
+    $extraData = null;
+    if ($paket === 'paket4') {
+        $extraData = json_encode([
+            'pos_bab'     => $pos_bab,
+            'pos_isi_bab' => $pos_isi,
+            'dimulai_dari'=> $dimulai,
+            'semb_dafus'  => $semb_dafus,
+            'semb_lamprn' => $semb_lamprn,
+        ]);
+    }
+
     try {
         $db   = getDB();
         $stmt = $db->prepare("
             INSERT INTO orders
-                (phone, guest_token, order_id, file_input, paket, font, size, hidden_cover, posisi, harga)
+                (phone, guest_token, order_id, file_input, paket, font, size, hidden_cover, posisi, harga, extra_data)
             VALUES
-                (:phone, :guest_token, :order_id, :file_input, :paket, :font, :size, :hidden_cover, :posisi, :harga)
+                (:phone, :guest_token, :order_id, :file_input, :paket, :font, :size, :hidden_cover, :posisi, :harga, :extra_data)
         ");
         $stmt->execute([
             ':phone'        => $isGuest ? null : $phone,
@@ -96,6 +108,7 @@ if (isset($_FILES['file']) && isset($_POST['paket'])) {
             ':size'         => $size,
             ':hidden_cover' => $hidden,
             ':posisi'       => $posisi,
+            ':extra_data'   => $extraData,
             ':harga'        => $harga,
         ]);
         $dbId = $db->lastInsertId();

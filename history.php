@@ -35,15 +35,28 @@ try {
 } catch (Exception $e) { $orders = []; }
 
 function namaPaket($p) {
-    return $p === 'paket1' ? 'FULL ANGKA' : 'ROMAWI DAN ANGKA';
+    if ($p === 'paket1') return 'FULL ANGKA';
+    if ($p === 'paket4') return 'ROMAWI DAN ANGKA (CUSTOM)';
+    return 'ROMAWI DAN ANGKA';
 }
 
 function keteranganList($row) {
+    $extra = !empty($row['extra_data']) ? (@json_decode($row['extra_data'], true) ?: []) : [];
+
     if ($row['paket'] === 'paket3') {
         $items = [['ROMAWI','Bawah Tengah'],['BAB','Bawah Tengah'],['ISI BAB','Kanan Atas']];
     } elseif ($row['paket'] === 'paket2') {
         $pos = $row['posisi'] ?: '-';
         $items = [['ROMAWI',$pos],['BAB',$pos],['ISI BAB',$pos]];
+    } elseif ($row['paket'] === 'paket4') {
+        $items = [
+            ['ROMAWI',   $row['posisi']                     ?: '-'],
+            ['BAB',      $extra['pos_bab']                  ?: '-'],
+            ['ISI BAB',  $extra['pos_isi_bab']              ?: '-'],
+            ['Dimulai',  $extra['dimulai_dari']              ?: '-'],
+            ['Semb.Dafpus', $extra['semb_dafus']            ?: '-'],
+            ['Semb.Lamp',   $extra['semb_lamprn']           ?: '-'],
+        ];
     } else {
         $items = [['POSISI', $row['posisi'] ?: '-']];
     }
