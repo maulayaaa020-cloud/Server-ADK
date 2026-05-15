@@ -290,30 +290,49 @@
     <!-- FAQ Section -->
     <section class="faq-section" id="faq">
         <div class="faq-wrap">
-            <h2>Pertanyaan yang Sering Ditanyakan</h2>
+            <h2>Pertanyaan yang Sering <span>Ditanyakan</span></h2>
+            <p class="faq-subtitle">Temukan jawaban dari pertanyaan umum seputar layanan kami</p>
             <div class="faq-list">
                 <div class="faq-item">
-                    <button class="faq-q" onclick="toggleFaq(this)">Berapa biaya penomoran halaman? <span class="faq-arrow">▾</span></button>
+                    <button class="faq-q" onclick="toggleFaq(this)">
+                        Berapa biaya penomoran halaman?
+                        <span class="faq-icon"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></span>
+                    </button>
                     <div class="faq-a">Mulai dari <strong>Rp 5.000</strong> per dokumen. Harga bervariasi tergantung jumlah halaman.</div>
                 </div>
                 <div class="faq-item">
-                    <button class="faq-q" onclick="toggleFaq(this)">Berapa lama proses penomoran halaman? <span class="faq-arrow">▾</span></button>
+                    <button class="faq-q" onclick="toggleFaq(this)">
+                        Berapa lama proses penomoran halaman?
+                        <span class="faq-icon"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></span>
+                    </button>
                     <div class="faq-a">Rata-rata selesai dalam <strong>5 menit</strong>. Prosesnya otomatis tanpa perlu menunggu admin.</div>
                 </div>
                 <div class="faq-item">
-                    <button class="faq-q" onclick="toggleFaq(this)">Apakah bisa preview sebelum bayar? <span class="faq-arrow">▾</span></button>
+                    <button class="faq-q" onclick="toggleFaq(this)">
+                        Apakah bisa preview sebelum bayar?
+                        <span class="faq-icon"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></span>
+                    </button>
                     <div class="faq-a">Ya, Anda bisa melihat hasil penomoran terlebih dahulu <strong>sebelum melakukan pembayaran</strong>.</div>
                 </div>
                 <div class="faq-item">
-                    <button class="faq-q" onclick="toggleFaq(this)">Apakah perlu install software tambahan? <span class="faq-arrow">▾</span></button>
+                    <button class="faq-q" onclick="toggleFaq(this)">
+                        Apakah perlu install software tambahan?
+                        <span class="faq-icon"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></span>
+                    </button>
                     <div class="faq-a">Tidak perlu. Semua proses dilakukan <strong>langsung di browser</strong>, tanpa install software apapun.</div>
                 </div>
                 <div class="faq-item">
-                    <button class="faq-q" onclick="toggleFaq(this)">Dokumen apa saja yang bisa diproses? <span class="faq-arrow">▾</span></button>
+                    <button class="faq-q" onclick="toggleFaq(this)">
+                        Dokumen apa saja yang bisa diproses?
+                        <span class="faq-icon"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></span>
+                    </button>
                     <div class="faq-a">Skripsi, laporan kerja praktik, tugas akhir, dan dokumen kampus lainnya yang memerlukan penomoran halaman romawi dan angka.</div>
                 </div>
                 <div class="faq-item">
-                    <button class="faq-q" onclick="toggleFaq(this)">Apakah layanan tersedia 24 jam? <span class="faq-arrow">▾</span></button>
+                    <button class="faq-q" onclick="toggleFaq(this)">
+                        Apakah layanan tersedia 24 jam?
+                        <span class="faq-icon"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></span>
+                    </button>
                     <div class="faq-a">Ya, bisa order <strong>kapanpun dan dimanapun</strong> tanpa perlu menunggu admin online karena prosesnya otomatis.</div>
                 </div>
             </div>
@@ -354,10 +373,14 @@
     </footer>
     <script>
     function toggleFaq(btn) {
+        var item = btn.parentElement;
         var a = btn.nextElementSibling;
-        var isOpen = btn.classList.contains('open');
-        document.querySelectorAll('.faq-q.open').forEach(function(b){ b.classList.remove('open'); b.nextElementSibling.classList.remove('open'); });
-        if (!isOpen) { btn.classList.add('open'); a.classList.add('open'); }
+        var isOpen = item.classList.contains('open');
+        document.querySelectorAll('.faq-item.open').forEach(function(el) {
+            el.classList.remove('open');
+            el.querySelector('.faq-a').classList.remove('open');
+        });
+        if (!isOpen) { item.classList.add('open'); a.classList.add('open'); }
     }
     </script>
     <script src="nocopy.js"></script>
