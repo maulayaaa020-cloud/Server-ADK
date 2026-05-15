@@ -26,11 +26,17 @@ $random      = bin2hex(random_bytes(4));
 $outputRel   = "hasil/" . $namaAsli . "_ADK_" . $timestamp . "_" . $random . "." . $ext;
 $output_full = __DIR__ . '/../' . $outputRel;
 
-$paket  = $_SESSION['paket']        ?? 'paket3';
-$font   = $_SESSION['font']         ?? 'Times New Roman';
-$size   = $_SESSION['size']         ?? '12 pt';
-$hidden = $_SESSION['hidden_cover'] ?? 'Ya';
-$posisi = $_SESSION['posisi']       ?? 'Tengah Bawah';
+$paket      = $_SESSION['paket']        ?? 'paket3';
+$font       = $_SESSION['font']         ?? 'Times New Roman';
+$size       = $_SESSION['size']         ?? '12 pt';
+$hidden     = $_SESSION['hidden_cover'] ?? 'Ya';
+$posisi     = $_SESSION['posisi']       ?? 'Tengah Bawah';
+// Paket 4 — custom per-zona
+$pos_bab    = $_SESSION['pos_bab']      ?? 'Tengah Bawah';
+$pos_isi    = $_SESSION['pos_isi_bab']  ?? 'Kanan Atas';
+$dimulai    = $_SESSION['dimulai_dari'] ?? 'i';
+$semb_dafus = $_SESSION['semb_dafus']   ?? 'Tidak';
+$semb_lamprn= $_SESSION['semb_lamprn']  ?? 'Tidak';
 
 $python = PYTHON_EXE;
 $script = PYTHON_SCRIPT_DIR . '/main.py';
@@ -47,7 +53,12 @@ $cmd = "\"$python\" \"$script\" " .
     escapeshellarg($font)        . " " .
     escapeshellarg($size)        . " " .
     escapeshellarg($hidden)      . " " .
-    escapeshellarg($posisi)      . " 2>&1";
+    escapeshellarg($posisi)      . " " .
+    escapeshellarg($pos_bab)     . " " .
+    escapeshellarg($pos_isi)     . " " .
+    escapeshellarg($dimulai)     . " " .
+    escapeshellarg($semb_dafus)  . " " .
+    escapeshellarg($semb_lamprn) . " 2>&1";
 
 exec($cmd, $out, $status);
 

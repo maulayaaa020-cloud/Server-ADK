@@ -19,6 +19,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import paket1
 import paket2
 import paket3
+import paket4
 from utils import DocProcessor
 
 
@@ -73,11 +74,17 @@ def main():
 
     input_file  = sys.argv[1]
     output_file = sys.argv[2]
-    paket       = sys.argv[3] if len(sys.argv) > 3 else 'paket3'
-    font_arg    = sys.argv[4] if len(sys.argv) > 4 else 'Times New Roman'
-    size_arg    = sys.argv[5] if len(sys.argv) > 5 else '12 pt'
-    hidden_cov  = sys.argv[6] if len(sys.argv) > 6 else 'Ya'
-    posisi      = sys.argv[7] if len(sys.argv) > 7 else 'Tengah Bawah'
+    paket       = sys.argv[3]  if len(sys.argv) > 3  else 'paket3'
+    font_arg    = sys.argv[4]  if len(sys.argv) > 4  else 'Times New Roman'
+    size_arg    = sys.argv[5]  if len(sys.argv) > 5  else '12 pt'
+    hidden_cov  = sys.argv[6]  if len(sys.argv) > 6  else 'Ya'
+    posisi      = sys.argv[7]  if len(sys.argv) > 7  else 'Tengah Bawah'
+    # Paket 4 – custom per-zona
+    pos_bab     = sys.argv[8]  if len(sys.argv) > 8  else 'Tengah Bawah'
+    pos_isi_bab = sys.argv[9]  if len(sys.argv) > 9  else 'Kanan Atas'
+    dimulai     = sys.argv[10] if len(sys.argv) > 10 else 'i'
+    semb_dafus  = sys.argv[11] if len(sys.argv) > 11 else 'Tidak'
+    semb_lamprn = sys.argv[12] if len(sys.argv) > 12 else 'Tidak'
 
     m            = re.search(r'\d+', size_arg)
     font_size_pt = int(m.group()) if m else 12
@@ -102,7 +109,7 @@ def main():
             paket1.apply(proc, hidden_cov, posisi)
 
         else:
-            # Paket 2 & 3: butuh deteksi zona → Phase 1-3 dulu
+            # Paket 2, 3, 4: butuh deteksi zona → Phase 1-3 dulu
             roman_start_p, bab_p_list = proc.scan_zones()
             detected_bab_texts = [
                 DocProcessor._p_text(p)[:60] for p in bab_p_list
@@ -114,6 +121,13 @@ def main():
 
             if paket == 'paket2':
                 paket2.apply(proc, roman_sec, bab_sec_list, n_sections, hidden_cov, posisi)
+            elif paket == 'paket4':
+                paket4.apply(
+                    proc, roman_sec, bab_sec_list, n_sections, hidden_cov,
+                    pos_romawi=posisi, pos_bab=pos_bab, pos_isi_bab=pos_isi_bab,
+                    dimulai_dari=dimulai, semb_dafus=semb_dafus, semb_lamprn=semb_lamprn,
+                    bab_p_list=bab_p_list
+                )
             else:
                 paket3.apply(proc, roman_sec, bab_sec_list, n_sections, hidden_cov)
 

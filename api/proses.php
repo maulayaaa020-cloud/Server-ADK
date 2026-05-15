@@ -10,12 +10,18 @@ if (file_exists(__DIR__ . '/../config/maintenance.flag')) {
 
 if (isset($_FILES['file']) && isset($_POST['paket'])) {
 
-    $paket  = $_POST['paket'];
-    $font   = $_POST['font']         ?? '';
-    $size   = $_POST['size']         ?? '';
-    $hidden = $_POST['hidden_cover'] ?? 'Ya';
-    $posisi = $_POST['posisi']       ?? '';
-    $phone  = trim($_POST['phone']   ?? '');
+    $paket      = $_POST['paket'];
+    $font       = $_POST['font']              ?? '';
+    $size       = $_POST['size']              ?? '';
+    $hidden     = $_POST['hidden_cover']      ?? 'Ya';
+    $posisi     = $_POST['posisi']            ?? '';
+    $phone      = trim($_POST['phone']        ?? '');
+    // Paket 4 — custom per-zona
+    $pos_bab    = $_POST['pos_bab']           ?? '';
+    $pos_isi    = $_POST['pos_isi_bab']       ?? '';
+    $dimulai    = $_POST['dimulai_dari']      ?? 'i';
+    $semb_dafus = $_POST['sembunyi_dafus']    ?? 'Tidak';
+    $semb_lamprn= $_POST['sembunyi_lamprn']   ?? 'Tidak';
 
     $isGuest = empty($phone);
 
@@ -67,6 +73,7 @@ if (isset($_FILES['file']) && isset($_POST['paket'])) {
     $hargaConfig = @json_decode(@file_get_contents(__DIR__ . '/../config/harga.json'), true) ?: [];
     if ($paket == 'paket1')     $harga = $hargaConfig['paket1'] ?? 5000;
     elseif ($paket == 'paket2') $harga = $hargaConfig['paket2'] ?? 10000;
+    elseif ($paket == 'paket4') $harga = $hargaConfig['paket4'] ?? 15000;
     else                        $harga = $hargaConfig['paket3'] ?? 10000;
 
     $orderId = 'ADK-' . time() . '-' . bin2hex(random_bytes(3));
@@ -102,6 +109,11 @@ if (isset($_FILES['file']) && isset($_POST['paket'])) {
     $_SESSION['size']         = $size;
     $_SESSION['hidden_cover'] = $hidden;
     $_SESSION['posisi']       = $posisi;
+    $_SESSION['pos_bab']      = $pos_bab;
+    $_SESSION['pos_isi_bab']  = $pos_isi;
+    $_SESSION['dimulai_dari'] = $dimulai;
+    $_SESSION['semb_dafus']   = $semb_dafus;
+    $_SESSION['semb_lamprn']  = $semb_lamprn;
     $_SESSION['phone']        = $isGuest ? null : $phone;
     $_SESSION['guest_token']  = $guestToken;
     $_SESSION['is_guest']     = $isGuest;

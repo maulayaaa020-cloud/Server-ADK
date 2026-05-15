@@ -324,6 +324,11 @@
     padding: 0 12px 12px;
 }
 
+/* Paket 4 punya 12 field — di mobile jadi 12 baris, butuh lebih tinggi */
+.paket-card[data-paket="4"].active .paket-card-body {
+    max-height: 700px;
+}
+
 .populer-badge {
     position: absolute;
     top: -11px;
