@@ -183,11 +183,16 @@
     <form method="POST" action="api/proses.php" enctype="multipart/form-data"
           id="orderForm" onsubmit="return prepareSubmit(event)">
 
-        <input type="hidden" name="paket"        id="hidPaket"  value="paket1">
-        <input type="hidden" name="font"         id="hidFont"   value="">
-        <input type="hidden" name="size"         id="hidSize"   value="">
-        <input type="hidden" name="hidden_cover" id="hidHidden" value="">
-        <input type="hidden" name="posisi"       id="hidPosisi" value="">
+        <input type="hidden" name="paket"        id="hidPaket"    value="paket1">
+        <input type="hidden" name="font"         id="hidFont"     value="">
+        <input type="hidden" name="size"         id="hidSize"     value="">
+        <input type="hidden" name="hidden_cover" id="hidHidden"   value="">
+        <input type="hidden" name="posisi"       id="hidPosisi"   value="">
+        <input type="hidden" name="pos_bab"      id="hidPosBab"   value="">
+        <input type="hidden" name="pos_isi_bab"  id="hidPosIsiBab" value="">
+        <input type="hidden" name="dimulai_dari" id="hidDimulai"  value="">
+        <input type="hidden" name="sembunyi_dafus"   id="hidDafus"  value="">
+        <input type="hidden" name="sembunyi_lamprn"  id="hidLamprn" value="">
 
         <div class="order-wrapper">
 
@@ -208,120 +213,339 @@
                               onclick="removeFile();event.stopPropagation();">✕</span>
                     </div>
 
-                    <!-- Tab Pilih Paket -->
+                    <!-- Accordion Pilih Paket -->
                     <p class="pilih-paket-label">Pilih Paket:</p>
 
-                    <div class="paket-tabs">
-                        <div class="paket-tab active" data-paket="1" onclick="selectPaket(1)">
-                            <div class="tab-name">FULL ANGKA </div>
-                            <div class="tab-sub">Posisi Tetap</div>
-                            <div class="tab-format"></div>
-                        </div>
-                        <div class="paket-tab" data-paket="2" onclick="selectPaket(2)">
-                            <div class="tab-name">ROMAWI + ANGKA</div>
-                            <div class="tab-sub">Posisi Tetap</div>
-                            <div class="tab-format"></div>
-                        </div>
-                        <div class="paket-tab" data-paket="3" onclick="selectPaket(3)">
-                            <div class="tab-name">ROMAWI + ANGKA</div>
-                            <div class="tab-sub">Romawi Bawah Tengah<br>Bab Bawah Tengah<br>Isi Bab Kanan Atas</div>
-                            <div class="tab-format">🔥 Populer Skripsi</div>
-                        </div>
-                    </div>
+                    <div class="paket-accordion">
 
-                    <!-- Panel Opsi (ganti isi sesuai paket aktif) -->
-                    <div class="paket-opts-panel">
+                        <!-- Paket 1: FULL ANGKA -->
+                        <div class="paket-card" data-paket="1">
+                            <div class="paket-card-header" onclick="selectPaket(1)">
+                                <div class="paket-card-info">
+                                    <span class="paket-card-name">FULL ANGKA</span>
+                                    <span class="paket-card-sub">(Posisi Tetap)</span>
+                                </div>
+                                <span class="paket-arrow-icon"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></span>
+                            </div>
+                            <div class="paket-card-body" id="optsPanel1" data-paket="1">
+                                <div class="opts-form-grid">
+                                    <span class="opts-row-label">LETAK ROMAWI</span>
+                                    <div class="opts-select" data-group="p1v" onclick="toggleSelect(this)">
+                                        <span class="opts-sel-tri">▲</span>
+                                        <span class="opts-sel-text">Pilih Letak</span>
+                                        <div class="opts-sel-dropdown">
+                                            <div class="opt-sel-item" data-group="p1v" data-value="Bawah" onclick="chooseOpt(this);event.stopPropagation()">Bawah</div>
+                                            <div class="opt-sel-item" data-group="p1v" data-value="Atas"  onclick="chooseOpt(this);event.stopPropagation()">Atas</div>
+                                        </div>
+                                    </div>
+                                    <span class="opts-row-label">FONT</span>
+                                    <div class="opts-select" data-group="f1" onclick="toggleSelect(this)">
+                                        <span class="opts-sel-tri">▲</span>
+                                        <span class="opts-sel-text">Pilih Font</span>
+                                        <div class="opts-sel-dropdown">
+                                            <div class="opt-sel-item" data-group="f1" data-value="Times New Roman" onclick="chooseOpt(this);event.stopPropagation()">Times New Roman</div>
+                                            <div class="opt-sel-item" data-group="f1" data-value="Arial"           onclick="chooseOpt(this);event.stopPropagation()">Arial</div>
+                                            <div class="opt-sel-item" data-group="f1" data-value="Calibri"         onclick="chooseOpt(this);event.stopPropagation()">Calibri</div>
+                                        </div>
+                                    </div>
 
-                        <!-- Paket 1 -->
-                        <div class="opts-panel" id="optsPanel1" data-paket="1">
-                            <div class="opts-grid opts-grid-4">
-                                <div class="opts-col">
-                                    <div class="opts-label">Posisi / Letak</div>
-                                    <div class="pos-grid">
-                                        <div class="opt-btn" data-group="p1h" data-value="Tengah" onclick="selectOpt(this)">Tengah</div>
-                                        <div class="opt-btn" data-group="p1v" data-value="Bawah"  onclick="selectOpt(this)">Bawah</div>
-                                        <div class="opt-btn" data-group="p1h" data-value="Kanan"  onclick="selectOpt(this)">Kanan</div>
-                                        <div class="opt-btn" data-group="p1v" data-value="Atas"   onclick="selectOpt(this)">Atas</div>
-                                        <div class="opt-btn" data-group="p1h" data-value="Kiri"   onclick="selectOpt(this)">Kiri</div>
+                                    <span class="opts-row-label">POSISI ROMAWI</span>
+                                    <div class="opts-select" data-group="p1h" onclick="toggleSelect(this)">
+                                        <span class="opts-sel-tri">▲</span>
+                                        <span class="opts-sel-text">Pilih Posisi</span>
+                                        <div class="opts-sel-dropdown">
+                                            <div class="opt-sel-item" data-group="p1h" data-value="Tengah" onclick="chooseOpt(this);event.stopPropagation()">Tengah</div>
+                                            <div class="opt-sel-item" data-group="p1h" data-value="Kanan"  onclick="chooseOpt(this);event.stopPropagation()">Kanan</div>
+                                            <div class="opt-sel-item" data-group="p1h" data-value="Kiri"   onclick="chooseOpt(this);event.stopPropagation()">Kiri</div>
+                                        </div>
+                                    </div>
+                                    <span class="opts-row-label">SIZE</span>
+                                    <div class="opts-select" data-group="s1" onclick="toggleSelect(this)">
+                                        <span class="opts-sel-tri">▲</span>
+                                        <span class="opts-sel-text">Pilih Size</span>
+                                        <div class="opts-sel-dropdown">
+                                            <div class="opt-sel-item" data-group="s1" data-value="11 pt" onclick="chooseOpt(this);event.stopPropagation()">11 pt</div>
+                                            <div class="opt-sel-item" data-group="s1" data-value="12 pt" onclick="chooseOpt(this);event.stopPropagation()">12 pt</div>
+                                            <div class="opt-sel-item" data-group="s1" data-value="14 pt" onclick="chooseOpt(this);event.stopPropagation()">14 pt</div>
+                                        </div>
+                                    </div>
+
+                                    <span class="opts-placeholder"></span>
+                                    <span class="opts-placeholder"></span>
+                                    <span class="opts-row-label">SEMBUNYI COVER</span>
+                                    <div class="opts-select" data-group="h1" onclick="toggleSelect(this)">
+                                        <span class="opts-sel-tri">▲</span>
+                                        <span class="opts-sel-text">Pilih</span>
+                                        <div class="opts-sel-dropdown">
+                                            <div class="opt-sel-item" data-group="h1" data-value="Ya"    onclick="chooseOpt(this);event.stopPropagation()">Ya</div>
+                                            <div class="opt-sel-item" data-group="h1" data-value="Tidak" onclick="chooseOpt(this);event.stopPropagation()">Tidak</div>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="opts-col">
-                                    <div class="opts-label">Font</div>
-                                    <div class="opt-btn" data-group="f1" data-value="Times New Roman" onclick="selectOpt(this)">Times New Roman</div>
-                                    <div class="opt-btn" data-group="f1" data-value="Arial"           onclick="selectOpt(this)">Arial</div>
-                                    <div class="opt-btn" data-group="f1" data-value="Calibri"         onclick="selectOpt(this)">Calibri</div>
-                                </div>
-                                <div class="opts-col">
-                                    <div class="opts-label">Size</div>
-                                    <div class="opt-btn" data-group="s1" data-value="11 pt" onclick="selectOpt(this)">11 pt</div>
-                                    <div class="opt-btn" data-group="s1" data-value="12 pt" onclick="selectOpt(this)">12 pt</div>
-                                    <div class="opt-btn" data-group="s1" data-value="14 pt" onclick="selectOpt(this)">14 pt</div>
-                                </div>
-                                <div class="opts-col">
-                                    <div class="opts-label">Sembunyikan Cover (1)</div>
-                                    <div class="opt-btn" data-group="h1" data-value="Ya"    onclick="selectOpt(this)">Ya</div>
-                                    <div class="opt-btn" data-group="h1" data-value="Tidak" onclick="selectOpt(this)">Tidak</div>
+                                <div class="opts-keterangan">
+                                    <strong>KETERANGAN PAKET</strong>
+                                    <ul><li>Posisi / Letak akan tetap berada pada Posisi / Letak yang anda tentukan</li></ul>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Paket 2 -->
-                        <div class="opts-panel" id="optsPanel2" data-paket="2" style="display:none">
-                            <div class="opts-grid opts-grid-4">
-                                <div class="opts-col">
-                                    <div class="opts-label">Posisi / Letak</div>
-                                    <div class="pos-grid">
-                                        <div class="opt-btn" data-group="p2h" data-value="Tengah" onclick="selectOpt(this)">Tengah</div>
-                                        <div class="opt-btn" data-group="p2v" data-value="Bawah"  onclick="selectOpt(this)">Bawah</div>
-                                        <div class="opt-btn" data-group="p2h" data-value="Kanan"  onclick="selectOpt(this)">Kanan</div>
-                                        <div class="opt-btn" data-group="p2v" data-value="Atas"   onclick="selectOpt(this)">Atas</div>
-                                        <div class="opt-btn" data-group="p2h" data-value="Kiri"   onclick="selectOpt(this)">Kiri</div>
+                        <!-- Paket 2: ROMAWI + ANGKA (Posisi Tetap) -->
+                        <div class="paket-card" data-paket="2">
+                            <div class="paket-card-header" onclick="selectPaket(2)">
+                                <div class="paket-card-info">
+                                    <span class="paket-card-name">ROMAWI + ANGKA</span>
+                                    <span class="paket-card-sub">(Posisi Tetap)</span>
+                                </div>
+                                <span class="paket-arrow-icon"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></span>
+                            </div>
+                            <div class="paket-card-body" id="optsPanel2" data-paket="2">
+                                <div class="opts-form-grid">
+                                    <span class="opts-row-label">LETAK ROMAWI</span>
+                                    <div class="opts-select" data-group="p2v" onclick="toggleSelect(this)">
+                                        <span class="opts-sel-tri">▲</span>
+                                        <span class="opts-sel-text">Pilih Letak</span>
+                                        <div class="opts-sel-dropdown">
+                                            <div class="opt-sel-item" data-group="p2v" data-value="Bawah" onclick="chooseOpt(this);event.stopPropagation()">Bawah</div>
+                                            <div class="opt-sel-item" data-group="p2v" data-value="Atas"  onclick="chooseOpt(this);event.stopPropagation()">Atas</div>
+                                        </div>
+                                    </div>
+                                    <span class="opts-row-label">FONT</span>
+                                    <div class="opts-select" data-group="f2" onclick="toggleSelect(this)">
+                                        <span class="opts-sel-tri">▲</span>
+                                        <span class="opts-sel-text">Pilih Font</span>
+                                        <div class="opts-sel-dropdown">
+                                            <div class="opt-sel-item" data-group="f2" data-value="Times New Roman" onclick="chooseOpt(this);event.stopPropagation()">Times New Roman</div>
+                                            <div class="opt-sel-item" data-group="f2" data-value="Arial"           onclick="chooseOpt(this);event.stopPropagation()">Arial</div>
+                                            <div class="opt-sel-item" data-group="f2" data-value="Calibri"         onclick="chooseOpt(this);event.stopPropagation()">Calibri</div>
+                                        </div>
+                                    </div>
+
+                                    <span class="opts-row-label">POSISI ROMAWI</span>
+                                    <div class="opts-select" data-group="p2h" onclick="toggleSelect(this)">
+                                        <span class="opts-sel-tri">▲</span>
+                                        <span class="opts-sel-text">Pilih Posisi</span>
+                                        <div class="opts-sel-dropdown">
+                                            <div class="opt-sel-item" data-group="p2h" data-value="Tengah" onclick="chooseOpt(this);event.stopPropagation()">Tengah</div>
+                                            <div class="opt-sel-item" data-group="p2h" data-value="Kanan"  onclick="chooseOpt(this);event.stopPropagation()">Kanan</div>
+                                            <div class="opt-sel-item" data-group="p2h" data-value="Kiri"   onclick="chooseOpt(this);event.stopPropagation()">Kiri</div>
+                                        </div>
+                                    </div>
+                                    <span class="opts-row-label">SIZE</span>
+                                    <div class="opts-select" data-group="s2" onclick="toggleSelect(this)">
+                                        <span class="opts-sel-tri">▲</span>
+                                        <span class="opts-sel-text">Pilih Size</span>
+                                        <div class="opts-sel-dropdown">
+                                            <div class="opt-sel-item" data-group="s2" data-value="11 pt" onclick="chooseOpt(this);event.stopPropagation()">11 pt</div>
+                                            <div class="opt-sel-item" data-group="s2" data-value="12 pt" onclick="chooseOpt(this);event.stopPropagation()">12 pt</div>
+                                            <div class="opt-sel-item" data-group="s2" data-value="14 pt" onclick="chooseOpt(this);event.stopPropagation()">14 pt</div>
+                                        </div>
+                                    </div>
+
+                                    <span class="opts-placeholder"></span>
+                                    <span class="opts-placeholder"></span>
+                                    <span class="opts-row-label">SEMBUNYI COVER</span>
+                                    <div class="opts-select" data-group="h2" onclick="toggleSelect(this)">
+                                        <span class="opts-sel-tri">▲</span>
+                                        <span class="opts-sel-text">Pilih</span>
+                                        <div class="opts-sel-dropdown">
+                                            <div class="opt-sel-item" data-group="h2" data-value="Ya"    onclick="chooseOpt(this);event.stopPropagation()">Ya</div>
+                                            <div class="opt-sel-item" data-group="h2" data-value="Tidak" onclick="chooseOpt(this);event.stopPropagation()">Tidak</div>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="opts-col">
-                                    <div class="opts-label">Font</div>
-                                    <div class="opt-btn" data-group="f2" data-value="Times New Roman" onclick="selectOpt(this)">Times New Roman</div>
-                                    <div class="opt-btn" data-group="f2" data-value="Arial"           onclick="selectOpt(this)">Arial</div>
-                                    <div class="opt-btn" data-group="f2" data-value="Calibri"         onclick="selectOpt(this)">Calibri</div>
-                                </div>
-                                <div class="opts-col">
-                                    <div class="opts-label">Size</div>
-                                    <div class="opt-btn" data-group="s2" data-value="11 pt" onclick="selectOpt(this)">11 pt</div>
-                                    <div class="opt-btn" data-group="s2" data-value="12 pt" onclick="selectOpt(this)">12 pt</div>
-                                    <div class="opt-btn" data-group="s2" data-value="14 pt" onclick="selectOpt(this)">14 pt</div>
-                                </div>
-                                <div class="opts-col">
-                                    <div class="opts-label">Sembunyikan Cover <span style="text-transform:none">(i)</span></div>
-                                    <div class="opt-btn" data-group="h2" data-value="Ya"    onclick="selectOpt(this)">Ya</div>
-                                    <div class="opt-btn" data-group="h2" data-value="Tidak" onclick="selectOpt(this)">Tidak</div>
+                                <div class="opts-keterangan">
+                                    <strong>KETERANGAN PAKET</strong>
+                                    <ul><li>Posisi / Letak akan tetap berada pada Posisi / Letak yang anda tentukan</li></ul>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Paket 3 -->
-                        <div class="opts-panel" id="optsPanel3" data-paket="3" style="display:none">
-                            <div class="opts-grid">
-                                <div class="opts-col">
-                                    <div class="opts-label">Font</div>
-                                    <div class="opt-btn" data-group="f3" data-value="Times New Roman" onclick="selectOpt(this)">Times New Roman</div>
-                                    <div class="opt-btn" data-group="f3" data-value="Arial"           onclick="selectOpt(this)">Arial</div>
-                                    <div class="opt-btn" data-group="f3" data-value="Calibri"         onclick="selectOpt(this)">Calibri</div>
+                        <!-- Paket 3: ROMAWI + ANGKA (Populer Skripsi) -->
+                        <div class="paket-card" data-paket="3">
+                            <span class="populer-badge">🔥 Populer Skripsi</span>
+                            <div class="paket-card-header" onclick="selectPaket(3)">
+                                <div class="paket-card-info">
+                                    <span class="paket-card-name">ROMAWI + ANGKA</span>
+                                    <span class="paket-card-sub">(Tengah Bawah, Kanan Atas)</span>
                                 </div>
-                                <div class="opts-col">
-                                    <div class="opts-label">Size</div>
-                                    <div class="opt-btn" data-group="s3" data-value="11 pt" onclick="selectOpt(this)">11 pt</div>
-                                    <div class="opt-btn" data-group="s3" data-value="12 pt" onclick="selectOpt(this)">12 pt</div>
-                                    <div class="opt-btn" data-group="s3" data-value="14 pt" onclick="selectOpt(this)">14 pt</div>
+                                <span class="paket-arrow-icon"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></span>
+                            </div>
+                            <div class="paket-card-body" id="optsPanel3" data-paket="3">
+                                <div class="opts-form-grid">
+                                    <span class="opts-row-label">FONT</span>
+                                    <div class="opts-select" data-group="f3" onclick="toggleSelect(this)">
+                                        <span class="opts-sel-tri">▲</span>
+                                        <span class="opts-sel-text">Pilih Font</span>
+                                        <div class="opts-sel-dropdown">
+                                            <div class="opt-sel-item" data-group="f3" data-value="Times New Roman" onclick="chooseOpt(this);event.stopPropagation()">Times New Roman</div>
+                                            <div class="opt-sel-item" data-group="f3" data-value="Arial"           onclick="chooseOpt(this);event.stopPropagation()">Arial</div>
+                                            <div class="opt-sel-item" data-group="f3" data-value="Calibri"         onclick="chooseOpt(this);event.stopPropagation()">Calibri</div>
+                                        </div>
+                                    </div>
+                                    <span class="opts-row-label">SEMBUNYI COVER</span>
+                                    <div class="opts-select" data-group="h3" onclick="toggleSelect(this)">
+                                        <span class="opts-sel-tri">▲</span>
+                                        <span class="opts-sel-text">Pilih</span>
+                                        <div class="opts-sel-dropdown">
+                                            <div class="opt-sel-item" data-group="h3" data-value="Ya"    onclick="chooseOpt(this);event.stopPropagation()">Ya</div>
+                                            <div class="opt-sel-item" data-group="h3" data-value="Tidak" onclick="chooseOpt(this);event.stopPropagation()">Tidak</div>
+                                        </div>
+                                    </div>
+
+                                    <span class="opts-row-label">SIZE</span>
+                                    <div class="opts-select" data-group="s3" onclick="toggleSelect(this)">
+                                        <span class="opts-sel-tri">▲</span>
+                                        <span class="opts-sel-text">Pilih Size</span>
+                                        <div class="opts-sel-dropdown">
+                                            <div class="opt-sel-item" data-group="s3" data-value="11 pt" onclick="chooseOpt(this);event.stopPropagation()">11 pt</div>
+                                            <div class="opt-sel-item" data-group="s3" data-value="12 pt" onclick="chooseOpt(this);event.stopPropagation()">12 pt</div>
+                                            <div class="opt-sel-item" data-group="s3" data-value="14 pt" onclick="chooseOpt(this);event.stopPropagation()">14 pt</div>
+                                        </div>
+                                    </div>
+                                    <span class="opts-placeholder"></span>
+                                    <span class="opts-placeholder"></span>
                                 </div>
-                                <div class="opts-col">
-                                    <div class="opts-label">Sembunyikan Cover <span style="text-transform:none">(i)</span></div>
-                                    <div class="opt-btn" data-group="h3" data-value="Ya"    onclick="selectOpt(this)">Ya</div>
-                                    <div class="opt-btn" data-group="h3" data-value="Tidak" onclick="selectOpt(this)">Tidak</div>
+                                <div class="opts-keterangan">
+                                    <strong>KETERANGAN PAKET</strong>
+                                    <ul>
+                                        <li>Romawi Bawah Tengah</li>
+                                        <li>BAB Bawah Tengah</li>
+                                        <li>ISI BAB Kanan Atas</li>
+                                        <li>Dimulai dari ii pada halaman setelah cover (Jika cover disembunyikan)</li>
+                                    </ul>
                                 </div>
                             </div>
                         </div>
 
-                    </div><!-- /paket-opts-panel -->
+                        <!-- Paket 4: Custom -->
+                        <div class="paket-card" data-paket="4">
+                            <span class="populer-badge">🔥 Populer</span>
+                            <div class="paket-card-header" onclick="selectPaket(4)">
+                                <div class="paket-card-info">
+                                    <span class="paket-card-name">ROMAWI + ANGKA</span>
+                                    <span class="paket-card-sub">(Costum)</span>
+                                </div>
+                                <span class="paket-arrow-icon"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></span>
+                            </div>
+                            <div class="paket-card-body" id="optsPanel4" data-paket="4">
+                                <div class="opts-form-grid">
+                                    <span class="opts-row-label">LETAK ROMAWI</span>
+                                    <div class="opts-select" data-group="p4v" onclick="toggleSelect(this)">
+                                        <span class="opts-sel-tri">▲</span><span class="opts-sel-text">Pilih Letak</span>
+                                        <div class="opts-sel-dropdown">
+                                            <div class="opt-sel-item" data-group="p4v" data-value="Bawah" onclick="chooseOpt(this);event.stopPropagation()">Bawah</div>
+                                            <div class="opt-sel-item" data-group="p4v" data-value="Atas"  onclick="chooseOpt(this);event.stopPropagation()">Atas</div>
+                                        </div>
+                                    </div>
+                                    <span class="opts-row-label">LETAK BAB</span>
+                                    <div class="opts-select" data-group="p4bv" onclick="toggleSelect(this)">
+                                        <span class="opts-sel-tri">▲</span><span class="opts-sel-text">Pilih Letak</span>
+                                        <div class="opts-sel-dropdown">
+                                            <div class="opt-sel-item" data-group="p4bv" data-value="Bawah" onclick="chooseOpt(this);event.stopPropagation()">Bawah</div>
+                                            <div class="opt-sel-item" data-group="p4bv" data-value="Atas"  onclick="chooseOpt(this);event.stopPropagation()">Atas</div>
+                                        </div>
+                                    </div>
+
+                                    <span class="opts-row-label">POSISI ROMAWI</span>
+                                    <div class="opts-select" data-group="p4h" onclick="toggleSelect(this)">
+                                        <span class="opts-sel-tri">▲</span><span class="opts-sel-text">Pilih Posisi</span>
+                                        <div class="opts-sel-dropdown">
+                                            <div class="opt-sel-item" data-group="p4h" data-value="Tengah" onclick="chooseOpt(this);event.stopPropagation()">Tengah</div>
+                                            <div class="opt-sel-item" data-group="p4h" data-value="Kanan"  onclick="chooseOpt(this);event.stopPropagation()">Kanan</div>
+                                            <div class="opt-sel-item" data-group="p4h" data-value="Kiri"   onclick="chooseOpt(this);event.stopPropagation()">Kiri</div>
+                                        </div>
+                                    </div>
+                                    <span class="opts-row-label">POSISI BAB</span>
+                                    <div class="opts-select" data-group="p4bh" onclick="toggleSelect(this)">
+                                        <span class="opts-sel-tri">▲</span><span class="opts-sel-text">Pilih Posisi</span>
+                                        <div class="opts-sel-dropdown">
+                                            <div class="opt-sel-item" data-group="p4bh" data-value="Tengah" onclick="chooseOpt(this);event.stopPropagation()">Tengah</div>
+                                            <div class="opt-sel-item" data-group="p4bh" data-value="Kanan"  onclick="chooseOpt(this);event.stopPropagation()">Kanan</div>
+                                            <div class="opt-sel-item" data-group="p4bh" data-value="Kiri"   onclick="chooseOpt(this);event.stopPropagation()">Kiri</div>
+                                        </div>
+                                    </div>
+
+                                    <span class="opts-row-label">SEMBUNYI COVER</span>
+                                    <div class="opts-select" data-group="h4" onclick="toggleSelect(this)">
+                                        <span class="opts-sel-tri">▲</span><span class="opts-sel-text">Pilih</span>
+                                        <div class="opts-sel-dropdown">
+                                            <div class="opt-sel-item" data-group="h4" data-value="Ya"    onclick="chooseOpt(this);event.stopPropagation()">Ya</div>
+                                            <div class="opt-sel-item" data-group="h4" data-value="Tidak" onclick="chooseOpt(this);event.stopPropagation()">Tidak</div>
+                                        </div>
+                                    </div>
+                                    <span class="opts-row-label">LETAK ISI BAB</span>
+                                    <div class="opts-select" data-group="p4iv" onclick="toggleSelect(this)">
+                                        <span class="opts-sel-tri">▲</span><span class="opts-sel-text">Pilih Letak</span>
+                                        <div class="opts-sel-dropdown">
+                                            <div class="opt-sel-item" data-group="p4iv" data-value="Bawah" onclick="chooseOpt(this);event.stopPropagation()">Bawah</div>
+                                            <div class="opt-sel-item" data-group="p4iv" data-value="Atas"  onclick="chooseOpt(this);event.stopPropagation()">Atas</div>
+                                        </div>
+                                    </div>
+
+                                    <span class="opts-row-label">DIMULAI DARI</span>
+                                    <div class="opts-select" data-group="dm4" onclick="toggleSelect(this)">
+                                        <span class="opts-sel-tri">▲</span><span class="opts-sel-text">Pilih</span>
+                                        <div class="opts-sel-dropdown">
+                                            <div class="opt-sel-item" data-group="dm4" data-value="i"   onclick="chooseOpt(this);event.stopPropagation()">i</div>
+                                            <div class="opt-sel-item" data-group="dm4" data-value="ii"  onclick="chooseOpt(this);event.stopPropagation()">ii</div>
+                                            <div class="opt-sel-item" data-group="dm4" data-value="iii" onclick="chooseOpt(this);event.stopPropagation()">iii</div>
+                                            <div class="opt-sel-item" data-group="dm4" data-value="iv"  onclick="chooseOpt(this);event.stopPropagation()">iv</div>
+                                        </div>
+                                    </div>
+                                    <span class="opts-row-label">POSISI ISI BAB</span>
+                                    <div class="opts-select" data-group="p4ih" onclick="toggleSelect(this)">
+                                        <span class="opts-sel-tri">▲</span><span class="opts-sel-text">Pilih Posisi</span>
+                                        <div class="opts-sel-dropdown">
+                                            <div class="opt-sel-item" data-group="p4ih" data-value="Tengah" onclick="chooseOpt(this);event.stopPropagation()">Tengah</div>
+                                            <div class="opt-sel-item" data-group="p4ih" data-value="Kanan"  onclick="chooseOpt(this);event.stopPropagation()">Kanan</div>
+                                            <div class="opt-sel-item" data-group="p4ih" data-value="Kiri"   onclick="chooseOpt(this);event.stopPropagation()">Kiri</div>
+                                        </div>
+                                    </div>
+
+                                    <span class="opts-row-label">FONT</span>
+                                    <div class="opts-select" data-group="f4" onclick="toggleSelect(this)">
+                                        <span class="opts-sel-tri">▲</span><span class="opts-sel-text">Pilih Font</span>
+                                        <div class="opts-sel-dropdown">
+                                            <div class="opt-sel-item" data-group="f4" data-value="Times New Roman" onclick="chooseOpt(this);event.stopPropagation()">Times New Roman</div>
+                                            <div class="opt-sel-item" data-group="f4" data-value="Arial"           onclick="chooseOpt(this);event.stopPropagation()">Arial</div>
+                                            <div class="opt-sel-item" data-group="f4" data-value="Calibri"         onclick="chooseOpt(this);event.stopPropagation()">Calibri</div>
+                                        </div>
+                                    </div>
+                                    <span class="opts-row-label">SEMB. DAFUS</span>
+                                    <div class="opts-select" data-group="df4" onclick="toggleSelect(this)">
+                                        <span class="opts-sel-tri">▲</span><span class="opts-sel-text">Pilih</span>
+                                        <div class="opts-sel-dropdown">
+                                            <div class="opt-sel-item" data-group="df4" data-value="Ya"    onclick="chooseOpt(this);event.stopPropagation()">Ya</div>
+                                            <div class="opt-sel-item" data-group="df4" data-value="Tidak" onclick="chooseOpt(this);event.stopPropagation()">Tidak</div>
+                                        </div>
+                                    </div>
+
+                                    <span class="opts-row-label">SIZE</span>
+                                    <div class="opts-select" data-group="s4" onclick="toggleSelect(this)">
+                                        <span class="opts-sel-tri">▲</span><span class="opts-sel-text">Pilih Size</span>
+                                        <div class="opts-sel-dropdown">
+                                            <div class="opt-sel-item" data-group="s4" data-value="11 pt" onclick="chooseOpt(this);event.stopPropagation()">11 pt</div>
+                                            <div class="opt-sel-item" data-group="s4" data-value="12 pt" onclick="chooseOpt(this);event.stopPropagation()">12 pt</div>
+                                            <div class="opt-sel-item" data-group="s4" data-value="14 pt" onclick="chooseOpt(this);event.stopPropagation()">14 pt</div>
+                                        </div>
+                                    </div>
+                                    <span class="opts-row-label">SEMB. LAMPIRAN</span>
+                                    <div class="opts-select" data-group="lp4" onclick="toggleSelect(this)">
+                                        <span class="opts-sel-tri">▲</span><span class="opts-sel-text">Pilih</span>
+                                        <div class="opts-sel-dropdown">
+                                            <div class="opt-sel-item" data-group="lp4" data-value="Ya"    onclick="chooseOpt(this);event.stopPropagation()">Ya</div>
+                                            <div class="opt-sel-item" data-group="lp4" data-value="Tidak" onclick="chooseOpt(this);event.stopPropagation()">Tidak</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="opts-keterangan">
+                                    <strong>KETERANGAN PAKET</strong>
+                                    <ul><li>3 Point Posisi / Letak (Romawi, BAB, dan ISI BAB) akan berada pada Posisi / Letak yang anda tentukan</li></ul>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div><!-- /paket-accordion -->
 
                     <div class="validation-msg" id="validMsg"></div>
 
@@ -393,9 +617,14 @@
         const sel = {
             p1h: '', p1v: '',
             p2h: '', p2v: '',
+            p4h: '', p4v: '',
+            p4bh: '', p4bv: '',
+            p4ih: '', p4iv: '',
             f1: '', s1: '', h1: '',
             f2: '', s2: '', h2: '',
             f3: '', s3: '', h3: '',
+            f4: '', s4: '', h4: '',
+            df4: '', lp4: '', dm4: '',
         };
 
         // Map (horizontal + vertikal) → CSS class suffix
@@ -482,6 +711,31 @@
                         { label: '',      num: 'Dst..', pos: 'topright' },
                     ];
                 }
+            },
+            4: {
+                val: 'paket4', name: 'ROMAWI DAN ANGKA (CUSTOM)',
+                sub: '!! 3 Point Posisi Dapat Dipilih',
+                phk: 'p4h', pvk: 'p4v',
+                fk: 'f4', sk: 's4', hk: 'h4',
+                pages(hidden, ph, pv) {
+                    const pos = getPosClass(ph || 'Tengah', pv || 'Bawah');
+                    if (hidden === 'Tidak') return [
+                        { label: 'COVER', num: 'i',     pos: pos },
+                        { label: '',      num: 'ii',    pos: pos },
+                        { label: '',      num: 'Dst..', pos: pos },
+                        { label: 'BAB',   num: '1',     pos: 'bottom' },
+                        { label: '',      num: '2',     pos: 'topright' },
+                        { label: '',      num: 'Dst..', pos: 'topright' },
+                    ];
+                    return [
+                        { label: 'COVER', num: '',      pos: '' },
+                        { label: '',      num: 'ii',    pos: pos },
+                        { label: '',      num: 'Dst..', pos: pos },
+                        { label: 'BAB',   num: '1',     pos: 'bottom' },
+                        { label: '',      num: '2',     pos: 'topright' },
+                        { label: '',      num: 'Dst..', pos: 'topright' },
+                    ];
+                }
             }
         };
 
@@ -489,11 +743,13 @@
             1: '✓ Paket Full Angka cocok untuk dokumen apapun..',
             2: '!! Sebelum Upload, Pastikan file anda memiliki: (COVER, BAB I, BAB II, BAB III, Dst)',
             3: '!! Sebelum Upload, Pastikan file anda memiliki: (COVER, BAB I, BAB II, BAB III, Dst)',
+            4: '!! Sebelum Upload, Pastikan file anda memiliki: (COVER, BAB I, BAB II, BAB III, Dst)',
         };
         const warningClass = {
             1: 'warning-box warning-ok',
             2: 'warning-box',
             3: 'warning-box',
+            4: 'warning-box',
         };
 
         function updateWarning() {
@@ -503,26 +759,41 @@
         }
 
         function selectPaket(n) {
-            if (currentPaket === n) return;
+            const clickedCard = document.querySelector('.paket-card[data-paket="' + n + '"]');
+            const isOpen = clickedCard && clickedCard.classList.contains('active');
 
-            const prev = paketInfo[currentPaket];
-            [prev.fk, prev.sk, prev.hk].forEach(k => sel[k] = '');
-            if (prev.phk) { sel[prev.phk] = ''; sel[prev.pvk] = ''; }
-            document.getElementById('optsPanel' + currentPaket)
-                .querySelectorAll('.opt-btn.selected')
-                .forEach(b => b.classList.remove('selected'));
+            // Toggle: klik paket yang sudah terbuka → tutup saja
+            if (isOpen) {
+                clickedCard.classList.remove('active');
+                return;
+            }
 
-            currentPaket = n;
+            // Pindah ke paket lain: reset pilihan paket sebelumnya
+            if (currentPaket !== n) {
+                const prev = paketInfo[currentPaket];
+                [prev.fk, prev.sk, prev.hk].forEach(k => sel[k] = '');
+                if (prev.phk) { sel[prev.phk] = ''; sel[prev.pvk] = ''; }
+                if (currentPaket === 4) {
+                    ['p4bv', 'p4bh', 'p4iv', 'p4ih', 'df4', 'lp4', 'dm4'].forEach(k => sel[k] = '');
+                }
+                const prevPanel = document.getElementById('optsPanel' + currentPaket);
+                if (prevPanel) {
+                    prevPanel.querySelectorAll('.opts-select').forEach(function(box) {
+                        box.classList.remove('has-value', 'open');
+                        const txt = box.querySelector('.opts-sel-text');
+                        if (txt) txt.textContent = txt.dataset.ph || 'Pilih...';
+                    });
+                    prevPanel.querySelectorAll('.opt-sel-item.selected').forEach(function(i) { i.classList.remove('selected'); });
+                }
+                currentPaket = n;
+            }
 
-            const _h = window._harga || {paket1:5000, paket2:10000, paket3:10000};
-            const _hVal = n === 1 ? _h.paket1 : (n === 2 ? _h.paket2 : _h.paket3);
+            const _h = window._harga || {paket1:5000, paket2:10000, paket3:10000, paket4:15000};
+            const _hVal = n === 1 ? _h.paket1 : (n === 2 ? _h.paket2 : (n === 3 ? _h.paket3 : (_h.paket4 || 15000)));
             document.getElementById('totalHarga').textContent = 'Total: Rp ' + _hVal.toLocaleString('id-ID');
 
-            document.querySelectorAll('.paket-tab').forEach((t, i) => {
-                t.classList.toggle('active', i === n - 1);
-            });
-            document.querySelectorAll('.opts-panel').forEach((p, i) => {
-                p.style.display = i === n - 1 ? '' : 'none';
+            document.querySelectorAll('.paket-card[data-paket]').forEach(card => {
+                card.classList.toggle('active', parseInt(card.dataset.paket) === n);
             });
 
             hideValidation();
@@ -530,8 +801,15 @@
             updateWarning();
         }
 
-        function selectOpt(el) {
-            const panel    = el.closest('.opts-panel');
+        function toggleSelect(box) {
+            const isOpen = box.classList.contains('open');
+            document.querySelectorAll('.opts-select.open').forEach(function(s) { s.classList.remove('open'); });
+            if (!isOpen) box.classList.add('open');
+        }
+
+        function chooseOpt(el) {
+            const box      = el.closest('.opts-select');
+            const panel    = el.closest('.paket-card-body');
             const paketNum = parseInt(panel.dataset.paket);
             if (currentPaket !== paketNum) selectPaket(paketNum);
 
@@ -539,13 +817,21 @@
             const value = el.dataset.value;
             sel[group] = value;
 
-            panel.querySelectorAll(`[data-group="${group}"]`)
-                 .forEach(b => b.classList.remove('selected'));
+            box.querySelectorAll('.opt-sel-item').forEach(function(i) { i.classList.remove('selected'); });
             el.classList.add('selected');
+            box.querySelector('.opts-sel-text').textContent = value;
+            box.classList.add('has-value');
+            box.classList.remove('open');
 
             hideValidation();
             updatePreview();
         }
+
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.opts-select')) {
+                document.querySelectorAll('.opts-select.open').forEach(function(s) { s.classList.remove('open'); });
+            }
+        });
 
         function updatePreview() {
             const p      = paketInfo[currentPaket];
@@ -665,13 +951,20 @@
 
             if (!document.getElementById('fileInput').files[0])
                 msgs.push('Anda belum upload file (.docx)');
-            if (currentPaket === 1 || currentPaket === 2) {
-                if (!sel[p.phk]) msgs.push('Posisi horizontal belum dipilih (Kiri / Tengah / Kanan)');
-                if (!sel[p.pvk]) msgs.push('Posisi vertikal belum dipilih (Atas / Bawah)');
+            if (currentPaket === 1 || currentPaket === 2 || currentPaket === 4) {
+                if (!sel[p.phk]) msgs.push('Posisi Romawi (Tengah / Kanan / Kiri) belum dipilih');
+                if (!sel[p.pvk]) msgs.push('Letak Romawi (Atas / Bawah) belum dipilih');
+            }
+            if (currentPaket === 4) {
+                if (!sel.p4bh) msgs.push('Posisi BAB belum dipilih');
+                if (!sel.p4bv) msgs.push('Letak BAB belum dipilih');
+                if (!sel.p4ih) msgs.push('Posisi ISI BAB belum dipilih');
+                if (!sel.p4iv) msgs.push('Letak ISI BAB belum dipilih');
+                if (!sel.dm4)  msgs.push('Dimulai dari belum dipilih');
             }
             if (!sel[p.fk]) msgs.push('Font belum dipilih');
             if (!sel[p.sk]) msgs.push('Ukuran font belum dipilih');
-            if (!sel[p.hk]) msgs.push('Pilihan sembunyikan cover belum dipilih');
+            if (!sel[p.hk]) msgs.push('Pilihan sembunyi cover belum dipilih');
 
             if (msgs.length > 0) { showValidation(msgs); return false; }
 
@@ -680,6 +973,13 @@
             document.getElementById('hidSize').value   = sel[p.sk];
             document.getElementById('hidHidden').value = sel[p.hk];
             if (p.phk) document.getElementById('hidPosisi').value = `${sel[p.phk]} ${sel[p.pvk]}`;
+            if (currentPaket === 4) {
+                document.getElementById('hidPosBab').value    = `${sel.p4bh} ${sel.p4bv}`;
+                document.getElementById('hidPosIsiBab').value = `${sel.p4ih} ${sel.p4iv}`;
+                document.getElementById('hidDimulai').value   = sel.dm4;
+                document.getElementById('hidDafus').value     = sel.df4;
+                document.getElementById('hidLamprn').value    = sel.lp4;
+            }
 
             if (phone) {
                 // Mode login: verifikasi OTP terlebih dahulu
@@ -717,10 +1017,10 @@
                 .then(function(r) { return r.json(); })
                 .then(function(d) {
                     window._harga = d;
-                    var hargaVal = currentPaket === 1 ? d.paket1 : (currentPaket === 2 ? d.paket2 : d.paket3);
+                    var hargaVal = currentPaket === 1 ? d.paket1 : (currentPaket === 2 ? d.paket2 : (currentPaket === 3 ? d.paket3 : (d.paket4 || 15000)));
                     document.getElementById('totalHarga').textContent = 'Total: Rp ' + hargaVal.toLocaleString('id-ID');
                 })
-                .catch(function() { window._harga = {paket1:5000, paket2:10000, paket3:10000}; });
+                .catch(function() { window._harga = {paket1:5000, paket2:10000, paket3:10000, paket4:15000}; });
         })();
     </script>
 

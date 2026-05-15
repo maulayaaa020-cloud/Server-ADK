@@ -59,7 +59,7 @@
 
 /* ===== KIRI: Upload + Paket ===== */
 .order-left {
-    width: 48%;
+    width: 52%;
     flex-shrink: 0;
 }
 
@@ -67,29 +67,29 @@
     background: rgba(255,255,255,0.04);
     border: 1px solid rgba(124,58,237,0.2);
     border-radius: 16px;
-    padding: 22px;
+    padding: 14px 16px;
     color: #e2e8f0;
 }
 
 /* No. Telepon */
 .phone-field {
-    margin-bottom: 16px;
+    margin-bottom: 10px;
 }
 
 .phone-label {
     display: block;
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 700;
     color: #9ca3af;
-    margin-bottom: 6px;
+    margin-bottom: 4px;
 }
 
 .phone-input {
     width: 100%;
-    padding: 10px 14px;
+    padding: 7px 10px;
     border: 1.5px solid rgba(255,255,255,0.1);
-    border-radius: 10px;
-    font-size: 14px;
+    border-radius: 8px;
+    font-size: 12px;
     color: #e2e8f0;
     outline: none;
     transition: 0.2s;
@@ -113,10 +113,10 @@
 }
 
 .phone-hint {
-    font-size: 11px;
+    font-size: 10px;
     color: #6b7280;
-    margin-top: 5px;
-    line-height: 1.5;
+    margin-top: 4px;
+    line-height: 1.4;
 }
 
 .phone-hint b { color: #a78bfa; }
@@ -132,12 +132,12 @@
 .upload-area {
     position: relative;
     border: 2px dashed rgba(124,58,237,0.4);
-    border-radius: 12px;
-    padding: 26px 20px;
+    border-radius: 10px;
+    padding: 12px 14px;
     text-align: center;
     cursor: pointer;
     transition: border-color 0.25s, background 0.25s, transform 0.15s;
-    margin-bottom: 18px;
+    margin-bottom: 10px;
     background: rgba(124,58,237,0.06);
     user-select: none;
 }
@@ -165,14 +165,14 @@
 }
 
 .upload-area p {
-    margin: 0 0 4px;
-    font-size: 15px;
+    margin: 0 0 2px;
+    font-size: 12px;
     font-weight: 600;
     color: #e2e8f0;
 }
 
 .upload-area span {
-    font-size: 12px;
+    font-size: 10px;
     color: #6b7280;
 }
 
@@ -182,10 +182,10 @@
     justify-content: space-between;
     background: rgba(124,58,237,0.12);
     border: 1px solid rgba(124,58,237,0.35);
-    border-radius: 10px;
-    padding: 10px 14px;
-    margin-bottom: 18px;
-    font-size: 13px;
+    border-radius: 8px;
+    padding: 7px 10px;
+    margin-bottom: 10px;
+    font-size: 11px;
     color: #a78bfa;
     word-break: break-all;
 }
@@ -203,113 +203,306 @@
 /* Pilih Paket Label */
 .pilih-paket-label {
     font-weight: 600;
-    font-size: 14px;
+    font-size: 11px;
     color: #9ca3af;
-    margin: 0 0 10px;
+    margin: 0 0 6px;
 }
 
-/* ===== TAB PILIH PAKET ===== */
-.paket-tabs {
+/* ===== ACCORDION PILIH PAKET ===== */
+.paket-accordion {
     display: flex;
-    gap: 6px;
-    margin-bottom: 0;
-    padding-top: 12px;
-    overflow: visible;
+    flex-direction: column;
+    gap: 5px;
+    margin-bottom: 10px;
 }
 
-.paket-tab {
-    flex: 1;
-    border: 1.5px solid rgba(255,255,255,0.08);
-    border-radius: 10px 10px 0 0;
-    border-bottom: none;
-    padding: 10px 8px;
-    cursor: pointer;
-    background: rgba(255,255,255,0.03);
-    text-align: center;
-    transition: 0.2s;
+.paket-card {
     position: relative;
-    z-index: 0;
+    border: 1.5px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    background: rgba(255,255,255,0.03);
+    transition: border-color 0.2s, background 0.2s;
 }
 
-.paket-tab:hover {
-    border-color: #a78bfa;
-    background: rgba(124,58,237,0.1);
+.paket-card[data-paket="3"],
+.paket-card[data-paket="4"] {
+    margin-top: 8px;
 }
 
-.paket-tab.active {
-    border-color: #7c3aed;
-    border-width: 2px;
-    background: rgba(124,58,237,0.14);
-    z-index: 2;
-    margin-bottom: -2px;
-    padding-bottom: 12px;
+.paket-card:not(.paket-card-disabled):hover {
+    border-color: rgba(124,58,237,0.45);
+    background: rgba(124,58,237,0.06);
 }
 
-.tab-name {
-    font-size: 13px;
+.paket-card.active {
+    border: 2px solid #7c3aed;
+    background: rgba(124,58,237,0.10);
+}
+
+.paket-card-disabled { opacity: 0.45; }
+
+.paket-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.paket-card-disabled .paket-card-header { cursor: default; }
+
+.paket-card-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+    min-width: 0;
+}
+
+.paket-card-sub-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.paket-card-name {
+    font-size: 12px;
     font-weight: 700;
     color: #9ca3af;
-    margin-bottom: 3px;
+    white-space: nowrap;
+    min-width: 120px;
+    flex-shrink: 0;
+}
+
+.paket-card.active .paket-card-name { color: #a78bfa; }
+
+.paket-card-sub { font-size: 11px; color: #6b7280; }
+
+.paket-arrow-icon {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: rgba(124,58,237,0.18);
+    border: 1px solid rgba(124,58,237,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.2s;
+}
+
+.paket-arrow-icon svg {
+    width: 11px;
+    height: 11px;
+    stroke: #a78bfa;
+    fill: none;
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition: transform 0.35s ease;
+}
+
+.paket-card.active .paket-arrow-icon {
+    background: rgba(124,58,237,0.35);
+}
+
+.paket-card.active .paket-arrow-icon svg {
+    transform: rotate(180deg);
+}
+
+.paket-card-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.35s ease, padding 0.25s ease;
+    padding: 0 12px;
+}
+
+.paket-card.active .paket-card-body {
+    max-height: 360px;
+    overflow: visible;
+    padding: 0 12px 12px;
+}
+
+.populer-badge {
+    position: absolute;
+    top: -11px;
+    left: 12px;
+    background: #f97316;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 20px;
+    white-space: nowrap;
+    z-index: 2;
+    box-shadow: 0 2px 8px rgba(249,115,22,0.4);
+}
+
+.coming-soon-badge {
+    font-size: 9px;
+    color: #6b7280;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    padding: 2px 7px;
+    letter-spacing: 0.3px;
+}
+
+/* ===== OPTS FORM GRID (4-kolom: label | dropdown | label | dropdown) ===== */
+.opts-form-grid {
+    display: grid;
+    grid-template-columns: max-content 1fr max-content 1fr;
+    align-items: center;
+    column-gap: 8px;
+    row-gap: 5px;
+}
+
+.opts-placeholder { /* sel kosong penyeimbang grid */ }
+
+.opts-row-label {
+    font-size: 10px;
+    color: #6b7280;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
     line-height: 1.3;
 }
 
-.paket-tab.active .tab-name { color: #a78bfa; }
-
-.tab-sub {
-    font-size: 12px;
-    color: #6b7280;
-    margin-bottom: 5px;
+.opts-row-btns {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
 }
 
-.tab-format {
-    position: absolute;
-    top: -16px;
-    right: 8px;
-    font-size: 10px;
-    font-weight: 700;
-    color: #facc15;
-    background: #3b2a00;
-    padding: 3px 9px;
-    border-radius: 20px;
-    border: 1.5px solid #facc15;
-    white-space: nowrap;
-    box-shadow: 0 2px 8px rgba(250,204,21,0.25);
-}
-
-.paket-tab:not(.active) .tab-format { color: #a38000; background: #1e1a00; border-color: #a38000; box-shadow: none; }
-.tab-format:empty { display: none; }
-
-/* ===== PANEL OPSI ===== */
-.paket-opts-panel {
-    border: 2px solid #7c3aed;
-    border-radius: 0 0 12px 12px;
-    padding: 14px 16px;
-    background: rgba(124,58,237,0.08);
-    margin-bottom: 14px;
+/* ===== CUSTOM SELECT DROPDOWN ===== */
+.opts-select {
     position: relative;
-    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 9px;
+    background: rgba(255,255,255,0.04);
+    border: 1.5px solid rgba(124,58,237,0.28);
+    border-radius: 6px;
+    cursor: pointer;
+    width: 100%;
+    box-sizing: border-box;
+    user-select: none;
+    transition: border-color 0.2s, background 0.2s;
 }
 
+.opts-select:hover {
+    border-color: rgba(124,58,237,0.6);
+    background: rgba(124,58,237,0.08);
+}
 
-.populer-badge {
-    display: inline-block;
-    background: rgba(251,191,36,0.12);
-    color: #fbbf24;
-    font-size: 10px;
+.opts-select.open {
+    border-color: #7c3aed;
+    background: rgba(124,58,237,0.12);
+}
+
+.opts-sel-tri {
+    font-size: 7px;
+    color: rgba(124,58,237,0.8);
+    background: rgba(124,58,237,0.2);
+    border-radius: 3px;
+    padding: 2px 4px;
+    flex-shrink: 0;
+    line-height: 1;
+    transition: background 0.15s, color 0.15s;
+}
+
+.opts-select.has-value .opts-sel-tri {
+    color: white;
+    background: rgba(124,58,237,0.55);
+}
+
+.opts-sel-text {
+    font-size: 13px;
+    color: #4b5563;
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: color 0.15s;
+}
+
+.opts-select.has-value .opts-sel-text {
+    color: #e2e8f0;
     font-weight: 600;
-    padding: 2px 7px;
-    border-radius: 8px;
-    margin-left: 5px;
-    vertical-align: middle;
 }
 
-/* ===== OPTION BUTTONS GRID ===== */
+.opts-sel-dropdown {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    min-width: 100%;
+    width: max-content;
+    background: #1a1740;
+    border: 1.5px solid #7c3aed;
+    border-radius: 8px;
+    padding: 4px;
+    z-index: 200;
+    display: none;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+}
+
+.opts-select.open .opts-sel-dropdown { display: block; }
+
+.opt-sel-item {
+    padding: 6px 9px;
+    font-size: 12px;
+    color: #9ca3af;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+}
+
+.opt-sel-item:hover {
+    background: rgba(124,58,237,0.2);
+    color: #c4b5fd;
+}
+
+.opt-sel-item.selected {
+    background: #7c3aed;
+    color: white;
+    font-weight: 600;
+}
+
+.opts-keterangan {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(124,58,237,0.2);
+    font-size: 9px;
+    color: #6b7280;
+}
+
+.opts-keterangan strong {
+    display: block;
+    color: #9ca3af;
+    margin-bottom: 3px;
+    font-size: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+
+.opts-keterangan ul {
+    margin: 0;
+    padding-left: 12px;
+}
+
+.opts-keterangan li {
+    margin-bottom: 1px;
+    line-height: 1.4;
+}
+
+/* ===== OPTION BUTTONS GRID (legacy, kept for compatibility) ===== */
 .opts-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 10px;
-    padding-top: 12px;
-    border-top: 1px solid rgba(124,58,237,0.2);
 }
 
 /* 4-kolom untuk Paket 1 (ada Posisi/Letak) */
@@ -587,22 +780,6 @@
     color: #a78bfa;
 }
 
-/* ===== INACTIVE PAKET — options bisa diklik tapi tidak terlihat terpilih ===== */
-.paket-card:not(.active) .opts-grid {
-    opacity: 0.45;
-}
-
-/* Sembunyikan warna ungu selected di paket non-aktif */
-.paket-card:not(.active) .opt-btn.selected {
-    background: #f3f4f6;
-    color: #555;
-    border-color: #e5e7eb;
-    font-weight: normal;
-}
-
-.paket-card:not(.active) .paket-card-header {
-    opacity: 0.8;
-}
 
 /* ===== VALIDASI ===== */
 .validation-msg {
@@ -655,11 +832,11 @@
         grid-template-columns: 1fr 1fr;
     }
 
-    .paket-tabs {
-        gap: 4px;
-    }
+    .paket-card-name { font-size: 11px; }
+    .paket-card-sub  { font-size: 10px; }
 
-    .tab-name {
-        font-size: 10px;
+    .opts-form-grid {
+        grid-template-columns: max-content 1fr;
     }
+    .opts-placeholder { display: none; }
 }
