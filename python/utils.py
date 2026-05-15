@@ -561,6 +561,7 @@ class DocProcessor:
     # ── Section formatters (dipakai oleh paket2 & paket3) ─
 
     def fmt_cover(self, section, first_cover=False, show_pos=None):
+        section.different_first_page_header_footer = False
         self.clear_header(section)
         self.clear_footer(section)
         if first_cover:
