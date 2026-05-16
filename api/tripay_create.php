@@ -16,7 +16,7 @@ if (!$dbId || !$orderId || !$harga) {
 
 try {
     $db  = getDB();
-    $row = $db->prepare("SELECT snap_token, status FROM orders WHERE id = :id");
+    $row = $db->prepare("SELECT snap_token, status, phone FROM orders WHERE id = :id");
     $row->execute([':id' => $dbId]);
     $order = $row->fetch();
 
@@ -43,7 +43,7 @@ try {
         'amount'         => $harga,
         'customer_name'  => 'Pelanggan ADK',
         'customer_email' => 'pelanggan@adkphotocopy.com',
-        'customer_phone' => '08000000000',
+        'customer_phone' => !empty($order['phone']) ? preg_replace('/^0/', '62', $order['phone']) : '6281228790091',
         'order_items'    => [[
             'sku'      => 'ADK-PENOMORAN',
             'name'     => 'Layanan Penomoran Halaman ADK',
