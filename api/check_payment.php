@@ -11,7 +11,7 @@ if (!$dbId || !$orderId) { echo json_encode(['status' => 'error']); exit; }
 
 try {
     $db  = getDB();
-    $row = $db->prepare("SELECT status FROM orders WHERE id = :id");
+    $row = $db->prepare("SELECT status, snap_token FROM orders WHERE id = :id");
     $row->execute([':id' => $dbId]);
     $order = $row->fetch();
 
@@ -21,44 +21,34 @@ try {
         exit;
     }
 
-    // Cek status ke DOKU
-    $requestId = uniqid('adk-', true);
-    $timestamp = gmdate('Y-m-d\TH:i:s\Z');
-    $target    = '/orders/v1/status/' . urlencode($orderId);
+    $reference = $order['snap_token'] ?? '';
+    if (!$reference) {
+        echo json_encode(['status' => 'pending']);
+        exit;
+    }
 
-    $strToSign = "Client-Id:" . DOKU_CLIENT_ID . "\n"
-               . "Request-Id:" . $requestId . "\n"
-               . "Request-Timestamp:" . $timestamp . "\n"
-               . "Request-Target:" . $target;
-    $hmacKey   = strncmp(DOKU_SECRET_KEY, 'doku_key_', 9) === 0 ? substr(DOKU_SECRET_KEY, 9) : DOKU_SECRET_KEY;
-    $signature = 'HMACSHA256=' . base64_encode(hash_hmac('sha256', $strToSign, $hmacKey, true));
-
-    $ch = curl_init(DOKU_BASE_URL . $target);
+    // Cek status ke TriPay
+    $ch = curl_init(TRIPAY_BASE_URL . '/transaction/detail?reference=' . urlencode($reference));
     curl_setopt_array($ch, [
         CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_HTTPHEADER     => [
-            'Content-Type: application/json',
-            'Client-Id: ' . DOKU_CLIENT_ID,
-            'Request-Id: ' . $requestId,
-            'Request-Timestamp: ' . $timestamp,
-            'Signature: ' . $signature,
-        ],
+        CURLOPT_HTTPHEADER     => ['Authorization: Bearer ' . TRIPAY_API_KEY],
+        CURLOPT_TIMEOUT        => 10,
     ]);
     $resp   = curl_exec($ch);
     $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     curl_close($ch);
 
-    $result = json_decode($resp, true);
-    $txStatus = $result['transaction']['status'] ?? '';
+    $result   = json_decode($resp, true);
+    $txStatus = $result['data']['status'] ?? '';
 
-    if (in_array($txStatus, ['SUCCESS', 'SETTLEMENT'])) {
+    if ($txStatus === 'PAID') {
         $db->prepare("UPDATE orders SET status = 'paid' WHERE id = :id")->execute([':id' => $dbId]);
         echo json_encode(['status' => 'paid']);
-    } elseif (in_array($txStatus, ['EXPIRED', 'FAILED', 'CANCELLED'])) {
+    } elseif (in_array($txStatus, ['EXPIRED', 'FAILED', 'REFUND'])) {
         $db->prepare("UPDATE orders SET status = 'failed' WHERE id = :id")->execute([':id' => $dbId]);
         echo json_encode(['status' => 'failed']);
     } else {
-        echo json_encode(['status' => 'pending', 'doku' => $txStatus]);
+        echo json_encode(['status' => 'pending', 'tripay' => $txStatus]);
     }
 
 } catch (Exception $e) {
