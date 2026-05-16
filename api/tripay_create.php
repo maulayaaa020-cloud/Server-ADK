@@ -95,6 +95,6 @@ try {
 
     echo json_encode(['url' => $payUrl, 'reference' => $reference]);
 
-} catch (Exception $e) {
+} catch (Throwable $e) {
     echo json_encode(['url' => null, 'error' => $e->getMessage()]);
 }
