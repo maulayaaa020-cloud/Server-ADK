@@ -888,7 +888,7 @@ if (!empty($orders)) {
                 <span>📱</span>
                 <span class="phone-masked"><?= htmlspecialchars(maskPhone($phone)) ?></span>
                 <span class="phone-divider"></span>
-                <a href="cek_pembelian.php">Ganti Nomor</a>
+                <a href="cek_pembelian.php?change=1">Ganti Nomor</a>
             </div>
             <?php endif; ?>
         </div>
@@ -1247,13 +1247,34 @@ if (!empty($orders)) {
             modal.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(8,6,30,0.88);display:flex;align-items:center;justify-content:center;padding:20px';
             modal.innerHTML = `<div style="background:#1a1043;border:1px solid rgba(124,58,237,0.45);border-radius:16px;padding:24px 28px;width:100%;max-width:360px;height:480px;display:flex;flex-direction:column"><div style="overflow-y:auto;flex:1">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px"><div style="font-size:16px;font-weight:700;color:white">Pilih Metode Pembayaran</div><button onclick="document.getElementById('bayarModal').remove();document.body.style.overflow='';" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:#9ca3af;font-size:16px;cursor:pointer;padding:2px 8px;line-height:1;border-radius:6px;transition:0.15s" onmouseover="this.style.color='white';this.style.background='rgba(255,255,255,0.12)'" onmouseout="this.style.color='#9ca3af';this.style.background='rgba(255,255,255,0.06)'">✕</button></div>
-                <div style="font-size:12px;color:#a78bfa;margin-bottom:16px">Rp ${harga.toLocaleString('id-ID')}</div>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px"><div style="font-size:12px;color:#a78bfa">Rp ${harga.toLocaleString('id-ID')}</div><div id="bayarTimerWrap" style="font-size:11px;font-weight:700;color:#fbbf24;background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.25);padding:3px 9px;border-radius:6px">⏱ <span id="bayarTimer">--:--</span></div></div>
                 ${groupHtml}
                 </div>
                 <button onclick="document.getElementById('bayarModal').remove();document.body.style.overflow='';" style="width:100%;padding:8px;background:none;border:none;color:#6b7280;font-size:12px;cursor:pointer;margin-top:8px;flex-shrink:0">Batal</button>
             </div>`;
             document.body.appendChild(modal);
             document.body.style.overflow = 'hidden';
+
+            // Timer: ambil sisa waktu dari pendingOrders
+            var _bOrd = pendingOrders.find(function(o){ return o.id === dbId; });
+            var _bExp = _bOrd ? _bOrd.expiry : (Math.floor(Date.now()/1000) + 1800);
+            function _tickBayar() {
+                var left = _bExp - Math.floor(Date.now()/1000);
+                var el   = document.getElementById('bayarTimer');
+                var wrap = document.getElementById('bayarTimerWrap');
+                if (!el) { clearInterval(_bInt); return; }
+                if (left <= 0) {
+                    el.textContent = '00:00';
+                    if (wrap) { wrap.style.color='#f87171'; wrap.style.background='rgba(239,68,68,0.1)'; wrap.style.borderColor='rgba(239,68,68,0.3)'; }
+                    clearInterval(_bInt);
+                    setTimeout(function(){ var m=document.getElementById('bayarModal'); if(m){m.remove();document.body.style.overflow='';} }, 1500);
+                    return;
+                }
+                el.textContent = String(Math.floor(left/60)).padStart(2,'0') + ':' + String(left%60).padStart(2,'0');
+                if (left <= 60 && wrap) { wrap.style.color='#f87171'; wrap.style.background='rgba(239,68,68,0.1)'; wrap.style.borderColor='rgba(239,68,68,0.3)'; }
+            }
+            _tickBayar();
+            var _bInt = setInterval(_tickBayar, 1000);
         }
 
         function doBayar(dbId, orderId, harga, method, btn) {
