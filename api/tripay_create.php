@@ -35,7 +35,7 @@ try {
     }
 
     $signature   = hash_hmac('sha256', TRIPAY_MERCHANT_CODE . $orderId . $harga, TRIPAY_PRIVATE_KEY);
-    $expiredTime = time() + (24 * 60 * 60);
+    $expiredTime = time() + (30 * 60);
 
     $body = json_encode([
         'method'         => $method,
