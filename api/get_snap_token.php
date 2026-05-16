@@ -60,6 +60,14 @@ try {
                . "Digest:" . $digest;
     $signature = 'HMACSHA256=' . base64_encode(hash_hmac('sha256', $strToSign, DOKU_SECRET_KEY, true));
 
+    // DEBUG — hapus setelah masalah teratasi
+    error_log("[DOKU DEBUG] timestamp=" . $timestamp);
+    error_log("[DOKU DEBUG] client_id=" . DOKU_CLIENT_ID);
+    error_log("[DOKU DEBUG] secret_len=" . strlen(DOKU_SECRET_KEY));
+    error_log("[DOKU DEBUG] digest=" . $digest);
+    error_log("[DOKU DEBUG] strToSign=" . str_replace("\n", "|", $strToSign));
+    error_log("[DOKU DEBUG] signature=" . $signature);
+
     $ch = curl_init(DOKU_BASE_URL . $target);
     $curlOpts = [
         CURLOPT_RETURNTRANSFER => true,
