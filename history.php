@@ -1232,12 +1232,15 @@ if (!empty($orders)) {
             ];
             const btnStyle = 'width:100%;padding:9px 14px;margin-bottom:6px;background:rgba(124,58,237,0.12);border:1px solid rgba(124,58,237,0.35);border-radius:8px;color:#e5e7eb;font-size:13px;cursor:pointer;text-align:left;display:block';
             const groupHtml = groups.map((g, gi) => `
-                <div style="margin-bottom:6px;border:1px solid rgba(124,58,237,0.25);border-radius:10px;overflow:hidden">
-                    <button onclick="(function(el){var b=el.nextElementSibling;var open=b.style.display!=='none';b.style.display=open?'none':'block';el.querySelector('span').textContent=open?'▸':'▾';})(this)" style="width:100%;padding:10px 14px;background:rgba(124,58,237,0.15);border:none;color:#c4b5fd;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;cursor:pointer;text-align:left;display:flex;justify-content:space-between;align-items:center">
-                        ${g.label}<span style="font-size:13px">▸</span>
+                <div class="pm-group" style="margin-bottom:6px;border:1px solid rgba(124,58,237,0.25);border-radius:10px;overflow:hidden">
+                    <button class="pm-head" onclick="(function(el){var p=el.closest('.pm-group');var b=p.querySelector('.pm-body');var ico=el.querySelector('.pm-ico');var open=p.classList.contains('open');p.classList.toggle('open',!open);b.style.maxHeight=open?'0':b.scrollHeight+'px';ico.style.transform=open?'rotate(0deg)':'rotate(180deg)';})(this)" style="width:100%;padding:11px 14px;background:rgba(124,58,237,0.15);border:none;color:#c4b5fd;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;cursor:pointer;text-align:left;display:flex;justify-content:space-between;align-items:center">
+                        ${g.label}
+                        <svg class="pm-ico" viewBox="0 0 24 24" style="width:16px;height:16px;stroke:#a78bfa;fill:none;stroke-width:2.5;transition:transform 0.3s ease"><polyline points="6 9 12 15 18 9"/></svg>
                     </button>
-                    <div style="display:none;padding:8px 10px">
-                        ${g.methods.map(m => `<button onclick="doBayar(${dbId},'${orderId}',${harga},'${m.code}',this)" style="${btnStyle}">${m.label}</button>`).join('')}
+                    <div class="pm-body" style="max-height:0;overflow:hidden;transition:max-height 0.35s ease;padding:0 10px">
+                        <div style="padding:8px 0">
+                            ${g.methods.map(m => `<button onclick="doBayar(${dbId},'${orderId}',${harga},'${m.code}',this)" style="${btnStyle}">${m.label}</button>`).join('')}
+                        </div>
                     </div>
                 </div>
             `).join('');
