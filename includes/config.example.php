@@ -7,8 +7,8 @@ define('MIDTRANS_CLIENT_KEY', 'Mid-client-xxx');
 
 // DOKU JOKUL
 define('DOKU_CLIENT_ID',  'BRN-xxxx');
-define('DOKU_SECRET_KEY', 'SK-xxx');
-define('DOKU_BASE_URL',   'https://api-sandbox.doku.com'); // ganti ke production saat live
+define('DOKU_SECRET_KEY', 'doku_key_xxx');
+define('DOKU_BASE_URL',   'https://api.doku.com'); // sandbox: https://api-sandbox.doku.com
 
 define('DB_HOST', 'localhost');
 define('DB_USER', 'root');
