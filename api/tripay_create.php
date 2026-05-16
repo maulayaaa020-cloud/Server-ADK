@@ -90,8 +90,8 @@ try {
         exit;
     }
 
-    $db->prepare("UPDATE orders SET snap_token = :ref WHERE id = :id")
-       ->execute([':ref' => $reference, ':id' => $dbId]);
+    $db->prepare("UPDATE orders SET snap_token = :data WHERE id = :id")
+       ->execute([':data' => json_encode(['reference' => $reference, 'url' => $payUrl]), ':id' => $dbId]);
 
     echo json_encode(['url' => $payUrl, 'reference' => $reference]);
 

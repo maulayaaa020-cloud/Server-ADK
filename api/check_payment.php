@@ -21,7 +21,11 @@ try {
         exit;
     }
 
-    $reference = $order['snap_token'] ?? '';
+    $tokenRaw  = $order['snap_token'] ?? '';
+    $tokenData = json_decode($tokenRaw, true);
+    $reference = (is_array($tokenData) && isset($tokenData['reference']))
+        ? $tokenData['reference']
+        : $tokenRaw;
     if (!$reference) {
         echo json_encode(['status' => 'pending']);
         exit;
