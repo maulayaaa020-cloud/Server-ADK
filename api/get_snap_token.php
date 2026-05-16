@@ -61,7 +61,7 @@ try {
     $signature = 'HMACSHA256=' . base64_encode(hash_hmac('sha256', $strToSign, DOKU_SECRET_KEY, true));
 
     $ch = curl_init(DOKU_BASE_URL . $target);
-    curl_setopt_array($ch, [
+    $curlOpts = [
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_POST           => true,
         CURLOPT_POSTFIELDS     => $body,
@@ -73,9 +73,13 @@ try {
             'Signature: ' . $signature,
         ],
         CURLOPT_SSL_VERIFYPEER => true,
-        CURLOPT_CAINFO         => CACERT_PATH,
         CURLOPT_TIMEOUT        => 15,
-    ]);
+    ];
+    // Pakai CAINFO custom hanya jika file ada (Windows/XAMPP); di Linux curl pakai sistem CA
+    if (defined('CACERT_PATH') && file_exists(CACERT_PATH)) {
+        $curlOpts[CURLOPT_CAINFO] = CACERT_PATH;
+    }
+    curl_setopt_array($ch, $curlOpts);
     $resp      = curl_exec($ch);
     $curlErr   = curl_error($ch);
     $curlErrNo = curl_errno($ch);
