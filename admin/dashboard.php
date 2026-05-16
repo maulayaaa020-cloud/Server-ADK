@@ -671,6 +671,7 @@ function tglAdmin(string $dt): string {
                             'paket1' => 'Paket 1',
                             'paket2' => 'Paket 2',
                             'paket3' => 'Paket 3',
+                            'paket4' => 'Paket 4 (Custom)',
                             default  => htmlspecialchars($o['paket'] ?? '-')
                         };
                         $badgeClass = match($o['status']) {

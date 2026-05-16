@@ -3,7 +3,7 @@ date_default_timezone_set('Asia/Jakarta');
 require_once __DIR__ . '/_guard.php';
 
 $configPath = __DIR__ . '/../config/harga.json';
-$harga      = json_decode(file_get_contents($configPath), true) ?: ['paket1'=>5000,'paket2'=>10000,'paket3'=>10000];
+$harga      = json_decode(file_get_contents($configPath), true) ?: ['paket1'=>5000,'paket2'=>10000,'paket3'=>10000,'paket4'=>15000];
 $success    = false;
 $error      = '';
 
@@ -11,11 +11,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $p1 = (int)($_POST['paket1'] ?? 0);
     $p2 = (int)($_POST['paket2'] ?? 0);
     $p3 = (int)($_POST['paket3'] ?? 0);
+    $p4 = (int)($_POST['paket4'] ?? 0);
 
-    if ($p1 < 1000 || $p2 < 1000 || $p3 < 1000) {
+    if ($p1 < 1000 || $p2 < 1000 || $p3 < 1000 || $p4 < 1000) {
         $error = 'Harga minimal Rp 1.000 per paket.';
     } else {
-        $harga   = ['paket1' => $p1, 'paket2' => $p2, 'paket3' => $p3];
+        $harga   = ['paket1' => $p1, 'paket2' => $p2, 'paket3' => $p3, 'paket4' => $p4];
         $written = file_put_contents($configPath, json_encode($harga, JSON_PRETTY_PRINT));
         if ($written !== false) {
             $success = true;
@@ -99,6 +100,13 @@ function fmt(int $n): string { return 'Rp ' . number_format($n, 0, ',', '.'); }
             <label>Harga (Rp)</label>
             <input type="number" name="paket3" value="<?= $harga['paket3'] ?>" min="1000" step="500" required>
             <div class="hint">Saat ini: <?= fmt($harga['paket3']) ?></div>
+        </div>
+        <div class="card">
+            <div class="card-label">Paket 4 — Custom</div>
+            <div class="card-desc">Romawi + angka, 3 posisi dapat dipilih bebas (custom). Segera hadir.</div>
+            <label>Harga (Rp)</label>
+            <input type="number" name="paket4" value="<?= $harga['paket4'] ?? 15000 ?>" min="1000" step="500" required>
+            <div class="hint">Saat ini: <?= fmt($harga['paket4'] ?? 15000) ?></div>
         </div>
     </div>
     <button type="submit" class="btn-save">Simpan Harga</button>
