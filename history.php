@@ -1189,9 +1189,12 @@ if (!empty($orders)) {
             }, 3000);
         }
 
+        const _savedPayUrl = {};
+
         function bayar(dbId, orderId, harga, existingUrl) {
-            if (existingUrl) {
-                window.open(existingUrl, '_blank');
+            const url = existingUrl || _savedPayUrl[dbId] || '';
+            if (url) {
+                window.open(url, '_blank');
                 startPolling(dbId, orderId);
                 return;
             }
@@ -1230,6 +1233,7 @@ if (!empty($orders)) {
                 const modal = document.getElementById('bayarModal');
                 if (modal) modal.remove();
                 if (!data.url) { alert('Gagal membuat transaksi: ' + (data.error || 'Coba lagi')); return; }
+                _savedPayUrl[dbId] = data.url;
                 window.open(data.url, '_blank');
                 startPolling(dbId, orderId);
             })
