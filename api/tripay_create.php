@@ -25,15 +25,21 @@ try {
         exit;
     }
 
-    // Kembalikan URL yang sudah ada
+    // Kembalikan URL yang sudah ada, atau reset jika metode berbeda
     if (!empty($order['snap_token'])) {
         $existing = json_decode($order['snap_token'], true);
         if ($existing && isset($existing['url'])) {
-            echo json_encode(['url' => $existing['url']]);
-            exit;
+            if (($existing['method'] ?? '') === $method) {
+                echo json_encode(['url' => $existing['url']]);
+                exit;
+            }
+            // Metode berbeda — hapus transaksi lama dan buat baru
+            $db->prepare("UPDATE orders SET snap_token = NULL WHERE id = :id")
+               ->execute([':id' => $dbId]);
+        } else {
+            $db->prepare("UPDATE orders SET snap_token = NULL WHERE id = :id")
+               ->execute([':id' => $dbId]);
         }
-        echo json_encode(['url' => $order['snap_token']]);
-        exit;
     }
 
     $signature   = hash_hmac('sha256', TRIPAY_MERCHANT_CODE . $orderId . $harga, TRIPAY_PRIVATE_KEY);
@@ -91,7 +97,7 @@ try {
     }
 
     $db->prepare("UPDATE orders SET snap_token = :data WHERE id = :id")
-       ->execute([':data' => json_encode(['reference' => $reference, 'url' => $payUrl]), ':id' => $dbId]);
+       ->execute([':data' => json_encode(['reference' => $reference, 'url' => $payUrl, 'method' => $method]), ':id' => $dbId]);
 
     echo json_encode(['url' => $payUrl, 'reference' => $reference]);
 
