@@ -22,12 +22,13 @@ if ($clientId !== DOKU_CLIENT_ID) {
 // Verifikasi signature DOKU
 $target  = '/api/doku_callback.php';
 $digest  = base64_encode(hash('sha256', $rawBody, true));
-$strSign = "Client-Id:{$clientId}\n"
-         . "Request-Id:{$requestId}\n"
-         . "Request-Timestamp:{$timestamp}\n"
-         . "Request-Target:{$target}\n"
-         . "Digest:{$digest}";
-$expected = 'HMACSHA256=' . base64_encode(hash_hmac('sha256', $strSign, DOKU_SECRET_KEY, true));
+$strSign  = "Client-Id:{$clientId}\n"
+          . "Request-Id:{$requestId}\n"
+          . "Request-Timestamp:{$timestamp}\n"
+          . "Request-Target:{$target}\n"
+          . "Digest:{$digest}";
+$hmacKey  = strncmp(DOKU_SECRET_KEY, 'doku_key_', 9) === 0 ? substr(DOKU_SECRET_KEY, 9) : DOKU_SECRET_KEY;
+$expected = 'HMACSHA256=' . base64_encode(hash_hmac('sha256', $strSign, $hmacKey, true));
 
 if (!hash_equals($expected, $incoming)) {
     error_log("[DOKU callback] Signature mismatch. Expected: {$expected} | Got: {$incoming}");

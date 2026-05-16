@@ -30,7 +30,8 @@ try {
                . "Request-Id:" . $requestId . "\n"
                . "Request-Timestamp:" . $timestamp . "\n"
                . "Request-Target:" . $target;
-    $signature = 'HMACSHA256=' . base64_encode(hash_hmac('sha256', $strToSign, DOKU_SECRET_KEY, true));
+    $hmacKey   = strncmp(DOKU_SECRET_KEY, 'doku_key_', 9) === 0 ? substr(DOKU_SECRET_KEY, 9) : DOKU_SECRET_KEY;
+    $signature = 'HMACSHA256=' . base64_encode(hash_hmac('sha256', $strToSign, $hmacKey, true));
 
     $ch = curl_init(DOKU_BASE_URL . $target);
     curl_setopt_array($ch, [
