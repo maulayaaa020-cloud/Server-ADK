@@ -1247,11 +1247,12 @@ if (!empty($orders)) {
             const modal = document.createElement('div');
             modal.id = 'bayarModal';
             modal.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(8,6,30,0.88);display:flex;align-items:center;justify-content:center;padding:20px';
-            modal.innerHTML = `<div style="background:#1a1043;border:1px solid rgba(124,58,237,0.45);border-radius:16px;padding:24px 28px;width:100%;max-width:360px;max-height:90vh;overflow-y:auto">
+            modal.innerHTML = `<div style="background:#1a1043;border:1px solid rgba(124,58,237,0.45);border-radius:16px;padding:24px 28px;width:100%;max-width:360px;height:480px;display:flex;flex-direction:column"><div style="overflow-y:auto;flex:1">
                 <div style="font-size:16px;font-weight:700;color:white;margin-bottom:4px">Pilih Metode Pembayaran</div>
                 <div style="font-size:12px;color:#a78bfa;margin-bottom:16px">Rp ${harga.toLocaleString('id-ID')}</div>
                 ${groupHtml}
-                <button onclick="document.getElementById('bayarModal').remove()" style="width:100%;padding:8px;background:none;border:none;color:#6b7280;font-size:12px;cursor:pointer;margin-top:8px">Batal</button>
+                </div>
+                <button onclick="document.getElementById('bayarModal').remove()" style="width:100%;padding:8px;background:none;border:none;color:#6b7280;font-size:12px;cursor:pointer;margin-top:8px;flex-shrink:0">Batal</button>
             </div>`;
             document.body.appendChild(modal);
         }
