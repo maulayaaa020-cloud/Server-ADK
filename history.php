@@ -1202,35 +1202,36 @@ if (!empty($orders)) {
                 {
                     label: 'QRIS',
                     methods: [
-                        {code:'QRIS', label:'QRIS (Semua Dompet)'},
+                        {code:'QRIS',      label:'QRIS (Semua Dompet)', fee:'+0.70%'},
                     ]
                 },
                 {
                     label: 'Dompet Digital',
                     methods: [
-                        {code:'DANA',      label:'Dana'},
-                        {code:'SHOPEEPAY', label:'ShopeePay'},
+                        {code:'DANA',      label:'Dana',      fee:'+3.00%'},
+                        {code:'SHOPEEPAY', label:'ShopeePay', fee:'+3.00%'},
                     ]
                 },
                 {
                     label: 'Virtual Account',
                     methods: [
-                        {code:'BRIVA',     label:'BRI Virtual Account'},
-                        {code:'BNIIVA',    label:'BNI Virtual Account'},
-                        {code:'MANDIRIVA', label:'Mandiri Virtual Account'},
-                        {code:'BCAVA',     label:'BCA Virtual Account'},
+                        {code:'BRIVA',     label:'BRI Virtual Account',     fee:'+Rp 4.250'},
+                        {code:'BNIIVA',    label:'BNI Virtual Account',     fee:'+Rp 4.250'},
+                        {code:'MANDIRIVA', label:'Mandiri Virtual Account', fee:'+Rp 4.250'},
+                        {code:'BCAVA',     label:'BCA Virtual Account',     fee:'+Rp 4.250'},
+                        {code:'BSIVA',     label:'BSI Virtual Account',     fee:'+Rp 4.250'},
                     ]
                 },
                 {
                     label: 'Gerai / Minimarket',
                     methods: [
-                        {code:'ALFAMART',  label:'Alfamart'},
-                        {code:'ALFAMIDI',  label:'Alfamidi'},
-                        {code:'INDOMARET', label:'Indomaret'},
+                        {code:'ALFAMART',  label:'Alfamart',  fee:'+Rp 3.500'},
+                        {code:'ALFAMIDI',  label:'Alfamidi',  fee:'+Rp 3.500'},
+                        {code:'INDOMARET', label:'Indomaret', fee:'+Rp 3.500'},
                     ]
                 },
             ];
-            const btnStyle = 'width:100%;padding:9px 14px;margin-bottom:6px;background:rgba(124,58,237,0.12);border:1px solid rgba(124,58,237,0.35);border-radius:8px;color:#e5e7eb;font-size:13px;cursor:pointer;text-align:left;display:block';
+            const btnStyle = 'width:100%;padding:9px 14px;margin-bottom:6px;background:rgba(124,58,237,0.12);border:1px solid rgba(124,58,237,0.35);border-radius:8px;color:#e5e7eb;font-size:13px;cursor:pointer;text-align:left;display:flex;justify-content:space-between;align-items:center';
             const groupHtml = groups.map((g, gi) => `
                 <div class="pm-group" style="margin-bottom:6px;border:1px solid rgba(124,58,237,0.25);border-radius:10px;overflow:hidden">
                     <button class="pm-head" onclick="(function(el){var p=el.closest('.pm-group');var b=p.querySelector('.pm-body');var ico=el.querySelector('.pm-ico');var open=p.classList.contains('open');p.classList.toggle('open',!open);b.style.maxHeight=open?'0':b.scrollHeight+'px';ico.style.transform=open?'rotate(0deg)':'rotate(180deg)';})(this)" style="width:100%;padding:11px 14px;background:rgba(124,58,237,0.15);border:none;color:#c4b5fd;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;cursor:pointer;text-align:left;display:flex;justify-content:space-between;align-items:center">
@@ -1239,7 +1240,7 @@ if (!empty($orders)) {
                     </button>
                     <div class="pm-body" style="max-height:0;overflow:hidden;transition:max-height 0.35s ease;padding:0 10px">
                         <div style="padding:8px 0">
-                            ${g.methods.map(m => `<button onclick="doBayar(${dbId},'${orderId}',${harga},'${m.code}',this)" style="${btnStyle}">${m.label}</button>`).join('')}
+                            ${g.methods.map(m => `<button onclick="doBayar(${dbId},'${orderId}',${harga},'${m.code}',this)" style="${btnStyle}"><span>${m.label}</span><span style="font-size:11px;color:#a78bfa;font-weight:600;white-space:nowrap;margin-left:8px">${m.fee}</span></button>`).join('')}
                         </div>
                     </div>
                 </div>
