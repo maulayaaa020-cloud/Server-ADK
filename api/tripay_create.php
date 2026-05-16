@@ -82,11 +82,11 @@ try {
         exit;
     }
 
-    $payUrl    = $result['data']['pay_url']   ?? null;
+    $payUrl    = $result['data']['pay_url'] ?? $result['data']['checkout_url'] ?? null;
     $reference = $result['data']['reference'] ?? null;
 
     if (!$payUrl) {
-        echo json_encode(['url' => null, 'error' => 'No pay_url returned']);
+        echo json_encode(['url' => null, 'error' => 'No pay_url returned', 'debug' => $result['data'] ?? $resp]);
         exit;
     }
 
