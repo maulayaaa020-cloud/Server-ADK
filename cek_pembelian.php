@@ -3,6 +3,12 @@ session_start();
 require_once __DIR__ . '/includes/config.php';
 require_once __DIR__ . '/includes/db.php';
 
+// Jika sudah login atau tamu, langsung ke history (kecuali mode ganti nomor)
+if (empty($_GET['change'])) {
+    if (!empty($_SESSION['phone'])) { header("Location: history.php"); exit; }
+    if (!empty($_SESSION['guest_token']) || !empty($_COOKIE['adk_guest'])) { header("Location: history.php"); exit; }
+}
+
 $error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -227,10 +233,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <script>
         document.addEventListener('contextmenu', e => e.preventDefault());
 
+        var _currentPhone = <?= json_encode($_SESSION['phone'] ?? '') ?>;
+
         document.querySelector('form').addEventListener('submit', function (e) {
             e.preventDefault();
             var phone = document.querySelector('input[name="phone"]').value.trim();
             if (!phone) return;
+
+            // Nomor sama dengan yang sudah login → skip OTP langsung masuk
+            if (_currentPhone && phone === _currentPhone) {
+                HTMLFormElement.prototype.submit.call(document.querySelector('form'));
+                return;
+            }
 
             requireOTP(phone, function () {
                 // OTP verified — submit form secara programatik (bypass listener)
