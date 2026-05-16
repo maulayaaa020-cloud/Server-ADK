@@ -413,6 +413,7 @@ def insert_break_before_xml(target_p):
 
 def fmt_cover(section, first_cover=False, show_pos=None):
     """Cover: set lowerRoman format. show_pos=(align, top) shows roman numeral on cover page."""
+    section.different_first_page_header_footer = False
     clear_header(section)
     clear_footer(section)
     if first_cover:
