@@ -1252,9 +1252,10 @@ if (!empty($orders)) {
                 <div style="font-size:12px;color:#a78bfa;margin-bottom:16px">Rp ${harga.toLocaleString('id-ID')}</div>
                 ${groupHtml}
                 </div>
-                <button onclick="document.getElementById('bayarModal').remove()" style="width:100%;padding:8px;background:none;border:none;color:#6b7280;font-size:12px;cursor:pointer;margin-top:8px;flex-shrink:0">Batal</button>
+                <button onclick="document.getElementById('bayarModal').remove();document.body.style.overflow='';" style="width:100%;padding:8px;background:none;border:none;color:#6b7280;font-size:12px;cursor:pointer;margin-top:8px;flex-shrink:0">Batal</button>
             </div>`;
             document.body.appendChild(modal);
+            document.body.style.overflow = 'hidden';
         }
 
         function doBayar(dbId, orderId, harga, method, btn) {
@@ -1268,7 +1269,7 @@ if (!empty($orders)) {
             .then(r => r.json())
             .then(data => {
                 const modal = document.getElementById('bayarModal');
-                if (modal) modal.remove();
+                if (modal) { modal.remove(); document.body.style.overflow = ''; }
                 if (!data.url) { alert('Gagal membuat transaksi: ' + (data.error || 'Coba lagi')); return; }
                 _savedPayUrl[dbId] = data.url;
                 window.open(data.url, '_blank');
