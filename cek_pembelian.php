@@ -256,6 +256,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <h4>Bantuan</h4>
                 <a href="tutorial.html">Tutorial</a>
                 <a href="sk.html">Syarat &amp; Ketentuan</a>
+                <a href="tentang-kami.html">Tentang Kami</a>
+                <a href="kebijakan-privasi.html">Kebijakan Privasi</a>
             </div>
             <div class="footer-col">
                 <h4>Kontak</h4>
