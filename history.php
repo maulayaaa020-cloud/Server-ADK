@@ -781,6 +781,24 @@ if (!empty($orders)) {
             .footer-inner { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 24px 16px !important; }
             .footer-brand { grid-column: 1 / -1 !important; }
         }
+
+        .qris-banner {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            background: rgba(251,191,36,0.08);
+            border: 1px solid rgba(251,191,36,0.35);
+            border-radius: 10px;
+            padding: 12px 20px;
+            margin: 0 0 24px;
+            color: #fbbf24;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+            text-align: center;
+        }
+        .qris-banner-icon { font-size: 16px; flex-shrink: 0; }
     </style>
 </head>
 <body>
@@ -851,6 +869,11 @@ if (!empty($orders)) {
     </div>
 
     <div class="history-page">
+        <div class="qris-banner">
+            <span class="qris-banner-icon">&#x26A0;</span>
+            Payment QRIS Only &mdash; Segera Hadir!!!
+            <span class="qris-banner-icon">&#x26A0;</span>
+        </div>
         <div class="history-header">
             <h2 class="history-heading">Riwayat Orderan</h2>
 
