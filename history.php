@@ -968,8 +968,15 @@ if (!empty($orders)) {
 
                     <?php if ($isPending): ?>
                     <a href="sk.html" target="_blank" class="sk-link">S&amp;K berlaku</a>
+                    <?php
+                        $existingPayUrl = '';
+                        if (!empty($o['snap_token'])) {
+                            $td = json_decode($o['snap_token'], true);
+                            if ($td && isset($td['url'])) $existingPayUrl = $td['url'];
+                        }
+                    ?>
                     <button class="btn-bayar"
-                            onclick="bayar(<?= $o['id'] ?>, '<?= htmlspecialchars($o['order_id']) ?>', <?= $o['harga'] ?>)">
+                            onclick="bayar(<?= $o['id'] ?>, '<?= htmlspecialchars($o['order_id']) ?>', <?= $o['harga'] ?>, '<?= htmlspecialchars($existingPayUrl) ?>')">
                         Bayar — Rp <?= number_format($o['harga'],0,',','.') ?>
                     </button>
                     <?php endif; ?>
@@ -1182,7 +1189,12 @@ if (!empty($orders)) {
             }, 3000);
         }
 
-        function bayar(dbId, orderId, harga) {
+        function bayar(dbId, orderId, harga, existingUrl) {
+            if (existingUrl) {
+                window.open(existingUrl, '_blank');
+                startPolling(dbId, orderId);
+                return;
+            }
             const methods = [
                 {code:'QRIS',      label:'QRIS (Semua Dompet)'},
                 {code:'BRIVA',     label:'BRI Virtual Account'},
@@ -1247,7 +1259,7 @@ if (!empty($orders)) {
 
             if (isPending) {
                 bayarBtn.style.display = 'inline-block';
-                bayarBtn.onclick = function() { closePreview(); bayar(dbId, ordId, harga); };
+                bayarBtn.onclick = function() { closePreview(); bayar(dbId, ordId, harga, ''); };
             } else {
                 bayarBtn.style.display = 'none';
             }
