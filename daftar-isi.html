@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daftar Isi Otomatis – ADK PHOTOCOPY</title>
+    <meta name="description" content="Buat daftar isi dokumen Word secara otomatis. Upload file, pilih format, langsung jadi. ADK PHOTOCOPY.">
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="jasa.css">
+    <style>
+        .toc-preview-box {
+            background: #12102a;
+            border: 1px solid rgba(124,58,237,0.25);
+            border-radius: 14px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+        .toc-preview-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: #a78bfa;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+        .toc-doc {
+            background: #fff;
+            border-radius: 6px;
+            padding: 16px 14px;
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 11px;
+            color: #111;
+            line-height: 1.7;
+        }
+        .toc-doc-title {
+            text-align: center;
+            font-weight: 700;
+            font-size: 12px;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }
+        .toc-row {
+            display: flex;
+            align-items: baseline;
+            gap: 2px;
+        }
+        .toc-row-title {
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .toc-row-fill {
+            flex: 1;
+            overflow: hidden;
+            color: #555;
+            letter-spacing: 1px;
+            font-size: 10px;
+            padding: 0 2px;
+        }
+        .toc-row-page {
+            white-space: nowrap;
+            flex-shrink: 0;
+            min-width: 18px;
+            text-align: right;
+        }
+        .toc-h1 .toc-row-title { font-weight: 700; }
+        .toc-h2 { padding-left: 16px; }
+        .toc-h3 { padding-left: 32px; }
+        .toc-placeholder {
+            text-align: center;
+            color: #94a3b8;
+            font-size: 12px;
+            padding: 24px 0;
+            font-family: sans-serif;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- NAVBAR -->
+    <div class="navbar">
+        <a href="index.html" class="logo">
+            <img src="LOGO ADK.png" alt="ADK Logo" style="width:36px;height:26px;object-fit:contain;flex-shrink:0;">
+            <span>ADK PHOTOCOPY</span>
+        </a>
+        <div class="menu">
+            <a href="index.html">Home</a>
+            <a href="tutorial.html">Tutorial</a>
+            <div class="dropdown">
+                <a href="#" class="dropdown-toggle">Jasa ADK <span class="dropdown-arrow">▾</span></a>
+                <div class="dropdown-menu">
+                    <a href="jasa.html">
+                        <div class="dropdown-item-icon">📄</div>
+                        <div class="dropdown-item-title">Penomoran Halaman</div>
+                    </a>
+                    <a href="daftar-isi.html">
+                        <div class="dropdown-item-icon">📋</div>
+                        <div class="dropdown-item-title">Daftar Isi Otomatis</div>
+                    </a>
+                </div>
+            </div>
+            <div class="dropdown">
+                <a href="#" class="dropdown-toggle">Contact Us <span class="dropdown-arrow">▾</span></a>
+                <div class="dropdown-menu">
+                    <a href="https://www.tiktok.com/@adk_rowosari" target="_blank" rel="noopener"><div class="dropdown-item-icon">🎵</div><div class="dropdown-item-title">TikTok</div></a>
+                    <a href="https://www.instagram.com/adk_rowosari?igsh=MXV4OXdwbnQycGp5cg==" target="_blank" rel="noopener"><div class="dropdown-item-icon">📸</div><div class="dropdown-item-title">Instagram</div></a>
+                    <a href="https://wa.me/6287700277748" target="_blank" rel="noopener"><div class="dropdown-item-icon">🏪</div><div class="dropdown-item-title">WA Toko<br>(Cepiring, Kendal)</div></a>
+                    <a href="https://wa.me/62895341996647" target="_blank" rel="noopener"><div class="dropdown-item-icon">🏪</div><div class="dropdown-item-title">WA Toko<br>(Rowosari, Kendal)</div></a>
+                    <a href="https://wa.me/6281228790091" target="_blank" rel="noopener"><div class="dropdown-item-icon">💬</div><div class="dropdown-item-title">WA Admin</div></a>
+                </div>
+            </div>
+        </div>
+        <div class="nav-right">
+            <a href="cek_pembelian.php" class="btn-nav">Cek Pembelian</a>
+        </div>
+        <div class="mobile-jasa-drop" id="jasaDrop">
+            <button class="mobile-jasa-link" onclick="toggleJasaDrop()">Jasa ADK <span class="mobile-jasa-arrow">▾</span></button>
+            <div class="mobile-jasa-menu">
+                <a href="jasa.html">📄 Penomoran Halaman</a>
+                <a href="daftar-isi.html">📋 Daftar Isi Otomatis</a>
+            </div>
+        </div>
+        <button class="hamburger" onclick="openMobileMenu()">
+            <span></span><span></span><span></span>
+        </button>
+    </div>
+
+    <div class="mobile-nav" id="mobileNav">
+        <div class="mobile-nav-header">
+            <a href="index.html" class="logo">
+                <img src="LOGO ADK.png" alt="ADK Logo" style="width:36px;height:26px;object-fit:contain;flex-shrink:0;">
+                <span>ADK PHOTOCOPY</span>
+            </a>
+            <button class="mobile-nav-close" onclick="closeMobileMenu()">✕</button>
+        </div>
+        <div class="mobile-nav-links">
+            <a href="index.html">Home</a>
+            <a href="tutorial.html">Tutorial</a>
+            <a href="jasa.html">Jasa ADK</a>
+            <div class="mobile-nav-section-title">Contact Us</div>
+            <a href="https://www.tiktok.com/@adk_rowosari" target="_blank" rel="noopener" class="mobile-nav-contact">🎵 TikTok</a>
+            <a href="https://www.instagram.com/adk_rowosari?igsh=MXV4OXdwbnQycGp5cg==" target="_blank" rel="noopener" class="mobile-nav-contact">📸 Instagram</a>
+            <a href="https://wa.me/6287700277748" target="_blank" rel="noopener" class="mobile-nav-contact">🏪 WA Toko<br>(Cepiring, Kendal)</a>
+            <a href="https://wa.me/62895341996647" target="_blank" rel="noopener" class="mobile-nav-contact">🏪 WA Toko<br>(Rowosari, Kendal)</a>
+            <a href="https://wa.me/6281228790091" target="_blank" rel="noopener" class="mobile-nav-contact">💬 WA Admin</a>
+        </div>
+        <div class="mobile-nav-footer">
+            <a href="cek_pembelian.php" class="btn-nav">Cek Pembelian</a>
+        </div>
+    </div>
+
+    <!-- PAGE TITLE -->
+    <div class="page-header">
+        <h2 class="page-title">Jasa ADK Daftar Isi Otomatis</h2>
+    </div>
+
+    <!-- FORM -->
+    <form method="POST" action="api/proses_daftar_isi.php" enctype="multipart/form-data"
+          id="orderForm" onsubmit="return prepareSubmit(event)">
+
+        <input type="hidden" name="kedalaman"    id="hidKedalaman" value="">
+        <input type="hidden" name="format_titik" id="hidFormat"    value="">
+
+        <div class="order-wrapper">
+
+            <!-- KIRI -->
+            <div class="order-left">
+                <div class="order-panel">
+
+                    <!-- Upload -->
+                    <div class="upload-area" id="uploadArea">
+                        <p><b>Pilih / Seret File</b></p>
+                        <span>Format Word (.docx)</span>
+                        <input type="file" name="file" id="fileInput" accept=".docx"
+                               onchange="handleFile(this)">
+                    </div>
+                    <div class="file-display" id="fileDisplay">
+                        <span id="fileNameDisplay"></span>
+                        <span class="file-remove"
+                              onclick="removeFile();event.stopPropagation();">✕</span>
+                    </div>
+
+                    <!-- Opsi -->
+                    <p class="pilih-paket-label">Pilih Opsi:</p>
+
+                    <div class="opts-form-grid" style="margin-bottom:16px;">
+
+                        <span class="opts-row-label">KEDALAMAN HEADING</span>
+                        <div class="opts-select" data-group="kedalaman" onclick="toggleSelect(this)">
+                            <span class="opts-sel-tri">▲</span>
+                            <span class="opts-sel-text">Pilih Level</span>
+                            <div class="opts-sel-dropdown">
+                                <div class="opt-sel-item" data-group="kedalaman" data-value="H1"
+                                     onclick="chooseOpt(this);event.stopPropagation()">H1 saja</div>
+                                <div class="opt-sel-item" data-group="kedalaman" data-value="H1+H2"
+                                     onclick="chooseOpt(this);event.stopPropagation()">H1 + H2</div>
+                                <div class="opt-sel-item" data-group="kedalaman" data-value="H1+H2+H3"
+                                     onclick="chooseOpt(this);event.stopPropagation()">H1 + H2 + H3</div>
+                            </div>
+                        </div>
+
+                        <span class="opts-row-label">FORMAT TITIK</span>
+                        <div class="opts-select" data-group="format" onclick="toggleSelect(this)">
+                            <span class="opts-sel-tri">▲</span>
+                            <span class="opts-sel-text">Pilih Format</span>
+                            <div class="opts-sel-dropdown">
+                                <div class="opt-sel-item" data-group="format" data-value="titik"
+                                     onclick="chooseOpt(this);event.stopPropagation()">Titik-titik (…………)</div>
+                                <div class="opt-sel-item" data-group="format" data-value="tab"
+                                     onclick="chooseOpt(this);event.stopPropagation()">Tab / Spasi</div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="validation-msg" id="validMsg"></div>
+
+                    <!-- No. Telepon -->
+                    <div class="phone-field">
+                        <label class="phone-label">
+                            No. Telepon
+                            <span class="phone-optional-badge">Opsional</span>
+                        </label>
+                        <input type="text" name="phone" id="phoneInput"
+                               class="phone-input" placeholder="Opsional — Contoh: 08123456789"
+                               autocomplete="off">
+                    </div>
+
+                    <div id="totalHarga" style="font-size:11px;color:#facc15;margin-bottom:8px;">
+                        Total: Rp 5.000
+                    </div>
+
+                    <button type="submit" class="btn-upload-main" id="btnUpload">
+                        <span class="spinner"></span>
+                        <span class="btn-label">UPLOAD</span>
+                    </button>
+
+                </div>
+            </div>
+
+            <!-- KANAN -->
+            <div class="order-right">
+
+                <!-- PREVIEW DAFTAR ISI -->
+                <div class="toc-preview-box">
+                    <div class="toc-preview-label">Preview Daftar Isi:</div>
+                    <div class="toc-doc" id="tocPreview">
+                        <div class="toc-placeholder">Pilih opsi untuk melihat preview</div>
+                    </div>
+                </div>
+
+                <div class="warning-box">
+                    !! Sebelum Upload, pastikan heading di file kamu sudah menggunakan style
+                    <b>Heading 1 / Heading 2 / Heading 3</b> dari Word — bukan teks biasa yang di-bold.
+                </div>
+
+                <div class="benefits-box">
+                    <h3 class="benefits-title">Kelebihan memakai jasa ADK Daftar Isi Otomatis</h3>
+                    <ul class="benefits-list">
+                        <li>✓ Daftar isi rapi sesuai heading dokumen.</li>
+                        <li>✓ Bisa pilih sampai H1, H2, atau H3.</li>
+                        <li>✓ Format titik-titik atau tab sesuai kebutuhan.</li>
+                        <li>✓ Proses cepat, langsung download hasilnya.</li>
+                    </ul>
+                </div>
+
+            </div>
+
+        </div>
+    </form>
+
+    <footer class="site-footer">
+        <div class="footer-inner">
+            <div class="footer-brand">
+                <div class="footer-logo-wrap">
+                    <img src="LOGO ADK.png" alt="ADK Logo" style="width:36px;height:26px;object-fit:contain;flex-shrink:0;">
+                    <span>ADK PHOTOCOPY</span>
+                </div>
+                <p>© 2025 ADK PHOTOCOPY<br>All Rights Reserved.</p>
+            </div>
+            <div class="footer-col">
+                <h4>Jasa</h4>
+                <a href="jasa.html">Penomoran Halaman</a>
+                <a href="daftar-isi.html">Daftar Isi Otomatis</a>
+            </div>
+            <div class="footer-col">
+                <h4>Bantuan</h4>
+                <a href="tutorial.html">Tutorial</a>
+                <a href="sk.html">Syarat &amp; Ketentuan</a>
+                <a href="tentang-kami.html">Tentang Kami</a>
+                <a href="kebijakan-privasi.html">Kebijakan Privasi</a>
+            </div>
+            <div class="footer-col">
+                <h4>Kontak</h4>
+                <a href="https://wa.me/6287700277748" target="_blank" rel="noopener">WA Toko<br>(Cepiring, Kendal)</a>
+                <a href="https://wa.me/62895341996647" target="_blank" rel="noopener">WA Toko<br>(Rowosari, Kendal)</a>
+                <a href="https://wa.me/6281228790091" target="_blank" rel="noopener">WA Admin</a>
+            </div>
+            <div class="footer-col">
+                <h4>Ikuti Kami</h4>
+                <a href="https://www.tiktok.com/@adk_rowosari" target="_blank" rel="noopener">TikTok</a>
+                <a href="https://www.instagram.com/adk_rowosari?igsh=MXV4OXdwbnQycGp5cg==" target="_blank" rel="noopener">Instagram</a>
+            </div>
+        </div>
+        <hr class="footer-divider">
+        <p class="footer-bottom">© 2025 ADK PHOTOCOPY · All Rights Reserved.</p>
+    </footer>
+
+    <script src="otp.js?v=4"></script>
+    <script>
+        const sel = { kedalaman: '', format: '' };
+
+        // Data sample untuk preview
+        const tocData = [
+            { level: 1, title: 'KATA PENGANTAR',        page: 'i'  },
+            { level: 1, title: 'DAFTAR ISI',             page: 'ii' },
+            { level: 1, title: 'DAFTAR GAMBAR',          page: 'iii'},
+            { level: 1, title: 'BAB I PENDAHULUAN',      page: '1'  },
+            { level: 2, title: '1.1 Latar Belakang',     page: '1'  },
+            { level: 3, title: '1.1.1 Gambaran Umum',    page: '2'  },
+            { level: 2, title: '1.2 Rumusan Masalah',    page: '3'  },
+            { level: 1, title: 'BAB II TINJAUAN PUSTAKA',page: '5'  },
+            { level: 2, title: '2.1 Landasan Teori',     page: '5'  },
+            { level: 3, title: '2.1.1 Definisi',         page: '6'  },
+            { level: 2, title: '2.2 Kerangka Berpikir',  page: '7'  },
+            { level: 1, title: 'DAFTAR PUSTAKA',         page: '10' },
+        ];
+
+        function makeDots() {
+            return '..................................';
+        }
+
+        function buildRow(entry, useDots) {
+            const indent = entry.level === 2 ? 'toc-h2' : entry.level === 3 ? 'toc-h3' : 'toc-h1';
+            const fill = useDots
+                ? `<span class="toc-row-fill">${makeDots()}</span>`
+                : `<span class="toc-row-fill">&nbsp;</span>`;
+            return `<div class="toc-row ${indent}">
+                        <span class="toc-row-title">${entry.title}</span>
+                        ${fill}
+                        <span class="toc-row-page">${entry.page}</span>
+                    </div>`;
+        }
+
+        function updatePreview() {
+            const kedalaman = sel.kedalaman;
+            const format    = sel.format;
+
+            if (!kedalaman || !format) {
+                document.getElementById('tocPreview').innerHTML =
+                    '<div class="toc-placeholder">Pilih opsi untuk melihat preview</div>';
+                return;
+            }
+
+            const showH2 = kedalaman === 'H1+H2'    || kedalaman === 'H1+H2+H3';
+            const showH3 = kedalaman === 'H1+H2+H3';
+            const useDots = format === 'titik';
+
+            const filtered = tocData.filter(function(e) {
+                if (e.level === 1) return true;
+                if (e.level === 2) return showH2;
+                if (e.level === 3) return showH3;
+                return false;
+            });
+
+            const html = '<div class="toc-doc-title">DAFTAR ISI</div>'
+                + filtered.map(function(e) { return buildRow(e, useDots); }).join('');
+
+            document.getElementById('tocPreview').innerHTML = html;
+        }
+
+        function toggleSelect(box) {
+            const isOpen = box.classList.contains('open');
+            document.querySelectorAll('.opts-select.open').forEach(function(s) { s.classList.remove('open'); });
+            if (!isOpen) box.classList.add('open');
+        }
+
+        function chooseOpt(el) {
+            const box   = el.closest('.opts-select');
+            const group = el.dataset.group;
+            const value = el.dataset.value;
+            sel[group] = value;
+
+            box.querySelectorAll('.opt-sel-item').forEach(function(i) { i.classList.remove('selected'); });
+            el.classList.add('selected');
+            box.querySelector('.opts-sel-text').textContent = el.textContent.trim();
+            box.classList.add('has-value');
+            box.classList.remove('open');
+            hideValidation();
+            updatePreview();
+        }
+
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.opts-select')) {
+                document.querySelectorAll('.opts-select.open').forEach(function(s) { s.classList.remove('open'); });
+            }
+        });
+
+        function applyFile(file) {
+            if (!file) return;
+            if (!file.name.toLowerCase().endsWith('.docx')) {
+                alert('Hanya file .docx yang diterima.'); return;
+            }
+            try { var dt = new DataTransfer(); dt.items.add(file); document.getElementById('fileInput').files = dt.files; } catch(e) {}
+            document.getElementById('fileNameDisplay').textContent = file.name;
+            document.getElementById('fileDisplay').style.display = 'flex';
+            document.getElementById('uploadArea').style.display  = 'none';
+            hideValidation();
+        }
+
+        function handleFile(input) { applyFile(input.files[0]); }
+
+        function removeFile() {
+            document.getElementById('fileInput').value = '';
+            document.getElementById('fileDisplay').style.display = 'none';
+            document.getElementById('uploadArea').style.display  = '';
+        }
+
+        (function(){
+            var area = document.getElementById('uploadArea');
+            area.addEventListener('dragover', function(e) {
+                e.preventDefault(); e.stopPropagation();
+                this.classList.add('drag-over');
+            });
+            area.addEventListener('dragleave', function(e) {
+                e.preventDefault();
+                if (!this.contains(e.relatedTarget)) this.classList.remove('drag-over');
+            });
+            area.addEventListener('drop', function(e) {
+                e.preventDefault(); e.stopPropagation();
+                this.classList.remove('drag-over');
+                var file = e.dataTransfer.files[0];
+                if (file) applyFile(file);
+            });
+        })();
+
+        function hideValidation() {
+            document.getElementById('validMsg').classList.remove('show');
+        }
+
+        function showValidation(msgs) {
+            const el = document.getElementById('validMsg');
+            el.innerHTML = msgs.map(function(m) { return '• ' + m; }).join('<br>');
+            el.classList.add('show');
+            el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        function prepareSubmit(e) {
+            e.preventDefault();
+            const msgs  = [];
+            const phone = document.getElementById('phoneInput').value.trim();
+
+            if (!document.getElementById('fileInput').files[0])
+                msgs.push('Anda belum upload file (.docx)');
+            if (!sel.kedalaman)
+                msgs.push('Kedalaman heading belum dipilih');
+            if (!sel.format)
+                msgs.push('Format titik belum dipilih');
+
+            if (msgs.length > 0) { showValidation(msgs); return false; }
+
+            document.getElementById('hidKedalaman').value = sel.kedalaman;
+            document.getElementById('hidFormat').value    = sel.format;
+
+            if (phone) {
+                requireOTP(phone, function () {
+                    const btn = document.getElementById('btnUpload');
+                    btn.querySelector('.btn-label').textContent = 'Mengerjakan';
+                    btn.classList.add('loading');
+                    document.getElementById('orderForm').submit();
+                });
+            } else {
+                const btn = document.getElementById('btnUpload');
+                btn.querySelector('.btn-label').textContent = 'Mengerjakan';
+                btn.classList.add('loading');
+                document.getElementById('orderForm').submit();
+            }
+        }
+
+        function openMobileMenu()  { document.getElementById('mobileNav').classList.add('open'); document.body.style.overflow='hidden'; }
+        function closeMobileMenu() { document.getElementById('mobileNav').classList.remove('open'); document.body.style.overflow=''; }
+        function toggleJasaDrop()  { document.getElementById('jasaDrop').classList.toggle('open'); }
+        document.addEventListener('click', function(e) {
+            var d = document.getElementById('jasaDrop');
+            if (d && !d.contains(e.target)) d.classList.remove('open');
+        });
+
+        document.addEventListener('contextmenu', function(e) { e.preventDefault(); });
+        document.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && ['c','a','u','s'].includes(e.key.toLowerCase()))
+                e.preventDefault();
+        });
+    </script>
+    <script src="nocopy.js"></script>
+</body>
+
+</html>
