@@ -43,31 +43,31 @@
             letter-spacing: 1px;
         }
         .toc-row {
-            display: flex;
-            align-items: baseline;
-            gap: 2px;
+            display: table;
+            width: 100%;
         }
         .toc-row-title {
+            display: table-cell;
             white-space: nowrap;
-            flex-shrink: 0;
+            padding-right: 5px;
         }
         .toc-row-fill {
-            flex: 1;
+            display: table-cell;
+            width: 100%;
+            max-width: 0;
             overflow: hidden;
+            white-space: nowrap;
             color: #555;
-            letter-spacing: 1px;
             font-size: 10px;
-            padding: 0 2px;
         }
         .toc-row-page {
+            display: table-cell;
             white-space: nowrap;
-            flex-shrink: 0;
-            min-width: 18px;
-            text-align: right;
+            padding-left: 5px;
         }
         .toc-h1 .toc-row-title { font-weight: 700; }
-        .toc-h2 { padding-left: 16px; }
-        .toc-h3 { padding-left: 32px; }
+        .toc-h2 .toc-row-title { padding-left: 16px; }
+        .toc-h3 .toc-row-title { padding-left: 32px; }
         .toc-placeholder {
             text-align: center;
             color: #94a3b8;
@@ -330,7 +330,7 @@
         ];
 
         function makeDots() {
-            return '..................................';
+            return '.'.repeat(500);
         }
 
         function buildRow(entry, useDots) {
