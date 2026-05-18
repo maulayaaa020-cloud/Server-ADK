@@ -163,6 +163,9 @@
 
         <input type="hidden" name="kedalaman"    id="hidKedalaman" value="">
         <input type="hidden" name="format_titik" id="hidFormat"    value="">
+        <input type="hidden" name="font"          id="hidFont"      value="">
+        <input type="hidden" name="size"          id="hidSize"      value="">
+        <input type="hidden" name="space"         id="hidSpace"     value="">
 
         <div class="order-wrapper">
 
@@ -208,11 +211,59 @@
                             <span class="opts-sel-text">Pilih Format</span>
                             <div class="opts-sel-dropdown">
                                 <div class="opt-sel-item" data-group="format" data-value="titik"
-                                     onclick="chooseOpt(this);event.stopPropagation()">Titik-titik (…………)</div>
+                                     onclick="chooseOpt(this);event.stopPropagation()">Full Titik</div>
                                 <div class="opt-sel-item" data-group="format" data-value="tab"
-                                     onclick="chooseOpt(this);event.stopPropagation()">Tab / Spasi</div>
+                                     onclick="chooseOpt(this);event.stopPropagation()">Full Spasi / Tab</div>
+                                <div class="opt-sel-item" data-group="format" data-value="kecualikan_bab"
+                                     onclick="chooseOpt(this);event.stopPropagation()">Kecualikan BAB</div>
                             </div>
                         </div>
+
+                        <span class="opts-row-label">FONT</span>
+                        <div class="opts-select" data-group="font" onclick="toggleSelect(this)">
+                            <span class="opts-sel-tri">▲</span>
+                            <span class="opts-sel-text">Pilih Font</span>
+                            <div class="opts-sel-dropdown">
+                                <div class="opt-sel-item" data-group="font" data-value="Times New Roman"
+                                     onclick="chooseOpt(this);event.stopPropagation()">Times New Roman</div>
+                                <div class="opt-sel-item" data-group="font" data-value="Arial"
+                                     onclick="chooseOpt(this);event.stopPropagation()">Arial</div>
+                                <div class="opt-sel-item" data-group="font" data-value="Calibri"
+                                     onclick="chooseOpt(this);event.stopPropagation()">Calibri</div>
+                            </div>
+                        </div>
+
+                        <span class="opts-row-label">SIZE</span>
+                        <div class="opts-select" data-group="size" onclick="toggleSelect(this)">
+                            <span class="opts-sel-tri">▲</span>
+                            <span class="opts-sel-text">Pilih Size</span>
+                            <div class="opts-sel-dropdown">
+                                <div class="opt-sel-item" data-group="size" data-value="11"
+                                     onclick="chooseOpt(this);event.stopPropagation()">11</div>
+                                <div class="opt-sel-item" data-group="size" data-value="12"
+                                     onclick="chooseOpt(this);event.stopPropagation()">12</div>
+                                <div class="opt-sel-item" data-group="size" data-value="14"
+                                     onclick="chooseOpt(this);event.stopPropagation()">14</div>
+                            </div>
+                        </div>
+
+                        <span class="opts-row-label">SPACE</span>
+                        <div class="opts-select" data-group="space" onclick="toggleSelect(this)">
+                            <span class="opts-sel-tri">▲</span>
+                            <span class="opts-sel-text">Pilih Space</span>
+                            <div class="opts-sel-dropdown">
+                                <div class="opt-sel-item" data-group="space" data-value="1.0"
+                                     onclick="chooseOpt(this);event.stopPropagation()">1.0</div>
+                                <div class="opt-sel-item" data-group="space" data-value="1.15"
+                                     onclick="chooseOpt(this);event.stopPropagation()">1.15</div>
+                                <div class="opt-sel-item" data-group="space" data-value="1.5"
+                                     onclick="chooseOpt(this);event.stopPropagation()">1.5</div>
+                                <div class="opt-sel-item" data-group="space" data-value="2.0"
+                                     onclick="chooseOpt(this);event.stopPropagation()">2.0</div>
+                            </div>
+                        </div>
+                        <span class="opts-placeholder"></span>
+                        <span class="opts-placeholder"></span>
 
                     </div>
 
@@ -238,19 +289,22 @@
                         <span class="btn-label">UPLOAD</span>
                     </button>
 
+                    <!-- PREVIEW DAFTAR ISI -->
+                    <div class="toc-preview-box" style="margin-top:16px;margin-bottom:0;">
+                        <div class="toc-preview-label">Preview Paket Kamu</div>
+                        <div class="toc-doc" id="tocPreview">
+                            <div class="toc-placeholder">Pilih opsi untuk melihat preview</div>
+                        </div>
+                        <div style="text-align:right;font-size:10px;color:#64748b;margin-top:6px;font-style:italic;">
+                            Preview hasil file kamu akan terlihat setelah upload
+                        </div>
+                    </div>
+
                 </div>
             </div>
 
             <!-- KANAN -->
             <div class="order-right">
-
-                <!-- PREVIEW DAFTAR ISI -->
-                <div class="toc-preview-box">
-                    <div class="toc-preview-label">Preview Daftar Isi:</div>
-                    <div class="toc-doc" id="tocPreview">
-                        <div class="toc-placeholder">Pilih opsi untuk melihat preview</div>
-                    </div>
-                </div>
 
                 <div class="warning-box">
                     <b>Pastikan File ANDA :</b>
@@ -323,7 +377,7 @@ H2    1.2          |    B</pre>
 
     <script src="otp.js?v=4"></script>
     <script>
-        const sel = { kedalaman: '', format: '' };
+        const sel = { kedalaman: '', format: '', font: '', size: '', space: '' };
 
         // Data sample untuk preview
         const tocData = [
@@ -369,7 +423,7 @@ H2    1.2          |    B</pre>
 
             const showH2 = kedalaman === 'H1+H2'    || kedalaman === 'H1+H2+H3';
             const showH3 = kedalaman === 'H1+H2+H3';
-            const useDots = format === 'titik';
+            const useDots = format === 'titik' || format === 'kecualikan_bab';
 
             const filtered = tocData.filter(function(e) {
                 if (e.level === 1) return true;
@@ -471,11 +525,20 @@ H2    1.2          |    B</pre>
                 msgs.push('Kedalaman heading belum dipilih');
             if (!sel.format)
                 msgs.push('Format titik belum dipilih');
+            if (!sel.font)
+                msgs.push('Font belum dipilih');
+            if (!sel.size)
+                msgs.push('Size belum dipilih');
+            if (!sel.space)
+                msgs.push('Space belum dipilih');
 
             if (msgs.length > 0) { showValidation(msgs); return false; }
 
             document.getElementById('hidKedalaman').value = sel.kedalaman;
             document.getElementById('hidFormat').value    = sel.format;
+            document.getElementById('hidFont').value      = sel.font;
+            document.getElementById('hidSize').value      = sel.size;
+            document.getElementById('hidSpace').value     = sel.space;
 
             if (phone) {
                 requireOTP(phone, function () {
