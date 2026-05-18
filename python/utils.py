@@ -25,12 +25,17 @@ ROMAN_START_KEYWORDS = [
     "halaman persembahan", "persembahan", "motto",
     "ringkasan",
     "daftar isi",
+    "daftar tabel", "daftar gambar", "daftar grafik", "daftar rumus",
+    "daftar singkatan", "daftar lambang", "daftar notasi", "daftar simbol",
+    "daftar istilah", "daftar arti lambang", "daftar arti simbol",
     "abstract", "summary", "executive summary",
     "preface", "foreword", "acknowledgment", "acknowledgements",
     "approval page", "approval sheet", "declaration", "originality statement",
     "dedication",
     "table of contents", "list of contents", "contents",
     "list of tables", "list of figures", "list of appendices",
+    "list of abbreviations", "list of symbols", "list of notations",
+    "nomenclature",
 ]
 
 _ROMAN_PAT = r'm{0,4}(cm|cd|d?c{0,3})(xc|xl|l?x{0,3})(ix|iv|v?i{0,3})'
@@ -535,7 +540,17 @@ class DocProcessor:
 
         if roman_start_p is not None:
             roman_start_p = self._find_section_start(roman_start_p)
-            self.insert_break_before_xml(roman_start_p)
+            # Jika section boundary sudah ada tepat sebelum roman_start_p,
+            # tidak perlu insert break (agar page break di roman zone tidak dihapus).
+            body_ch = list(self.doc.element.body)
+            _rsp_idx = next((i for i, e in enumerate(body_ch) if e is roman_start_p), -1)
+            _roman_already_bounded = (
+                _rsp_idx > 0 and
+                body_ch[_rsp_idx - 1].tag.endswith('}p') and
+                self._has_sectPr(body_ch[_rsp_idx - 1])
+            )
+            if not _roman_already_bounded:
+                self.insert_break_before_xml(roman_start_p)
 
         for bab_p in bab_p_list:
             self.insert_break_before_xml(bab_p)
@@ -592,7 +607,6 @@ class DocProcessor:
 
     def fmt_roman(self, section):
         section.different_first_page_header_footer = False
-        section.footer_distance = Cm(1.25)
         self.clear_header(section)
         f = section.footer
         f.is_linked_to_previous = False
