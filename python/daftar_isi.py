@@ -327,24 +327,11 @@ def detect_headings(doc, max_level):
     return results
 
 
-# ── Strip inline bold dari pPr/rPr heading ────────────────────────────────────
+# ── Bold normalization untuk heading ─────────────────────────────────────────
 
-def _strip_bold_from_heading(para):
-    """
-    Hapus w:b / w:bCs dari SELURUH tempat bold bisa tersimpan di paragraf H2/H3:
-      1. w:pPr/w:rPr  — paragraph-level default run properties
-      2. w:r/w:rPr    — setiap run individual (inline bold manual oleh user)
-
-    Keduanya harus dibersihkan agar Word tidak menyalin bold ke TOC entry.
-    Saat Word render TOC dari paragraf ber-outlineLvl, ia menggunakan pPr/rPr sebagai
-    template DAN mewarisi run-level bold ke teks TOC — keduanya harus OFF.
-
-    Efek samping: teks heading H2/H3 di body dokumen tidak lagi bold.
-    Ini trade-off yang diperlukan agar TOC konsisten.
-    """
+def _strip_inline_bold_only(para):
+    """Strip w:b/w:bCs dari pPr/rPr dan setiap run. TIDAK menambah w:b val=0."""
     BOLD_TAGS = (qn('w:b'), qn('w:bCs'))
-
-    # 1. Strip dari pPr/rPr
     pPr = para._p.find(qn('w:pPr'))
     if pPr is not None:
         rPr = pPr.find(qn('w:rPr'))
@@ -353,8 +340,6 @@ def _strip_bold_from_heading(para):
                 el = rPr.find(tag)
                 if el is not None:
                     rPr.remove(el)
-
-    # 2. Strip dari setiap run individual
     for r_el in para._p.findall(qn('w:r')):
         rPr = r_el.find(qn('w:rPr'))
         if rPr is None:
@@ -363,13 +348,46 @@ def _strip_bold_from_heading(para):
             el = rPr.find(tag)
             if el is not None:
                 rPr.remove(el)
-        # Tambahkan eksplisit b=0 agar tidak ter-inherit dari style
-        b = OxmlElement('w:b')
-        b.set(qn('w:val'), '0')
-        rPr.insert(0, b)
-        bCs = OxmlElement('w:bCs')
-        bCs.set(qn('w:val'), '0')
-        rPr.insert(1, bCs)
+
+
+def _set_runs_bold(para):
+    """Tambahkan w:b/w:bCs ke semua runs (inline bold eksplisit)."""
+    for r_el in para._p.findall(qn('w:r')):
+        rPr = r_el.find(qn('w:rPr'))
+        if rPr is None:
+            rPr = OxmlElement('w:rPr')
+            r_el.insert(0, rPr)
+        for tag in (qn('w:b'), qn('w:bCs')):
+            el = rPr.find(tag)
+            if el is not None:
+                rPr.remove(el)
+        rPr.append(OxmlElement('w:b'))
+        rPr.append(OxmlElement('w:bCs'))
+
+
+def _normalize_heading_bold(para, level):
+    """
+    Normalisasi bold heading di body dan TOC.
+
+    H1: tambahkan inline bold → body bold ✓, TOC bold ✓.
+    H2/H3 + heading style (standard maupun custom H2/H3):
+        strip inline bold saja → bold dari style, TOC tidak bold ✓.
+    H2/H3 tanpa heading style: tambahkan inline bold → body bold ✓,
+        TOC mungkin juga bold (limitation untuk non-standard style).
+    """
+    style_name = para.style.name if para.style else ''
+    is_heading_style = (
+        style_name.startswith('Heading ')
+        or style_name in _CUSTOM_H1_STYLES
+        or style_name in _CUSTOM_H2_STYLES
+        or style_name in _CUSTOM_H3_STYLES
+    )
+    if level == 1:
+        _set_runs_bold(para)
+    else:
+        _strip_inline_bold_only(para)
+        if not is_heading_style:
+            _set_runs_bold(para)
 
 
 # ── Terapkan outline level ─────────────────────────────────────────────────────
@@ -452,31 +470,23 @@ def _apply_rPr_font_to_style_element(style_el, font, size_pt, bold, is_char_styl
 
 def _fix_heading_char_styles(doc, font, size_pt):
     """
-    ROOT CAUSE FIX: Modifikasi style 'Heading X Char' (character styles) agar
-    fontnya konsisten dengan TOC font yang kita set.
+    Override Heading X Char styles agar font konsisten dan bold terkontrol.
 
-    Saat Word melakukan update TOC field, ia menaruh w:rStyle="HeadingXChar"
-    di setiap run paragraf TOC. Style karakter ini kemudian MENG-OVERRIDE font
-    dari definisi style TOC (karena character style > paragraph style dalam
-    prioritas cascading Word).
+    - Heading 1 Char: bold=True (TOC H1 harus bold)
+    - Heading 2/3+ Char: bold=False (TOC H2/H3 tidak bold)
 
-    Masalah: Heading X Char di dokumen ini menggunakan asciiTheme="majorHAnsi"
-    yang di-resolve ke Calibri Light, bukan Times New Roman.
-
-    Solusi: Override Heading X Char styles dengan font yang sama seperti TOC.
-    Ini aman karena style ini hanya digunakan di konteks TOC (sebagai linked
-    character style dari Heading paragraph style).
+    Saat Word update TOC field, ia menaruh w:rStyle="HeadingXChar" di setiap run
+    TOC entry. Style ini bisa override font TOC style jika tidak di-fix.
     """
     styles_root = doc.styles.element
 
-    # Mapping styleId yang umum dipakai oleh Word untuk Heading Char styles
     heading_char_ids = {
         'Heading1Char', 'Heading2Char', 'Heading3Char',
         'Heading4Char', 'Heading5Char', 'Heading6Char',
         'Heading7Char', 'Heading8Char', 'Heading9Char',
-        # Variasi lain yang mungkin ada di dokumen Indonesia
         'H1Char', 'H2Char', 'H3Char',
     }
+    h1_char_ids = {'Heading1Char', 'H1Char'}
 
     for style_el in styles_root.findall(qn('w:style')):
         stype = style_el.get(qn('w:type'), '')
@@ -486,7 +496,6 @@ def _fix_heading_char_styles(doc, font, size_pt):
         sname_el = style_el.find(qn('w:name'))
         sname = sname_el.get(qn('w:val'), '') if sname_el is not None else ''
 
-        # Cocokkan styleId atau nama yang mengandung "Heading" + "Char"
         is_heading_char = (
             style_id in heading_char_ids
             or ('Heading' in sname and 'Char' in sname)
@@ -496,10 +505,13 @@ def _fix_heading_char_styles(doc, font, size_pt):
         if not is_heading_char:
             continue
 
-        # Override font di char style ini — bold=False agar tidak bold di H2/H3
-        # (H1 juga tidak bold di char style, bold dikontrol oleh paragraph style)
+        # H1 Char: bold=True; semua lainnya: bold=False
+        is_h1_char = (
+            style_id in h1_char_ids
+            or sname.lower() in ('heading 1 char', 'heading1char')
+        )
         _apply_rPr_font_to_style_element(
-            style_el, font=font, size_pt=size_pt, bold=False, is_char_style=True
+            style_el, font=font, size_pt=size_pt, bold=is_h1_char, is_char_style=True
         )
 
 
@@ -945,6 +957,51 @@ def main():
               "style Heading 1/2/3 dari Word, atau teks dengan pola penomoran "
               "seperti '1.', '1.1', 'BAB I', atau teks ALL CAPS + bold.")
 
+    # ── Pastikan semua heading style (standard + custom) punya bold ───────────
+    # Sehingga setelah inline bold di-strip, body heading masih tampil bold.
+    _styles_to_bold = (
+        [f'Heading {i}' for i in range(1, max_level + 1)]
+        + list(_CUSTOM_H1_STYLES) + list(_CUSTOM_H2_STYLES) + list(_CUSTOM_H3_STYLES)
+    )
+    for sname in _styles_to_bold:
+        try:
+            style = doc.styles[sname]
+            style_el = style.element
+            rPr = style_el.find(qn('w:rPr'))
+            if rPr is None:
+                rPr = OxmlElement('w:rPr')
+                style_el.append(rPr)
+            for tag in (qn('w:b'), qn('w:bCs')):
+                el = rPr.find(tag)
+                if el is not None:
+                    rPr.remove(el)
+            rPr.append(OxmlElement('w:b'))
+            rPr.append(OxmlElement('w:bCs'))
+        except KeyError:
+            pass
+
+    # ── Pindahkan H2/H3 non-heading-style ke style H2/H3 ────────────────────
+    # Tujuan: agar bold di body berasal dari style (bukan inline run),
+    # sehingga TOC tidak mewarisi inline bold saat Word update field.
+    # H2/H3 style sudah ada di dokumen dengan font/size sama (TNR 12pt).
+    for idx, lvl, _txt in headings:
+        if lvl < 2:
+            continue
+        para = doc.paragraphs[idx]
+        style_name = para.style.name if para.style else ''
+        is_heading_style = (
+            style_name.startswith('Heading ')
+            or style_name in _CUSTOM_H1_STYLES
+            or style_name in _CUSTOM_H2_STYLES
+            or style_name in _CUSTOM_H3_STYLES
+        )
+        if not is_heading_style:
+            target = f'H{lvl}'
+            try:
+                para.style = doc.styles[target]
+            except KeyError:
+                pass  # style H2/H3 tidak ada di dokumen ini
+
     # ── Terapkan outline level agar TOC field bisa mendeteksi semua heading ──
     for idx, lvl, _txt in headings:
         para = doc.paragraphs[idx]
@@ -952,10 +1009,9 @@ def main():
         if not style_name.startswith('Heading '):
             apply_outline_level(para, lvl)
 
-    # ── Strip bold dari H2/H3 agar tidak ikut ke TOC ─────────────────────────
+    # ── Normalisasi bold: body selalu bold, TOC hanya H1 bold ────────────────
     for idx, lvl, _txt in headings:
-        if lvl >= 2:
-            _strip_bold_from_heading(doc.paragraphs[idx])
+        _normalize_heading_bold(doc.paragraphs[idx], lvl)
 
     # ── Aktifkan auto-update agar Word langsung hitung nomor halaman ─────────
     enable_auto_update_fields(doc)
