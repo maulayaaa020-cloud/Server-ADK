@@ -590,11 +590,11 @@ class DocProcessor:
 
     # ── Section formatters (dipakai oleh paket2 & paket3) ─
 
-    def fmt_cover(self, section, first_cover=False, show_pos=None):
+    def fmt_cover(self, section, first_cover=False, show_pos=None, cover_start=1):
         self.clear_header(section)
         self.clear_footer(section)
         if first_cover:
-            self.set_page_number_format(section, 'lowerRoman', 1)
+            self.set_page_number_format(section, 'lowerRoman', cover_start)
             if show_pos:
                 # hidden_cov='Tidak': tampilkan nomor di semua halaman cover
                 section.different_first_page_header_footer = False
