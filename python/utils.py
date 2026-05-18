@@ -591,18 +591,33 @@ class DocProcessor:
     # ── Section formatters (dipakai oleh paket2 & paket3) ─
 
     def fmt_cover(self, section, first_cover=False, show_pos=None):
-        section.different_first_page_header_footer = False
         self.clear_header(section)
         self.clear_footer(section)
         if first_cover:
             self.set_page_number_format(section, 'lowerRoman', 1)
             if show_pos:
+                # hidden_cov='Tidak': tampilkan nomor di semua halaman cover
+                section.different_first_page_header_footer = False
                 align, top = show_pos
                 if top:
                     self._place_num_in_part(section.header, align)
                 else:
                     self._place_num_in_part(section.footer, align)
+            else:
+                # hidden_cov='Ya': sembunyikan cover 1 via first-page footer,
+                # cover 2+ tampilkan "ii", "iii", dst via regular footer
+                section.different_first_page_header_footer = True
+                fph = section.first_page_header
+                fph.is_linked_to_previous = False
+                for p in fph.paragraphs:
+                    self.clear_paragraph(p)
+                fpf = section.first_page_footer
+                fpf.is_linked_to_previous = False
+                for p in fpf.paragraphs:
+                    self.clear_paragraph(p)
+                self._place_num_in_part(section.footer, WD_ALIGN_PARAGRAPH.CENTER)
         else:
+            section.different_first_page_header_footer = False
             self.set_page_number_format(section, 'lowerRoman')
             # Sampul ke-2 dst selalu tampilkan nomor halaman (ii, iii, ...)
             if show_pos:
