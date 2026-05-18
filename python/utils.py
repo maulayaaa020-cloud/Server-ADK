@@ -596,14 +596,23 @@ class DocProcessor:
         self.clear_footer(section)
         if first_cover:
             self.set_page_number_format(section, 'lowerRoman', 1)
+            if show_pos:
+                align, top = show_pos
+                if top:
+                    self._place_num_in_part(section.header, align)
+                else:
+                    self._place_num_in_part(section.footer, align)
         else:
             self.set_page_number_format(section, 'lowerRoman')
-        if show_pos and first_cover:
-            align, top = show_pos
-            if top:
-                self._place_num_in_part(section.header, align)
+            # Sampul ke-2 dst selalu tampilkan nomor halaman (ii, iii, ...)
+            if show_pos:
+                align, top = show_pos
+                if top:
+                    self._place_num_in_part(section.header, align)
+                else:
+                    self._place_num_in_part(section.footer, align)
             else:
-                self._place_num_in_part(section.footer, align)
+                self._place_num_in_part(section.footer, WD_ALIGN_PARAGRAPH.CENTER)
 
     def fmt_roman(self, section):
         section.different_first_page_header_footer = False
