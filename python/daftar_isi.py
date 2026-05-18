@@ -26,6 +26,8 @@ MAX_LEVEL_MAP = {'H1': 1, 'H1+H2': 2, 'H1+H2+H3': 3}
 # Tab stop kanan untuk nomor halaman (twips: 1 cm ≈ 567 twips, ~15 cm = 8505)
 TAB_POS_TWIPS = '8505'
 
+_XML_SPACE = '{http://www.w3.org/XML/1998/namespace}space'
+
 
 # ── Validasi file ─────────────────────────────────────────────────────────────
 
@@ -323,6 +325,51 @@ def detect_headings(doc, max_level):
 
     results = _dedup_bab_clusters(results)
     return results
+
+
+# ── Strip inline bold dari pPr/rPr heading ────────────────────────────────────
+
+def _strip_bold_from_heading(para):
+    """
+    Hapus w:b / w:bCs dari SELURUH tempat bold bisa tersimpan di paragraf H2/H3:
+      1. w:pPr/w:rPr  — paragraph-level default run properties
+      2. w:r/w:rPr    — setiap run individual (inline bold manual oleh user)
+
+    Keduanya harus dibersihkan agar Word tidak menyalin bold ke TOC entry.
+    Saat Word render TOC dari paragraf ber-outlineLvl, ia menggunakan pPr/rPr sebagai
+    template DAN mewarisi run-level bold ke teks TOC — keduanya harus OFF.
+
+    Efek samping: teks heading H2/H3 di body dokumen tidak lagi bold.
+    Ini trade-off yang diperlukan agar TOC konsisten.
+    """
+    BOLD_TAGS = (qn('w:b'), qn('w:bCs'))
+
+    # 1. Strip dari pPr/rPr
+    pPr = para._p.find(qn('w:pPr'))
+    if pPr is not None:
+        rPr = pPr.find(qn('w:rPr'))
+        if rPr is not None:
+            for tag in BOLD_TAGS:
+                el = rPr.find(tag)
+                if el is not None:
+                    rPr.remove(el)
+
+    # 2. Strip dari setiap run individual
+    for r_el in para._p.findall(qn('w:r')):
+        rPr = r_el.find(qn('w:rPr'))
+        if rPr is None:
+            continue
+        for tag in BOLD_TAGS:
+            el = rPr.find(tag)
+            if el is not None:
+                rPr.remove(el)
+        # Tambahkan eksplisit b=0 agar tidak ter-inherit dari style
+        b = OxmlElement('w:b')
+        b.set(qn('w:val'), '0')
+        rPr.insert(0, b)
+        bCs = OxmlElement('w:bCs')
+        bCs.set(qn('w:val'), '0')
+        rPr.insert(1, bCs)
 
 
 # ── Terapkan outline level ─────────────────────────────────────────────────────
@@ -645,6 +692,153 @@ def _make_toc_field_para(max_level):
     return p
 
 
+# ── Static TOC (tanpa field) ──────────────────────────────────────────────────
+
+def _add_paragraph_bookmark(para, bk_id, bk_name):
+    """Sisipkan bookmark start/end di paragraf heading untuk dirujuk PAGEREF."""
+    bkStart = OxmlElement('w:bookmarkStart')
+    bkStart.set(qn('w:id'),   str(bk_id))
+    bkStart.set(qn('w:name'), bk_name)
+    bkEnd = OxmlElement('w:bookmarkEnd')
+    bkEnd.set(qn('w:id'), str(bk_id))
+    para._p.insert(0, bkStart)
+    para._p.append(bkEnd)
+
+
+def _build_run_rPr(font, size_pt, bold):
+    """Buat w:rPr dengan font/size/bold eksplisit — tanpa theme reference."""
+    rPr = OxmlElement('w:rPr')
+    fonts_el = OxmlElement('w:rFonts')
+    fonts_el.set(qn('w:ascii'),    font)
+    fonts_el.set(qn('w:hAnsi'),    font)
+    fonts_el.set(qn('w:cs'),       font)
+    fonts_el.set(qn('w:eastAsia'), font)
+    rPr.append(fonts_el)
+    sz = OxmlElement('w:sz')
+    sz.set(qn('w:val'), str(size_pt * 2))
+    rPr.append(sz)
+    szCs = OxmlElement('w:szCs')
+    szCs.set(qn('w:val'), str(size_pt * 2))
+    rPr.append(szCs)
+    b = OxmlElement('w:b')
+    if not bold:
+        b.set(qn('w:val'), '0')
+    rPr.append(b)
+    bCs = OxmlElement('w:bCs')
+    if not bold:
+        bCs.set(qn('w:val'), '0')
+    rPr.append(bCs)
+    return rPr
+
+
+def _make_static_toc_para(text, level, bk_name, font, size_pt, use_dots, right_tab_pos):
+    """
+    Buat satu paragraf TOC statis dengan PAGEREF untuk nomor halaman.
+
+    Keuntungan vs TOC field:
+    - Formatting (font, bold) sepenuhnya dikontrol kita via rPr inline
+    - Tidak ada warisan bold/font dari paragraf sumber (DAF2 problem)
+    - Nomor halaman tetap dinamis via PAGEREF — diupdate Word saat dibuka
+    """
+    import copy
+    p       = OxmlElement('w:p')
+    is_bold = (level == 1)
+
+    # ── pPr ──────────────────────────────────────────────────────────────────
+    pPr = OxmlElement('w:pPr')
+
+    pStyle = OxmlElement('w:pStyle')
+    pStyle.set(qn('w:val'), f'TOC{level}')
+    pPr.append(pStyle)
+
+    spacing = OxmlElement('w:spacing')
+    spacing.set(qn('w:after'), '0')
+    spacing.set(qn('w:line'), '360')
+    spacing.set(qn('w:lineRule'), 'auto')
+    pPr.append(spacing)
+
+    IND = {1: (0, 0), 2: (284, 0), 3: (1560, 709)}
+    left_t, hang_t = IND.get(level, (284 * (level - 1), 0))
+    if left_t or hang_t:
+        ind = OxmlElement('w:ind')
+        if left_t:  ind.set(qn('w:left'),    str(left_t))
+        if hang_t:  ind.set(qn('w:hanging'), str(hang_t))
+        pPr.append(ind)
+
+    LEFT_TAB = {2: 851}
+    tabs_el = OxmlElement('w:tabs')
+    if level in LEFT_TAB:
+        lt = OxmlElement('w:tab')
+        lt.set(qn('w:val'), 'left')
+        lt.set(qn('w:pos'), str(LEFT_TAB[level]))
+        lt.set(qn('w:leader'), 'none')
+        tabs_el.append(lt)
+    rt = OxmlElement('w:tab')
+    rt.set(qn('w:val'), 'right')
+    rt.set(qn('w:pos'), str(right_tab_pos))
+    rt.set(qn('w:leader'), 'dot' if use_dots else 'none')
+    tabs_el.append(rt)
+    pPr.append(tabs_el)
+
+    p.append(pPr)
+
+    # ── Teks heading ──────────────────────────────────────────────────────────
+    r_text = OxmlElement('w:r')
+    r_text.append(_build_run_rPr(font, size_pt, is_bold))
+    t = OxmlElement('w:t')
+    t.set(_XML_SPACE, 'preserve')
+    t.text = text.replace('\n', ' ')
+    r_text.append(t)
+    p.append(r_text)
+
+    # ── Tab ───────────────────────────────────────────────────────────────────
+    r_tab = OxmlElement('w:r')
+    r_tab.append(_build_run_rPr(font, size_pt, is_bold))
+    r_tab.append(OxmlElement('w:tab'))
+    p.append(r_tab)
+
+    # ── PAGEREF field ─────────────────────────────────────────────────────────
+    base_rPr = _build_run_rPr(font, size_pt, is_bold)
+
+    r_begin = OxmlElement('w:r')
+    r_begin.append(copy.deepcopy(base_rPr))
+    fc = OxmlElement('w:fldChar')
+    fc.set(qn('w:fldCharType'), 'begin')
+    r_begin.append(fc)
+    p.append(r_begin)
+
+    r_instr = OxmlElement('w:r')
+    r_instr.append(copy.deepcopy(base_rPr))
+    instr = OxmlElement('w:instrText')
+    instr.set(_XML_SPACE, 'preserve')
+    instr.text = f' PAGEREF {bk_name} \\h '
+    r_instr.append(instr)
+    p.append(r_instr)
+
+    r_sep = OxmlElement('w:r')
+    r_sep.append(copy.deepcopy(base_rPr))
+    fc_sep = OxmlElement('w:fldChar')
+    fc_sep.set(qn('w:fldCharType'), 'separate')
+    r_sep.append(fc_sep)
+    p.append(r_sep)
+
+    r_ph = OxmlElement('w:r')
+    r_ph.append(copy.deepcopy(base_rPr))
+    t_ph = OxmlElement('w:t')
+    t_ph.text = '1'
+    r_ph.append(t_ph)
+    p.append(r_ph)
+
+    r_end = OxmlElement('w:r')
+    r_end.append(copy.deepcopy(base_rPr))
+    fc_end = OxmlElement('w:fldChar')
+    fc_end.set(qn('w:fldCharType'), 'end')
+    r_end.append(fc_end)
+    p.append(r_end)
+
+    return p
+
+
 # ── Helper page break ─────────────────────────────────────────────────────────
 
 def _has_inline_page_break(para):
@@ -757,6 +951,11 @@ def main():
         style_name = para.style.name if para.style else ''
         if not style_name.startswith('Heading '):
             apply_outline_level(para, lvl)
+
+    # ── Strip bold dari H2/H3 agar tidak ikut ke TOC ─────────────────────────
+    for idx, lvl, _txt in headings:
+        if lvl >= 2:
+            _strip_bold_from_heading(doc.paragraphs[idx])
 
     # ── Aktifkan auto-update agar Word langsung hitung nomor halaman ─────────
     enable_auto_update_fields(doc)
