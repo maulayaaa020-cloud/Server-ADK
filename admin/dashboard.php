@@ -42,7 +42,8 @@ $stats['today']   = (int)$db->query("SELECT COUNT(*) FROM orders WHERE DATE(crea
 $stats['paid']    = (int)$db->query("SELECT COUNT(*) FROM orders WHERE status = 'paid'")->fetchColumn();
 $stats['pending'] = (int)$db->query("SELECT COUNT(*) FROM orders WHERE status = 'pending'")->fetchColumn();
 $stats['failed']  = (int)$db->query("SELECT COUNT(*) FROM orders WHERE status = 'failed'")->fetchColumn();
-$stats['revenue'] = (float)$db->query("SELECT COALESCE(SUM(harga),0) FROM orders WHERE status = 'paid'")->fetchColumn();
+$stats['revenue']       = (float)$db->query("SELECT COALESCE(SUM(harga),0) FROM orders WHERE status = 'paid'")->fetchColumn();
+$stats['revenue_today'] = (float)$db->query("SELECT COALESCE(SUM(harga),0) FROM orders WHERE status = 'paid' AND DATE(created_at) = CURDATE()")->fetchColumn();
 
 // ── Filters ────────────────────────────────────────────────────────────────
 $filterStatus = $_GET['status'] ?? 'all';
@@ -621,6 +622,10 @@ function tglAdmin(string $dt): string {
         <div class="stat-card">
             <div class="stat-label">Total Pendapatan</div>
             <div class="stat-value green sm"><?= fmtRupiah($stats['revenue']) ?></div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Pendapatan Hari Ini</div>
+            <div class="stat-value green sm"><?= fmtRupiah($stats['revenue_today']) ?></div>
         </div>
     </div>
 
