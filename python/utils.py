@@ -551,6 +551,7 @@ class DocProcessor:
             )
             if not _roman_already_bounded:
                 self.insert_break_before_xml(roman_start_p)
+                self._strip_empty_paras_before_bab(roman_start_p)
 
         for bab_p in bab_p_list:
             self.insert_break_before_xml(bab_p)
