@@ -510,6 +510,21 @@ class DocProcessor:
                     seen_bab_numbers.add(bab_num_key)
                 last_bab_para_idx = para_idx
 
+            # Fallback: Heading 1 langsung setelah section break, bukan roman-zone heading.
+            # Menangani dokumen di mana BAB I/II/III tidak punya prefix "BAB" pada teksnya.
+            elif (roman_start_p is not None and text and not is_roman_start(text) and
+                  not lampiran_found):
+                _style_lower = para.style.name.lower() if para.style else ""
+                if re.match(r'^heading\s*1$', _style_lower):
+                    _prev_has_sect = (
+                        para_idx > 0 and
+                        self._has_sectPr(all_paras[para_idx - 1]._p)
+                    )
+                    if _prev_has_sect:
+                        bab_p_list.append(para._p)
+                        found_numbered_bab = True
+                        last_bab_para_idx = para_idx
+
         return roman_start_p, bab_p_list
 
     def insert_breaks(self, roman_start_p, bab_p_list):
