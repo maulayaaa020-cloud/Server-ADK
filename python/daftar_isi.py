@@ -348,50 +348,43 @@ def apply_outline_level(para, level):
 
 # ── TOC styles ────────────────────────────────────────────────────────────────
 
-def _ensure_toc_style(doc, level, use_dots, font='Times New Roman', size_pt=12, line_spacing=1.0):
+def _apply_rPr_font_to_style_element(style_el, font, size_pt, bold, is_char_style=False):
     """
-    Pastikan style 'TOC X' ada dengan font/size/spasi seragam + tab stop kanan.
-    Menggunakan XML langsung agar semua script font (ascii/hAnsi/cs) dan bold
-    ter-override secara eksplisit — menghindari inkonsistensi antar dokumen.
+    Terapkan font/size/bold ke elemen style XML secara menyeluruh.
+    Menghapus semua theme-based font references (asciiTheme, hAnsiTheme, cstheme)
+    yang bisa override font eksplisit saat Word update TOC field.
+
+    is_char_style=True: hapus juga sz/color/kern agar tidak ada residual
+    dari Heading X Char yang menimpa TOC entry saat dirender.
     """
-    style_name = f'TOC {level}'
-    try:
-        style = doc.styles[style_name]
-    except KeyError:
-        from docx.enum.style import WD_STYLE_TYPE
-        style = doc.styles.add_style(style_name, WD_STYLE_TYPE.PARAGRAPH)
-        try:
-            style.base_style = doc.styles['Normal']
-        except Exception:
-            pass
-
-    # ── Paragraph format ─────────────────────────────────────────────────────
-    pf = style.paragraph_format
-    pf.left_indent  = Cm((level - 1) * 0.5)
-    pf.space_after  = Pt(0)
-    pf.line_spacing = line_spacing
-
-    # ── Run properties: reset dan set ulang via XML ──────────────────────────
-    # Ambil atau buat rPr di definisi style
-    rPr = style.element.find(qn('w:rPr'))
+    rPr = style_el.find(qn('w:rPr'))
     if rPr is None:
         rPr = OxmlElement('w:rPr')
-        style.element.append(rPr)
+        style_el.append(rPr)
 
-    # Hapus semua formatting lama yang bisa konflik
-    for tag in (qn('w:rFonts'), qn('w:sz'), qn('w:szCs'), qn('w:b'), qn('w:color')):
+    # Hapus tag yang bisa konflik
+    remove_tags = [qn('w:rFonts'), qn('w:sz'), qn('w:szCs'), qn('w:b'), qn('w:bCs')]
+    if is_char_style:
+        # Untuk char style, hapus juga color/kern/ligatures agar tidak
+        # ada efek visual dari Heading Char yang ikut masuk ke TOC entry
+        remove_tags += [qn('w:color'), qn('w:kern'), qn('w:lang')]
+        # Hapus themeColor/themeShade attribute dari color jika ada
+    for tag in remove_tags:
         old = rPr.find(tag)
         if old is not None:
             rPr.remove(old)
 
-    # Font: set ascii + hAnsi + cs sekaligus
+    # Font: set ascii + hAnsi + cs secara eksplisit (TANPA theme reference)
+    # Theme reference seperti asciiTheme="majorHAnsi" akan di-resolve oleh Word
+    # menjadi Calibri Light / Cambria, BUKAN Times New Roman.
     fonts_el = OxmlElement('w:rFonts')
-    fonts_el.set(qn('w:ascii'), font)
-    fonts_el.set(qn('w:hAnsi'), font)
-    fonts_el.set(qn('w:cs'),    font)
+    fonts_el.set(qn('w:ascii'),  font)
+    fonts_el.set(qn('w:hAnsi'),  font)
+    fonts_el.set(qn('w:cs'),     font)
+    fonts_el.set(qn('w:eastAsia'), font)
     rPr.insert(0, fonts_el)
 
-    # Ukuran font (sz dan szCs untuk complex script)
+    # Ukuran font
     sz = OxmlElement('w:sz')
     sz.set(qn('w:val'), str(size_pt * 2))
     rPr.append(sz)
@@ -399,44 +392,191 @@ def _ensure_toc_style(doc, level, use_dots, font='Times New Roman', size_pt=12, 
     szCs.set(qn('w:val'), str(size_pt * 2))
     rPr.append(szCs)
 
-    # Bold: H1 = bold, H2/H3 = eksplisit tidak bold (val=0)
+    # Bold
     b = OxmlElement('w:b')
-    if level > 1:
+    if not bold:
         b.set(qn('w:val'), '0')
     rPr.append(b)
+    bCs = OxmlElement('w:bCs')
+    if not bold:
+        bCs.set(qn('w:val'), '0')
+    rPr.append(bCs)
 
-    # ── Tab stop kanan dengan/tanpa leader titik ─────────────────────────────
-    pPr = style.element.find(qn('w:pPr'))
-    if pPr is None:
-        pPr = OxmlElement('w:pPr')
-        style.element.append(pPr)
 
-    old_tabs = pPr.find(qn('w:tabs'))
-    if old_tabs is not None:
-        pPr.remove(old_tabs)
+def _fix_heading_char_styles(doc, font, size_pt):
+    """
+    ROOT CAUSE FIX: Modifikasi style 'Heading X Char' (character styles) agar
+    fontnya konsisten dengan TOC font yang kita set.
 
-    tabs = OxmlElement('w:tabs')
-    tab = OxmlElement('w:tab')
-    tab.set(qn('w:val'), 'right')
-    tab.set(qn('w:pos'), TAB_POS_TWIPS)
-    tab.set(qn('w:leader'), 'dot' if use_dots else 'none')
-    tabs.append(tab)
-    pPr.append(tabs)
+    Saat Word melakukan update TOC field, ia menaruh w:rStyle="HeadingXChar"
+    di setiap run paragraf TOC. Style karakter ini kemudian MENG-OVERRIDE font
+    dari definisi style TOC (karena character style > paragraph style dalam
+    prioritas cascading Word).
+
+    Masalah: Heading X Char di dokumen ini menggunakan asciiTheme="majorHAnsi"
+    yang di-resolve ke Calibri Light, bukan Times New Roman.
+
+    Solusi: Override Heading X Char styles dengan font yang sama seperti TOC.
+    Ini aman karena style ini hanya digunakan di konteks TOC (sebagai linked
+    character style dari Heading paragraph style).
+    """
+    styles_root = doc.styles.element
+
+    # Mapping styleId yang umum dipakai oleh Word untuk Heading Char styles
+    heading_char_ids = {
+        'Heading1Char', 'Heading2Char', 'Heading3Char',
+        'Heading4Char', 'Heading5Char', 'Heading6Char',
+        'Heading7Char', 'Heading8Char', 'Heading9Char',
+        # Variasi lain yang mungkin ada di dokumen Indonesia
+        'H1Char', 'H2Char', 'H3Char',
+    }
+
+    for style_el in styles_root.findall(qn('w:style')):
+        stype = style_el.get(qn('w:type'), '')
+        if stype != 'character':
+            continue
+        style_id = style_el.get(qn('w:styleId'), '')
+        sname_el = style_el.find(qn('w:name'))
+        sname = sname_el.get(qn('w:val'), '') if sname_el is not None else ''
+
+        # Cocokkan styleId atau nama yang mengandung "Heading" + "Char"
+        is_heading_char = (
+            style_id in heading_char_ids
+            or ('Heading' in sname and 'Char' in sname)
+            or (style_id.startswith('H') and style_id.endswith('Char')
+                and style_id[1:-4].isdigit())
+        )
+        if not is_heading_char:
+            continue
+
+        # Override font di char style ini — bold=False agar tidak bold di H2/H3
+        # (H1 juga tidak bold di char style, bold dikontrol oleh paragraph style)
+        _apply_rPr_font_to_style_element(
+            style_el, font=font, size_pt=size_pt, bold=False, is_char_style=True
+        )
+
+
+def _ensure_toc_style(doc, level, use_dots, font='Times New Roman', size_pt=12, line_spacing=1.0):
+    """
+    Pastikan style 'TOC X' ada dengan font/size/spasi seragam + tab stop kanan.
+
+    Menangani DUA versi style yang mungkin ada di dokumen Word Indonesia:
+      - 'TOC 1' / 'TOC 2' / 'TOC 3'  (Pascal case — dipakai saat Word update field)
+      - 'toc 1' / 'toc 2' / 'toc 3'  (lowercase — style bawaan Word Indonesia)
+
+    Kedua versi harus punya font yang sama. Jika 'toc X' lowercase tidak punya
+    rPr (seperti yang ditemukan di dokumen sumber), Word akan fallback ke Normal
+    style yang fontnya Calibri — menyebabkan inkonsistensi.
+
+    Menggunakan XML langsung agar semua script font (ascii/hAnsi/cs/eastAsia)
+    ter-override secara eksplisit tanpa theme reference.
+    """
+    from docx.enum.style import WD_STYLE_TYPE
+
+    # Tangani kedua versi nama style (Pascal dan lowercase)
+    style_names_to_fix = [f'TOC {level}', f'toc {level}']
+
+    for style_name in style_names_to_fix:
+        try:
+            style = doc.styles[style_name]
+        except KeyError:
+            if style_name == f'TOC {level}':
+                # Hanya buat style TOC jika belum ada (versi Pascal case adalah utama)
+                style = doc.styles.add_style(style_name, WD_STYLE_TYPE.PARAGRAPH)
+                try:
+                    style.base_style = doc.styles['Normal']
+                except Exception:
+                    pass
+            else:
+                # Versi lowercase opsional — skip jika tidak ada
+                continue
+
+        # ── Paragraph format ─────────────────────────────────────────────────
+        pf = style.paragraph_format
+        pf.space_after  = Pt(0)
+        pf.line_spacing = line_spacing
+
+        # Indentasi per level (dari analisis referensi)
+        # TOC1: left=0
+        # TOC2: left=284t, tidak ada hanging
+        # TOC3: left=1560t, hanging=709t (teks mulai di 1560-709=851t, sama dgn TOC2)
+        from docx.shared import Twips as _Twips
+        IND = {
+            1: (0,    0),
+            2: (284,  0),
+            3: (1560, 709),
+        }
+        left_t, hang_t = IND.get(level, (284 * (level - 1), 0))
+        pf.left_indent       = _Twips(left_t)
+        pf.first_line_indent = _Twips(-hang_t) if hang_t else None
+
+        # ── Run properties via XML ────────────────────────────────────────────
+        _apply_rPr_font_to_style_element(
+            style.element,
+            font=font,
+            size_pt=size_pt,
+            bold=(level == 1),
+            is_char_style=False,
+        )
+
+        # ── Tab stops ─────────────────────────────────────────────────────────
+        # Hitung posisi tab kanan (nomor halaman) dari margin dokumen
+        try:
+            sec = doc.sections[0]
+            right_tab = int((sec.page_width - sec.left_margin - sec.right_margin).twips)
+        except Exception:
+            right_tab = 7927  # fallback ~14cm
+
+        # TOC2: DUA tab stop — tab kiri 851t (alignment teks) + tab kanan (halaman)
+        # TOC3: hanya tab kanan (alignment diatur oleh left+hanging indent)
+        # TOC1: hanya tab kanan
+        LEFT_TAB_TWIPS = {2: 851}  # dari analisis referensi terbaru
+
+        pPr = style.element.find(qn('w:pPr'))
+        if pPr is None:
+            pPr = OxmlElement('w:pPr')
+            style.element.append(pPr)
+
+        old_tabs = pPr.find(qn('w:tabs'))
+        if old_tabs is not None:
+            pPr.remove(old_tabs)
+
+        tabs_el = OxmlElement('w:tabs')
+
+        if level in LEFT_TAB_TWIPS:
+            left_tab = OxmlElement('w:tab')
+            left_tab.set(qn('w:val'),    'left')
+            left_tab.set(qn('w:pos'),    str(LEFT_TAB_TWIPS[level]))
+            left_tab.set(qn('w:leader'), 'none')
+            tabs_el.append(left_tab)
+
+        right_tab_el = OxmlElement('w:tab')
+        right_tab_el.set(qn('w:val'),    'right')
+        right_tab_el.set(qn('w:pos'),    str(right_tab))
+        right_tab_el.set(qn('w:leader'), 'dot' if use_dots else 'none')
+        tabs_el.append(right_tab_el)
+
+        pPr.append(tabs_el)
 
 
 # ── Helper run ────────────────────────────────────────────────────────────────
 
 def _make_run(text, bold=False, font='Times New Roman', size_pt=12):
-    """Buat elemen <w:r> dengan formatting inline."""
+    """Buat elemen <w:r> dengan formatting inline (semua script font di-set eksplisit)."""
     r = OxmlElement('w:r')
     rPr = OxmlElement('w:rPr')
     fonts = OxmlElement('w:rFonts')
-    fonts.set(qn('w:ascii'), font)
-    fonts.set(qn('w:hAnsi'), font)
+    fonts.set(qn('w:ascii'),   font)
+    fonts.set(qn('w:hAnsi'),   font)
+    fonts.set(qn('w:cs'),      font)
+    fonts.set(qn('w:eastAsia'), font)
     rPr.append(fonts)
     sz = OxmlElement('w:sz')
     sz.set(qn('w:val'), str(size_pt * 2))
     rPr.append(sz)
+    szCs = OxmlElement('w:szCs')
+    szCs.set(qn('w:val'), str(size_pt * 2))
+    rPr.append(szCs)
     if bold:
         rPr.append(OxmlElement('w:b'))
     r.append(rPr)
@@ -594,6 +734,13 @@ def main():
     # ── Seragamkan style TOC agar font/size/spasi konsisten ─────────────────
     for lvl in range(1, max_level + 1):
         _ensure_toc_style(doc, lvl, use_dots, font=font, size_pt=size_pt, line_spacing=line_spacing)
+
+    # ── Fix Heading X Char styles (root cause inkonsistensi font) ────────────
+    # Saat Word update TOC field, ia menaruh rStyle="Heading2Char" di setiap
+    # run paragraf TOC 2/3. Style karakter ini menggunakan theme font
+    # (majorHAnsi = Calibri Light) yang OVERRIDE font Times New Roman dari
+    # definisi style TOC. Solusi: samakan font Heading X Char dengan TOC font.
+    _fix_heading_char_styles(doc, font=font, size_pt=size_pt)
 
     # ── Deteksi heading ──────────────────────────────────────────────────────
     headings = detect_headings(doc, max_level)
