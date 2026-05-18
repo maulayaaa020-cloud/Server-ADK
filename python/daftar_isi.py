@@ -351,6 +351,8 @@ def apply_outline_level(para, level):
 def _ensure_toc_style(doc, level, use_dots, font='Times New Roman', size_pt=12, line_spacing=1.0):
     """
     Pastikan style 'TOC X' ada dengan font/size/spasi seragam + tab stop kanan.
+    Menggunakan XML langsung agar semua script font (ascii/hAnsi/cs) dan bold
+    ter-override secara eksplisit — menghindari inkonsistensi antar dokumen.
     """
     style_name = f'TOC {level}'
     try:
@@ -363,16 +365,47 @@ def _ensure_toc_style(doc, level, use_dots, font='Times New Roman', size_pt=12, 
         except Exception:
             pass
 
+    # ── Paragraph format ─────────────────────────────────────────────────────
     pf = style.paragraph_format
     pf.left_indent  = Cm((level - 1) * 0.5)
     pf.space_after  = Pt(0)
     pf.line_spacing = line_spacing
 
-    style.font.name = font
-    style.font.size = Pt(size_pt)
-    style.font.bold = (level == 1)
+    # ── Run properties: reset dan set ulang via XML ──────────────────────────
+    # Ambil atau buat rPr di definisi style
+    rPr = style.element.find(qn('w:rPr'))
+    if rPr is None:
+        rPr = OxmlElement('w:rPr')
+        style.element.append(rPr)
 
-    # Tab stop kanan dengan/tanpa leader titik
+    # Hapus semua formatting lama yang bisa konflik
+    for tag in (qn('w:rFonts'), qn('w:sz'), qn('w:szCs'), qn('w:b'), qn('w:color')):
+        old = rPr.find(tag)
+        if old is not None:
+            rPr.remove(old)
+
+    # Font: set ascii + hAnsi + cs sekaligus
+    fonts_el = OxmlElement('w:rFonts')
+    fonts_el.set(qn('w:ascii'), font)
+    fonts_el.set(qn('w:hAnsi'), font)
+    fonts_el.set(qn('w:cs'),    font)
+    rPr.insert(0, fonts_el)
+
+    # Ukuran font (sz dan szCs untuk complex script)
+    sz = OxmlElement('w:sz')
+    sz.set(qn('w:val'), str(size_pt * 2))
+    rPr.append(sz)
+    szCs = OxmlElement('w:szCs')
+    szCs.set(qn('w:val'), str(size_pt * 2))
+    rPr.append(szCs)
+
+    # Bold: H1 = bold, H2/H3 = eksplisit tidak bold (val=0)
+    b = OxmlElement('w:b')
+    if level > 1:
+        b.set(qn('w:val'), '0')
+    rPr.append(b)
+
+    # ── Tab stop kanan dengan/tanpa leader titik ─────────────────────────────
     pPr = style.element.find(qn('w:pPr'))
     if pPr is None:
         pPr = OxmlElement('w:pPr')
