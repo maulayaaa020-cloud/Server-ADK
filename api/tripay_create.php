@@ -16,7 +16,7 @@ if (!$dbId || !$orderId || !$harga) {
 
 try {
     $db  = getDB();
-    $row = $db->prepare("SELECT snap_token, status FROM orders WHERE id = :id");
+    $row = $db->prepare("SELECT snap_token, status, phone FROM orders WHERE id = :id");
     $row->execute([':id' => $dbId]);
     $order = $row->fetch();
 
@@ -25,19 +25,17 @@ try {
         exit;
     }
 
-    // Kembalikan URL yang sudah ada
+    // Kembalikan URL yang sudah ada (tidak boleh ganti metode)
     if (!empty($order['snap_token'])) {
         $existing = json_decode($order['snap_token'], true);
         if ($existing && isset($existing['url'])) {
-            echo json_encode(['url' => $existing['url']]);
+            echo json_encode(['url' => $existing['url'], 'method' => $existing['method'] ?? '']);
             exit;
         }
-        echo json_encode(['url' => $order['snap_token']]);
-        exit;
     }
 
     $signature   = hash_hmac('sha256', TRIPAY_MERCHANT_CODE . $orderId . $harga, TRIPAY_PRIVATE_KEY);
-    $expiredTime = time() + (24 * 60 * 60);
+    $expiredTime = time() + (30 * 60);
 
     $body = json_encode([
         'method'         => $method,
@@ -45,7 +43,7 @@ try {
         'amount'         => $harga,
         'customer_name'  => 'Pelanggan ADK',
         'customer_email' => 'pelanggan@adkphotocopy.com',
-        'customer_phone' => '08000000000',
+        'customer_phone' => !empty($order['phone']) ? preg_replace('/^0/', '62', $order['phone']) : '6281228790091',
         'order_items'    => [[
             'sku'      => 'ADK-PENOMORAN',
             'name'     => 'Layanan Penomoran Halaman ADK',
@@ -82,19 +80,19 @@ try {
         exit;
     }
 
-    $payUrl    = $result['data']['pay_url']   ?? null;
+    $payUrl    = $result['data']['pay_url'] ?? $result['data']['checkout_url'] ?? null;
     $reference = $result['data']['reference'] ?? null;
 
     if (!$payUrl) {
-        echo json_encode(['url' => null, 'error' => 'No pay_url returned']);
+        echo json_encode(['url' => null, 'error' => 'No pay_url returned', 'debug' => $result['data'] ?? $resp]);
         exit;
     }
 
-    $db->prepare("UPDATE orders SET snap_token = :ref WHERE id = :id")
-       ->execute([':ref' => $reference, ':id' => $dbId]);
+    $db->prepare("UPDATE orders SET snap_token = :data WHERE id = :id")
+       ->execute([':data' => json_encode(['reference' => $reference, 'url' => $payUrl, 'method' => $method]), ':id' => $dbId]);
 
     echo json_encode(['url' => $payUrl, 'reference' => $reference]);
 
-} catch (Exception $e) {
+} catch (Throwable $e) {
     echo json_encode(['url' => null, 'error' => $e->getMessage()]);
 }

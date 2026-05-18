@@ -924,7 +924,7 @@ if (!empty($penomoran)) {
                 <span>📱</span>
                 <span class="phone-masked"><?= htmlspecialchars(maskPhone($phone)) ?></span>
                 <span class="phone-divider"></span>
-                <a href="cek_pembelian.php">Ganti Nomor</a>
+                <a href="cek_pembelian.php?change=1">Ganti Nomor</a>
             </div>
             <?php endif; ?>
         </div>
@@ -1018,8 +1018,15 @@ if (!empty($penomoran)) {
 
                     <?php if (!$isDI && $isPending): ?>
                     <a href="sk.html" target="_blank" class="sk-link">S&amp;K berlaku</a>
+                    <?php
+                        $existingPayUrl = '';
+                        if (!empty($o['snap_token'])) {
+                            $td = json_decode($o['snap_token'], true);
+                            if ($td && isset($td['url'])) $existingPayUrl = $td['url'];
+                        }
+                    ?>
                     <button class="btn-bayar"
-                            onclick="bayar(<?= $o['id'] ?>, '<?= htmlspecialchars($o['order_id']) ?>', <?= $o['harga'] ?>)">
+                            onclick="bayar(<?= $o['id'] ?>, '<?= htmlspecialchars($o['order_id']) ?>', <?= $o['harga'] ?>, '<?= htmlspecialchars($existingPayUrl) ?>')">
                         Bayar — Rp <?= number_format($o['harga'],0,',','.') ?>
                     </button>
                     <?php endif; ?>
@@ -1235,27 +1242,95 @@ if (!empty($penomoran)) {
             }, 3000);
         }
 
-        function bayar(dbId, orderId, harga) {
-            const methods = [
-                {code:'QRIS',      label:'QRIS (Semua Dompet)'},
-                {code:'BRIVA',     label:'BRI Virtual Account'},
-                {code:'BNIIVA',    label:'BNI Virtual Account'},
-                {code:'MANDIRIVA', label:'Mandiri Virtual Account'},
-                {code:'BCAVA',     label:'BCA Virtual Account'},
+        const _savedPayUrl = {};
+
+        function bayar(dbId, orderId, harga, existingUrl) {
+            const url = existingUrl || _savedPayUrl[dbId] || '';
+            if (url) {
+                window.open(url, '_blank');
+                startPolling(dbId, orderId);
+                return;
+            }
+            const groups = [
+                {
+                    label: 'QRIS',
+                    methods: [
+                        {code:'QRIS',      label:'QRIS (Semua Dompet)', fee:'+0.70%'},
+                    ]
+                },
+                {
+                    label: 'Dompet Digital',
+                    methods: [
+                        {code:'DANA',      label:'Dana',      fee:'+3.00%'},
+                        {code:'SHOPEEPAY', label:'ShopeePay', fee:'+3.00%'},
+                    ]
+                },
+                {
+                    label: 'Virtual Account',
+                    methods: [
+                        {code:'BRIVA',     label:'BRI Virtual Account',     fee:'+Rp 4.250'},
+                        {code:'BNIIVA',    label:'BNI Virtual Account',     fee:'+Rp 4.250'},
+                        {code:'MANDIRIVA', label:'Mandiri Virtual Account', fee:'+Rp 4.250'},
+                        {code:'BCAVA',     label:'BCA Virtual Account',     fee:'+Rp 4.250'},
+                        {code:'BSIVA',     label:'BSI Virtual Account',     fee:'+Rp 4.250'},
+                    ]
+                },
+                {
+                    label: 'Gerai / Minimarket',
+                    methods: [
+                        {code:'ALFAMART',  label:'Alfamart',  fee:'+Rp 3.500'},
+                        {code:'ALFAMIDI',  label:'Alfamidi',  fee:'+Rp 3.500'},
+                        {code:'INDOMARET', label:'Indomaret', fee:'+Rp 3.500'},
+                    ]
+                },
             ];
-            const opts = methods.map(m =>
-                `<button onclick="doBayar(${dbId},'${orderId}',${harga},'${m.code}',this)" style="width:100%;padding:10px 14px;margin-bottom:8px;background:rgba(124,58,237,0.15);border:1px solid rgba(124,58,237,0.4);border-radius:10px;color:#e5e7eb;font-size:14px;cursor:pointer;text-align:left">${m.label}</button>`
-            ).join('');
+            const btnStyle = 'width:100%;padding:9px 14px;margin-bottom:6px;background:rgba(124,58,237,0.12);border:1px solid rgba(124,58,237,0.35);border-radius:8px;color:#e5e7eb;font-size:13px;cursor:pointer;text-align:left;display:flex;justify-content:space-between;align-items:center';
+            const groupHtml = groups.map((g, gi) => `
+                <div class="pm-group" style="margin-bottom:6px;border:1px solid rgba(124,58,237,0.25);border-radius:10px;overflow:hidden">
+                    <button class="pm-head" onclick="(function(el){var p=el.closest('.pm-group');var b=p.querySelector('.pm-body');var ico=el.querySelector('.pm-ico');var open=p.classList.contains('open');p.classList.toggle('open',!open);b.style.maxHeight=open?'0':b.scrollHeight+'px';ico.style.transform=open?'rotate(0deg)':'rotate(180deg)';})(this)" style="width:100%;padding:11px 14px;background:rgba(124,58,237,0.15);border:none;color:#c4b5fd;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;cursor:pointer;text-align:left;display:flex;justify-content:space-between;align-items:center">
+                        ${g.label}
+                        <svg class="pm-ico" viewBox="0 0 24 24" style="width:16px;height:16px;stroke:#a78bfa;fill:none;stroke-width:2.5;transition:transform 0.3s ease"><polyline points="6 9 12 15 18 9"/></svg>
+                    </button>
+                    <div class="pm-body" style="max-height:0;overflow:hidden;transition:max-height 0.35s ease;padding:0 10px">
+                        <div style="padding:8px 0">
+                            ${g.methods.map(m => `<button onclick="doBayar(${dbId},'${orderId}',${harga},'${m.code}',this)" style="${btnStyle}"><span>${m.label}</span><span style="font-size:11px;color:#a78bfa;font-weight:600;white-space:nowrap;margin-left:8px">${m.fee}</span></button>`).join('')}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
             const modal = document.createElement('div');
             modal.id = 'bayarModal';
             modal.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(8,6,30,0.88);display:flex;align-items:center;justify-content:center;padding:20px';
-            modal.innerHTML = `<div style="background:#1a1043;border:1px solid rgba(124,58,237,0.45);border-radius:16px;padding:28px;width:100%;max-width:340px">
-                <div style="font-size:16px;font-weight:700;color:white;margin-bottom:6px">Pilih Metode Pembayaran</div>
-                <div style="font-size:12px;color:#a78bfa;margin-bottom:18px">Rp ${harga.toLocaleString('id-ID')}</div>
-                ${opts}
-                <button onclick="document.getElementById('bayarModal').remove()" style="width:100%;padding:8px;background:none;border:none;color:#6b7280;font-size:12px;cursor:pointer;margin-top:4px">Batal</button>
+            modal.innerHTML = `<div style="background:#1a1043;border:1px solid rgba(124,58,237,0.45);border-radius:16px;padding:24px 28px;width:100%;max-width:360px;height:480px;display:flex;flex-direction:column"><div style="overflow-y:auto;flex:1">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px"><div style="font-size:16px;font-weight:700;color:white">Pilih Metode Pembayaran</div><button onclick="document.getElementById('bayarModal').remove();document.body.style.overflow='';" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:#9ca3af;font-size:16px;cursor:pointer;padding:2px 8px;line-height:1;border-radius:6px;transition:0.15s" onmouseover="this.style.color='white';this.style.background='rgba(255,255,255,0.12)'" onmouseout="this.style.color='#9ca3af';this.style.background='rgba(255,255,255,0.06)'">✕</button></div>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px"><div style="font-size:12px;color:#a78bfa">Rp ${harga.toLocaleString('id-ID')}</div><div id="bayarTimerWrap" style="font-size:11px;font-weight:700;color:#fbbf24;background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.25);padding:3px 9px;border-radius:6px">⏱ <span id="bayarTimer">--:--</span></div></div>
+                ${groupHtml}
+                </div>
+                <button onclick="document.getElementById('bayarModal').remove();document.body.style.overflow='';" style="width:100%;padding:8px;background:none;border:none;color:#6b7280;font-size:12px;cursor:pointer;margin-top:8px;flex-shrink:0">Batal</button>
             </div>`;
             document.body.appendChild(modal);
+            document.body.style.overflow = 'hidden';
+
+            // Timer: ambil sisa waktu dari pendingOrders
+            var _bOrd = pendingOrders.find(function(o){ return o.id === dbId; });
+            var _bExp = _bOrd ? _bOrd.expiry : (Math.floor(Date.now()/1000) + 1800);
+            function _tickBayar() {
+                var left = _bExp - Math.floor(Date.now()/1000);
+                var el   = document.getElementById('bayarTimer');
+                var wrap = document.getElementById('bayarTimerWrap');
+                if (!el) { clearInterval(_bInt); return; }
+                if (left <= 0) {
+                    el.textContent = '00:00';
+                    if (wrap) { wrap.style.color='#f87171'; wrap.style.background='rgba(239,68,68,0.1)'; wrap.style.borderColor='rgba(239,68,68,0.3)'; }
+                    clearInterval(_bInt);
+                    setTimeout(function(){ var m=document.getElementById('bayarModal'); if(m){m.remove();document.body.style.overflow='';} }, 1500);
+                    return;
+                }
+                el.textContent = String(Math.floor(left/60)).padStart(2,'0') + ':' + String(left%60).padStart(2,'0');
+                if (left <= 60 && wrap) { wrap.style.color='#f87171'; wrap.style.background='rgba(239,68,68,0.1)'; wrap.style.borderColor='rgba(239,68,68,0.3)'; }
+            }
+            _tickBayar();
+            var _bInt = setInterval(_tickBayar, 1000);
         }
 
         function doBayar(dbId, orderId, harga, method, btn) {
@@ -1269,8 +1344,9 @@ if (!empty($penomoran)) {
             .then(r => r.json())
             .then(data => {
                 const modal = document.getElementById('bayarModal');
-                if (modal) modal.remove();
+                if (modal) { modal.remove(); document.body.style.overflow = ''; }
                 if (!data.url) { alert('Gagal membuat transaksi: ' + (data.error || 'Coba lagi')); return; }
+                _savedPayUrl[dbId] = data.url;
                 window.open(data.url, '_blank');
                 startPolling(dbId, orderId);
             })
@@ -1300,7 +1376,7 @@ if (!empty($penomoran)) {
 
             if (isPending) {
                 bayarBtn.style.display = 'inline-block';
-                bayarBtn.onclick = function() { closePreview(); bayar(dbId, ordId, harga); };
+                bayarBtn.onclick = function() { closePreview(); bayar(dbId, ordId, harga, ''); };
             } else {
                 bayarBtn.style.display = 'none';
             }
@@ -1520,6 +1596,8 @@ if (!empty($penomoran)) {
                 <h4>Bantuan</h4>
                 <a href="tutorial.html">Tutorial</a>
                 <a href="sk.html">Syarat &amp; Ketentuan</a>
+                <a href="tentang-kami.html">Tentang Kami</a>
+                <a href="kebijakan-privasi.html">Kebijakan Privasi</a>
             </div>
             <div class="footer-col">
                 <h4>Kontak</h4>
