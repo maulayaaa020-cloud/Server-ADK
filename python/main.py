@@ -106,7 +106,7 @@ def main():
         detected_bab_texts = []
         if paket == 'paket1':
             # Paket 1: tidak butuh deteksi zona
-            paket1.apply(proc, hidden_cov, posisi)
+            paket1.apply(proc, hidden_cov, posisi, dimulai_dari=dimulai)
 
         else:
             # Paket 2, 3, 4: butuh deteksi zona → Phase 1-3 dulu
@@ -120,7 +120,8 @@ def main():
             )
 
             if paket == 'paket2':
-                paket2.apply(proc, roman_sec, bab_sec_list, n_sections, hidden_cov, posisi)
+                paket2.apply(proc, roman_sec, bab_sec_list, n_sections, hidden_cov, posisi,
+                             dimulai_dari=dimulai)
             elif paket == 'paket4':
                 paket4.apply(
                     proc, roman_sec, bab_sec_list, n_sections, hidden_cov,
