@@ -103,5 +103,14 @@ $_SESSION['di_is_guest']     = $isGuest;
 $_SESSION['di_order_id']     = $orderId;
 $_SESSION['di_order_db_id']  = $dbId;
 
+// Set session yang dibutuhkan history.php
+if (!$isGuest) {
+    $_SESSION['phone'] = $phone;
+} else {
+    $_SESSION['guest_token'] = $guestToken;
+    if (!empty($_SESSION['is_guest'])) {} // jaga flag
+    $_SESSION['is_guest'] = true;
+}
+
 header("Location: proses_akhir_daftar_isi.php");
 exit;

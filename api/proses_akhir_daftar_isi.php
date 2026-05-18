@@ -71,5 +71,5 @@ if ($dbId) {
 
 $_SESSION['di_file_output'] = $outputRel;
 
-header("Location: ../daftar-isi-hasil.php");
+header("Location: ../history.php");
 exit;
