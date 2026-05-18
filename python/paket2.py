@@ -22,10 +22,12 @@ def apply(proc, roman_sec, bab_sec_list, n_sections, hidden_cov, posisi):
 
         # ── Cover zone ──
         if roman_sec is not None and i < roman_sec:
-            proc.fmt_cover(section, first_cover=(i == 0), show_pos=cov_show)
+            proc.fmt_cover(section, first_cover=(i == 0), show_pos=cov_show,
+                           visible_pos=(align, top))
             continue
         if roman_sec is None and i == 0:
-            proc.fmt_cover(section, first_cover=True, show_pos=cov_show)
+            proc.fmt_cover(section, first_cover=True, show_pos=cov_show,
+                           visible_pos=(align, top))
             continue
 
         # ── Romawi zone ──

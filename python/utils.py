@@ -591,7 +591,20 @@ class DocProcessor:
 
     # ── Section formatters (dipakai oleh paket2 & paket3) ─
 
-    def fmt_cover(self, section, first_cover=False, show_pos=None, cover_start=1):
+    def fmt_cover(self, section, first_cover=False, show_pos=None, cover_start=1,
+                  visible_pos=None):
+        """
+        show_pos    : (align, top) saat hidden_cov='Tidak' — semua halaman cover tampil.
+        visible_pos : (align, top) saat hidden_cov='Ya' — posisi nomor di halaman cover 2+.
+                      Jika None, default CENTER BAWAH.
+        """
+        _vis_align = WD_ALIGN_PARAGRAPH.CENTER
+        _vis_top   = False
+        if visible_pos:
+            _vis_align, _vis_top = visible_pos
+        elif show_pos:
+            _vis_align, _vis_top = show_pos
+
         self.clear_header(section)
         self.clear_footer(section)
         if first_cover:
@@ -606,7 +619,7 @@ class DocProcessor:
                     self._place_num_in_part(section.footer, align)
             else:
                 # hidden_cov='Ya': sembunyikan cover 1 via first-page footer,
-                # cover 2+ tampilkan "ii", "iii", dst via regular footer
+                # cover 2+ tampilkan via regular header/footer sesuai visible_pos
                 section.different_first_page_header_footer = True
                 fph = section.first_page_header
                 fph.is_linked_to_previous = False
@@ -616,11 +629,14 @@ class DocProcessor:
                 fpf.is_linked_to_previous = False
                 for p in fpf.paragraphs:
                     self.clear_paragraph(p)
-                self._place_num_in_part(section.footer, WD_ALIGN_PARAGRAPH.CENTER)
+                if _vis_top:
+                    self._place_num_in_part(section.header, _vis_align)
+                else:
+                    self._place_num_in_part(section.footer, _vis_align)
         else:
             section.different_first_page_header_footer = False
             self.set_page_number_format(section, 'lowerRoman')
-            # Sampul ke-2 dst selalu tampilkan nomor halaman (ii, iii, ...)
+            # Sampul ke-2 dst (section terpisah) tampilkan nomor sesuai visible_pos
             if show_pos:
                 align, top = show_pos
                 if top:
@@ -628,7 +644,10 @@ class DocProcessor:
                 else:
                     self._place_num_in_part(section.footer, align)
             else:
-                self._place_num_in_part(section.footer, WD_ALIGN_PARAGRAPH.CENTER)
+                if _vis_top:
+                    self._place_num_in_part(section.header, _vis_align)
+                else:
+                    self._place_num_in_part(section.footer, _vis_align)
 
     def fmt_roman(self, section):
         section.different_first_page_header_footer = False
