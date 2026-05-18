@@ -25,12 +25,17 @@ ROMAN_START_KEYWORDS = [
     "halaman persembahan", "persembahan", "motto",
     "ringkasan",
     "daftar isi",
+    "daftar tabel", "daftar gambar", "daftar grafik", "daftar rumus",
+    "daftar singkatan", "daftar lambang", "daftar notasi", "daftar simbol",
+    "daftar istilah", "daftar arti lambang", "daftar arti simbol",
     "abstract", "summary", "executive summary",
     "preface", "foreword", "acknowledgment", "acknowledgements",
     "approval page", "approval sheet", "declaration", "originality statement",
     "dedication",
     "table of contents", "list of contents", "contents",
     "list of tables", "list of figures", "list of appendices",
+    "list of abbreviations", "list of symbols", "list of notations",
+    "nomenclature",
 ]
 
 _ROMAN_PAT = r'm{0,4}(cm|cd|d?c{0,3})(xc|xl|l?x{0,3})(ix|iv|v?i{0,3})'
@@ -535,7 +540,18 @@ class DocProcessor:
 
         if roman_start_p is not None:
             roman_start_p = self._find_section_start(roman_start_p)
-            self.insert_break_before_xml(roman_start_p)
+            # Jika section boundary sudah ada tepat sebelum roman_start_p,
+            # tidak perlu insert break (agar page break di roman zone tidak dihapus).
+            body_ch = list(self.doc.element.body)
+            _rsp_idx = next((i for i, e in enumerate(body_ch) if e is roman_start_p), -1)
+            _roman_already_bounded = (
+                _rsp_idx > 0 and
+                body_ch[_rsp_idx - 1].tag.endswith('}p') and
+                self._has_sectPr(body_ch[_rsp_idx - 1])
+            )
+            if not _roman_already_bounded:
+                self.insert_break_before_xml(roman_start_p)
+                self._strip_empty_paras_before_bab(roman_start_p)
 
         for bab_p in bab_p_list:
             self.insert_break_before_xml(bab_p)
@@ -575,24 +591,66 @@ class DocProcessor:
 
     # ── Section formatters (dipakai oleh paket2 & paket3) ─
 
-    def fmt_cover(self, section, first_cover=False, show_pos=None):
-        section.different_first_page_header_footer = False
+    def fmt_cover(self, section, first_cover=False, show_pos=None, cover_start=1,
+                  visible_pos=None):
+        """
+        show_pos    : (align, top) saat hidden_cov='Tidak' — semua halaman cover tampil.
+        visible_pos : (align, top) saat hidden_cov='Ya' — posisi nomor di halaman cover 2+.
+                      Jika None, default CENTER BAWAH.
+        """
+        _vis_align = WD_ALIGN_PARAGRAPH.CENTER
+        _vis_top   = False
+        if visible_pos:
+            _vis_align, _vis_top = visible_pos
+        elif show_pos:
+            _vis_align, _vis_top = show_pos
+
         self.clear_header(section)
         self.clear_footer(section)
         if first_cover:
-            self.set_page_number_format(section, 'lowerRoman', 1)
-        else:
-            self.set_page_number_format(section, 'lowerRoman')
-        if show_pos and first_cover:
-            align, top = show_pos
-            if top:
-                self._place_num_in_part(section.header, align)
+            self.set_page_number_format(section, 'lowerRoman', cover_start)
+            if show_pos:
+                # hidden_cov='Tidak': tampilkan nomor di semua halaman cover
+                section.different_first_page_header_footer = False
+                align, top = show_pos
+                if top:
+                    self._place_num_in_part(section.header, align)
+                else:
+                    self._place_num_in_part(section.footer, align)
             else:
-                self._place_num_in_part(section.footer, align)
+                # hidden_cov='Ya': sembunyikan cover 1 via first-page footer,
+                # cover 2+ tampilkan via regular header/footer sesuai visible_pos
+                section.different_first_page_header_footer = True
+                fph = section.first_page_header
+                fph.is_linked_to_previous = False
+                for p in fph.paragraphs:
+                    self.clear_paragraph(p)
+                fpf = section.first_page_footer
+                fpf.is_linked_to_previous = False
+                for p in fpf.paragraphs:
+                    self.clear_paragraph(p)
+                if _vis_top:
+                    self._place_num_in_part(section.header, _vis_align)
+                else:
+                    self._place_num_in_part(section.footer, _vis_align)
+        else:
+            section.different_first_page_header_footer = False
+            self.set_page_number_format(section, 'lowerRoman')
+            # Sampul ke-2 dst (section terpisah) tampilkan nomor sesuai visible_pos
+            if show_pos:
+                align, top = show_pos
+                if top:
+                    self._place_num_in_part(section.header, align)
+                else:
+                    self._place_num_in_part(section.footer, align)
+            else:
+                if _vis_top:
+                    self._place_num_in_part(section.header, _vis_align)
+                else:
+                    self._place_num_in_part(section.footer, _vis_align)
 
     def fmt_roman(self, section):
         section.different_first_page_header_footer = False
-        section.footer_distance = Cm(1.25)
         self.clear_header(section)
         f = section.footer
         f.is_linked_to_previous = False

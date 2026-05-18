@@ -89,25 +89,32 @@ def apply(proc, roman_sec, bab_sec_list, n_sections, hidden_cov,
                 for si in range(sec_start, sec_end):
                     lampiran_secs.add(si)
 
-    roman_started = False
+    # cover_start: nilai page pertama cover section.
+    # hidden_cov='Ya'  → cover 1 tersembunyi, cover 2+ mulai dari roman_start_num
+    #                    sehingga cover section dimulai dari roman_start_num - 1
+    # hidden_cov='Tidak' → cover 1 ditampilkan, mulai dari roman_start_num
+    cover_start = roman_start_num - 1 if hidden_cov == 'Ya' else roman_start_num
 
     for i, section in enumerate(proc.doc.sections):
         try:
             # ── Cover zone ──────────────────────────────────────────────────
             if roman_sec is not None and i < roman_sec:
-                proc.fmt_cover(section, first_cover=(i == 0), show_pos=cov_show)
+                proc.fmt_cover(section, first_cover=(i == 0), show_pos=cov_show,
+                               cover_start=cover_start,
+                               visible_pos=(align_romawi, top_romawi))
                 continue
             if roman_sec is None and i == 0:
-                proc.fmt_cover(section, first_cover=True, show_pos=cov_show)
+                proc.fmt_cover(section, first_cover=True, show_pos=cov_show,
+                               cover_start=cover_start,
+                               visible_pos=(align_romawi, top_romawi))
                 continue
 
             # ── Romawi zone ─────────────────────────────────────────────────
+            # Tidak perlu reset start — cover_start sudah mengatur urutan
             if first_bab_sec is None or i < first_bab_sec:
-                start = roman_start_num if not roman_started else None
-                roman_started = True
                 proc.fmt_uniform_section(
                     section, align_romawi, top_romawi,
-                    fmt='lowerRoman', start=start
+                    fmt='lowerRoman', start=None
                 )
                 continue
 

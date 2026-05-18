@@ -236,7 +236,7 @@
                             </div>
                             <div class="paket-card-body" id="optsPanel1" data-paket="1">
                                 <div class="opts-form-grid">
-                                    <span class="opts-row-label">LETAK ROMAWI</span>
+                                    <span class="opts-row-label">LETAK</span>
                                     <div class="opts-select" data-group="p1v" onclick="toggleSelect(this)">
                                         <span class="opts-sel-tri">▲</span>
                                         <span class="opts-sel-text">Pilih Letak</span>
@@ -256,7 +256,7 @@
                                         </div>
                                     </div>
 
-                                    <span class="opts-row-label">POSISI ROMAWI</span>
+                                    <span class="opts-row-label">POSISI</span>
                                     <div class="opts-select" data-group="p1h" onclick="toggleSelect(this)">
                                         <span class="opts-sel-tri">▲</span>
                                         <span class="opts-sel-text">Pilih Posisi</span>
@@ -277,8 +277,16 @@
                                         </div>
                                     </div>
 
-                                    <span class="opts-placeholder"></span>
-                                    <span class="opts-placeholder"></span>
+                                    <span class="opts-row-label">DIMULAI DARI</span>
+                                    <div class="opts-select" data-group="dm1" onclick="toggleSelect(this)">
+                                        <span class="opts-sel-tri">▲</span><span class="opts-sel-text">Pilih</span>
+                                        <div class="opts-sel-dropdown">
+                                            <div class="opt-sel-item" data-group="dm1" data-value="1" onclick="chooseOpt(this);event.stopPropagation()">1</div>
+                                            <div class="opt-sel-item" data-group="dm1" data-value="2" onclick="chooseOpt(this);event.stopPropagation()">2</div>
+                                            <div class="opt-sel-item" data-group="dm1" data-value="3" onclick="chooseOpt(this);event.stopPropagation()">3</div>
+                                            <div class="opt-sel-item" data-group="dm1" data-value="4" onclick="chooseOpt(this);event.stopPropagation()">4</div>
+                                        </div>
+                                    </div>
                                     <span class="opts-row-label">SEMBUNYI COVER</span>
                                     <div class="opts-select" data-group="h1" onclick="toggleSelect(this)">
                                         <span class="opts-sel-tri">▲</span>
@@ -307,7 +315,7 @@
                             </div>
                             <div class="paket-card-body" id="optsPanel2" data-paket="2">
                                 <div class="opts-form-grid">
-                                    <span class="opts-row-label">LETAK ROMAWI</span>
+                                    <span class="opts-row-label">LETAK</span>
                                     <div class="opts-select" data-group="p2v" onclick="toggleSelect(this)">
                                         <span class="opts-sel-tri">▲</span>
                                         <span class="opts-sel-text">Pilih Letak</span>
@@ -327,7 +335,7 @@
                                         </div>
                                     </div>
 
-                                    <span class="opts-row-label">POSISI ROMAWI</span>
+                                    <span class="opts-row-label">POSISI</span>
                                     <div class="opts-select" data-group="p2h" onclick="toggleSelect(this)">
                                         <span class="opts-sel-tri">▲</span>
                                         <span class="opts-sel-text">Pilih Posisi</span>
@@ -348,8 +356,16 @@
                                         </div>
                                     </div>
 
-                                    <span class="opts-placeholder"></span>
-                                    <span class="opts-placeholder"></span>
+                                    <span class="opts-row-label">DIMULAI DARI</span>
+                                    <div class="opts-select" data-group="dm2" onclick="toggleSelect(this)">
+                                        <span class="opts-sel-tri">▲</span><span class="opts-sel-text">Pilih</span>
+                                        <div class="opts-sel-dropdown">
+                                            <div class="opt-sel-item" data-group="dm2" data-value="i"   onclick="chooseOpt(this);event.stopPropagation()">i</div>
+                                            <div class="opt-sel-item" data-group="dm2" data-value="ii"  onclick="chooseOpt(this);event.stopPropagation()">ii</div>
+                                            <div class="opt-sel-item" data-group="dm2" data-value="iii" onclick="chooseOpt(this);event.stopPropagation()">iii</div>
+                                            <div class="opt-sel-item" data-group="dm2" data-value="iv"  onclick="chooseOpt(this);event.stopPropagation()">iv</div>
+                                        </div>
+                                    </div>
                                     <span class="opts-row-label">SEMBUNYI COVER</span>
                                     <div class="opts-select" data-group="h2" onclick="toggleSelect(this)">
                                         <span class="opts-sel-tri">▲</span>
@@ -411,6 +427,18 @@
                                     </div>
                                     <span class="opts-placeholder"></span>
                                     <span class="opts-placeholder"></span>
+                                    <span class="opts-row-label">DIMULAI DARI</span>
+                                    <div class="opts-select" data-group="dm3" onclick="toggleSelect(this)">
+                                        <span class="opts-sel-tri">▲</span><span class="opts-sel-text">Pilih</span>
+                                        <div class="opts-sel-dropdown">
+                                            <div class="opt-sel-item" data-group="dm3" data-value="i"   onclick="chooseOpt(this);event.stopPropagation()">i</div>
+                                            <div class="opt-sel-item" data-group="dm3" data-value="ii"  onclick="chooseOpt(this);event.stopPropagation()">ii</div>
+                                            <div class="opt-sel-item" data-group="dm3" data-value="iii" onclick="chooseOpt(this);event.stopPropagation()">iii</div>
+                                            <div class="opt-sel-item" data-group="dm3" data-value="iv"  onclick="chooseOpt(this);event.stopPropagation()">iv</div>
+                                        </div>
+                                    </div>
+                                    <span class="opts-placeholder"></span>
+                                    <span class="opts-placeholder"></span>
                                 </div>
                                 <div class="opts-keterangan">
                                     <strong>KETERANGAN PAKET</strong>
@@ -418,7 +446,7 @@
                                         <li>Romawi Bawah Tengah</li>
                                         <li>BAB Bawah Tengah</li>
                                         <li>ISI BAB Kanan Atas</li>
-                                        <li>Dimulai dari ii pada halaman setelah cover (Jika cover disembunyikan)</li>
+                                        <li>Dimulai dari dapat dipilih sesuai kebutuhan</li>
                                     </ul>
                                 </div>
                             </div>
@@ -627,9 +655,9 @@
             p4h: '', p4v: '',
             p4bh: '', p4bv: '',
             p4ih: '', p4iv: '',
-            f1: '', s1: '', h1: '',
-            f2: '', s2: '', h2: '',
-            f3: '', s3: '', h3: '',
+            f1: '', s1: '', h1: '', dm1: '',
+            f2: '', s2: '', h2: '', dm2: '',
+            f3: '', s3: '', h3: '', dm3: '',
             f4: '', s4: '', h4: '',
             df4: '', lp4: '', dm4: '',
         };
@@ -780,6 +808,9 @@
                 const prev = paketInfo[currentPaket];
                 [prev.fk, prev.sk, prev.hk].forEach(k => sel[k] = '');
                 if (prev.phk) { sel[prev.phk] = ''; sel[prev.pvk] = ''; }
+                if (currentPaket === 1) { sel.dm1 = ''; }
+                if (currentPaket === 2) { sel.dm2 = ''; }
+                if (currentPaket === 3) { sel.dm3 = ''; }
                 if (currentPaket === 4) {
                     ['p4bv', 'p4bh', 'p4iv', 'p4ih', 'df4', 'lp4', 'dm4'].forEach(k => sel[k] = '');
                 }
@@ -962,6 +993,15 @@
                 if (!sel[p.phk]) msgs.push('Posisi Romawi (Tengah / Kanan / Kiri) belum dipilih');
                 if (!sel[p.pvk]) msgs.push('Letak Romawi (Atas / Bawah) belum dipilih');
             }
+            if (currentPaket === 1) {
+                if (!sel.dm1) msgs.push('Dimulai dari belum dipilih');
+            }
+            if (currentPaket === 2) {
+                if (!sel.dm2) msgs.push('Dimulai dari belum dipilih');
+            }
+            if (currentPaket === 3) {
+                if (!sel.dm3) msgs.push('Dimulai dari belum dipilih');
+            }
             if (currentPaket === 4) {
                 if (!sel.p4bh)  msgs.push('Posisi BAB belum dipilih');
                 if (!sel.p4bv)  msgs.push('Letak BAB belum dipilih');
@@ -982,6 +1022,15 @@
             document.getElementById('hidSize').value   = sel[p.sk];
             document.getElementById('hidHidden').value = sel[p.hk];
             if (p.phk) document.getElementById('hidPosisi').value = `${sel[p.phk]} ${sel[p.pvk]}`;
+            if (currentPaket === 1) {
+                document.getElementById('hidDimulai').value = sel.dm1;
+            }
+            if (currentPaket === 2) {
+                document.getElementById('hidDimulai').value = sel.dm2;
+            }
+            if (currentPaket === 3) {
+                document.getElementById('hidDimulai').value = sel.dm3;
+            }
             if (currentPaket === 4) {
                 document.getElementById('hidPosBab').value    = `${sel.p4bh} ${sel.p4bv}`;
                 document.getElementById('hidPosIsiBab').value = `${sel.p4ih} ${sel.p4iv}`;
