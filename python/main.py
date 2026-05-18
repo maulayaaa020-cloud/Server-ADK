@@ -130,7 +130,8 @@ def main():
                     bab_p_list=bab_p_list
                 )
             else:
-                paket3.apply(proc, roman_sec, bab_sec_list, n_sections, hidden_cov)
+                paket3.apply(proc, roman_sec, bab_sec_list, n_sections, hidden_cov,
+                             dimulai_dari=dimulai)
 
     except Exception as e:
         _fail("PROCESSING_ERROR", f"Gagal memproses dokumen: {e}")

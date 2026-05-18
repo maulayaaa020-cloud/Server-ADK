@@ -8,14 +8,19 @@ paket3.py — Romawi + Angka, posisi tetap (Populer Skripsi).
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 
 
-def apply(proc, roman_sec, bab_sec_list, n_sections, hidden_cov):
+def apply(proc, roman_sec, bab_sec_list, n_sections, hidden_cov, dimulai_dari='i'):
     """
-    proc        : DocProcessor instance
-    roman_sec   : index section awal zona romawi
-    bab_sec_list: list index section tiap heading BAB
-    n_sections  : total section
-    hidden_cov  : 'Ya' | 'Tidak'
+    proc         : DocProcessor instance
+    roman_sec    : index section awal zona romawi
+    bab_sec_list : list index section tiap heading BAB
+    n_sections   : total section
+    hidden_cov   : 'Ya' | 'Tidak'
+    dimulai_dari : 'i' | 'ii' | 'iii' | 'iv'
     """
+    roman_start_map = {'i': 1, 'ii': 2, 'iii': 3, 'iv': 4}
+    roman_start_num = roman_start_map.get((dimulai_dari or 'i').lower().strip(), 1)
+    cover_start     = roman_start_num - 1 if hidden_cov == 'Ya' else roman_start_num
+
     cov_show      = None if hidden_cov == 'Ya' else (WD_ALIGN_PARAGRAPH.CENTER, False)
     first_bab_sec = bab_sec_list[0] if bab_sec_list else None
 
@@ -23,10 +28,12 @@ def apply(proc, roman_sec, bab_sec_list, n_sections, hidden_cov):
         try:
             # ── Cover zone ──
             if roman_sec is not None and i < roman_sec:
-                proc.fmt_cover(section, first_cover=(i == 0), show_pos=cov_show)
+                proc.fmt_cover(section, first_cover=(i == 0), show_pos=cov_show,
+                               cover_start=cover_start)
                 continue
             if roman_sec is None and i == 0:
-                proc.fmt_cover(section, first_cover=True, show_pos=cov_show)
+                proc.fmt_cover(section, first_cover=True, show_pos=cov_show,
+                               cover_start=cover_start)
                 continue
 
             # ── Romawi zone ──
