@@ -390,6 +390,126 @@ def _normalize_heading_bold(para, level):
             _set_runs_bold(para)
 
 
+# ── Normalisasi list heading → typed ─────────────────────────────────────────
+
+def _roman_to_int(s):
+    vals = {'I': 1, 'V': 5, 'X': 10, 'L': 50, 'C': 100, 'D': 500, 'M': 1000}
+    result, prev = 0, 0
+    for ch in reversed(s.upper()):
+        v = vals.get(ch, 0)
+        result += v if v >= prev else -v
+        prev = v
+    return result
+
+
+def _update_counters(counters, level, text):
+    """Update counter array dari teks heading bertipe typed."""
+    m3 = re.match(r'^(\d+)\.(\d+)\.(\d+)', text)
+    if m3:
+        counters[1], counters[2], counters[3] = int(m3.group(1)), int(m3.group(2)), int(m3.group(3))
+        return
+    m2 = re.match(r'^(\d+)\.(\d+)', text)
+    if m2:
+        counters[1] = int(m2.group(1))
+        counters[2] = int(m2.group(2))
+        counters[3] = 0
+        return
+    mb = re.match(r'^\s*BAB\s+([IVXivx]+)\b', text, re.IGNORECASE)
+    if mb:
+        counters[1] = _roman_to_int(mb.group(1))
+        counters[2] = 0
+        counters[3] = 0
+        return
+    m1 = re.match(r'^(\d+)\.', text)
+    if m1 and level == 1:
+        counters[1] = int(m1.group(1))
+        counters[2] = 0
+        counters[3] = 0
+
+
+def _normalize_list_headings(doc, headings):
+    """
+    Konversi heading yang pakai multilevel list ke format typed number.
+
+    File campuran (sebagian typed, sebagian list) menyebabkan TOC tidak rata
+    karena list heading punya tab+indentasi berbeda dari typed heading.
+    Solusi: hapus numPr dari list heading, sisipkan angka sebagai teks biasa.
+    Angka dihitung dari konteks heading typed di sekitarnya.
+    """
+    counters = {1: 0, 2: 0, 3: 0}
+
+    for idx, lvl, txt in headings:
+        para    = doc.paragraphs[idx]
+        p       = para._p
+        pPr     = p.find(qn('w:pPr'))
+        numPr   = pPr.find(qn('w:numPr')) if pPr is not None else None
+
+        is_list = False
+        if numPr is not None:
+            nid_el = numPr.find(qn('w:numId'))
+            if nid_el is not None:
+                is_list = (nid_el.get(qn('w:val'), '0') != '0')
+
+        if is_list:
+            # Hitung nomor dari counter
+            if lvl == 1:
+                counters[1] += 1
+                counters[2]  = 0
+                counters[3]  = 0
+                prefix = 'BAB %s ' % _int_to_roman(counters[1])
+            elif lvl == 2:
+                counters[2] += 1
+                counters[3]  = 0
+                prefix = '%d.%d ' % (counters[1], counters[2])
+            else:
+                counters[3] += 1
+                prefix = '%d.%d.%d ' % (counters[1], counters[2], counters[3])
+
+            # Sisipkan run prefix di awal paragraf
+            r_pre = OxmlElement('w:r')
+            # Salin rPr dari run pertama agar format konsisten
+            first_r = p.find(qn('w:r'))
+            if first_r is not None:
+                first_rPr = first_r.find(qn('w:rPr'))
+                if first_rPr is not None:
+                    import copy
+                    r_pre.append(copy.deepcopy(first_rPr))
+            t_pre = OxmlElement('w:t')
+            t_pre.set('{http://www.w3.org/XML/1998/namespace}space', 'preserve')
+            t_pre.text = prefix
+            r_pre.append(t_pre)
+            if first_r is not None:
+                first_r.addprevious(r_pre)
+            else:
+                p.append(r_pre)
+
+            # Hapus numPr dan nonaktifkan list dari style
+            pPr.remove(numPr)
+            # Tambah numId=0 agar list inherited dari style tidak aktif
+            numPr_disable = OxmlElement('w:numPr')
+            ilvl_el = OxmlElement('w:ilvl')
+            ilvl_el.set(qn('w:val'), '0')
+            numPr_disable.append(ilvl_el)
+            numId_el = OxmlElement('w:numId')
+            numId_el.set(qn('w:val'), '0')
+            numPr_disable.append(numId_el)
+            pPr.append(numPr_disable)
+
+        else:
+            _update_counters(counters, lvl, txt)
+
+
+def _int_to_roman(n):
+    vals = [(1000,'M'),(900,'CM'),(500,'D'),(400,'CD'),(100,'C'),(90,'XC'),
+            (50,'L'),(40,'XL'),(10,'X'),(9,'IX'),(5,'V'),(4,'IV'),(1,'I')]
+    result = ''
+    for v, s in vals:
+        while n >= v:
+            result += s
+            n -= v
+    return result
+
+
 # ── Terapkan outline level ─────────────────────────────────────────────────────
 
 def apply_outline_level(para, level):
@@ -1008,6 +1128,9 @@ def main():
         style_name = para.style.name if para.style else ''
         if not style_name.startswith('Heading '):
             apply_outline_level(para, lvl)
+
+    # ── Normalisasi list heading ke typed agar TOC rata di file campuran ────
+    _normalize_list_headings(doc, headings)
 
     # ── Normalisasi bold: body selalu bold, TOC hanya H1 bold ────────────────
     for idx, lvl, _txt in headings:
