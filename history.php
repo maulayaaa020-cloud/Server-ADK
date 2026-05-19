@@ -782,6 +782,66 @@ if (!empty($orders)) {
             .footer-brand { grid-column: 1 / -1 !important; }
         }
 
+        /* ===== REMINDER PANEL ===== */
+        .reminder-overlay {
+            position: fixed; inset: 0; z-index: 5000;
+            background: rgba(5,3,20,0.75);
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            animation: fadeInRem 0.25s ease;
+        }
+        @keyframes fadeInRem { from { opacity: 0; } to { opacity: 1; } }
+
+        .reminder-card {
+            background: #12102a;
+            border: 1px solid rgba(124,58,237,0.5);
+            border-radius: 22px;
+            padding: 34px 28px 26px;
+            max-width: 320px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 28px 70px rgba(0,0,0,0.65);
+            animation: slideUpRem 0.35s cubic-bezier(0.34,1.45,0.64,1);
+        }
+        @keyframes slideUpRem { from { transform: translateY(28px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        .reminder-emoji { font-size: 38px; display: block; margin-bottom: 14px; }
+
+        .reminder-title {
+            font-size: 19px;
+            font-weight: 800;
+            color: white;
+            margin: 0 0 10px;
+            line-height: 1.35;
+        }
+
+        .reminder-desc {
+            font-size: 12px;
+            color: #9ca3af;
+            margin: 0 0 26px;
+            line-height: 1.6;
+        }
+
+        .btn-reminder-ok {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #7c3aed, #a855f7);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn-reminder-ok:hover {
+            background: linear-gradient(135deg, #6d28d9, #9333ea);
+            box-shadow: 0 6px 20px rgba(124,58,237,0.45);
+        }
+
     </style>
 </head>
 <body>
@@ -1003,6 +1063,16 @@ if (!empty($orders)) {
         </div>
     </div>
 
+
+    <!-- ===== REMINDER PANEL ===== -->
+    <div class="reminder-overlay" id="reminderOverlay">
+        <div class="reminder-card">
+            <span class="reminder-emoji">👀</span>
+            <p class="reminder-title">Mohon Cek Preview Hasil<br>Sebelum Bayar</p>
+            <p class="reminder-desc">jangan buru-buru yaa.. luangkan 1 menit untuk cek hasil</p>
+            <button class="btn-reminder-ok" onclick="closeReminder()">OK</button>
+        </div>
+    </div>
 
     <!-- ===== PREVIEW MODAL ===== -->
     <div class="pv-overlay" id="pvOverlay" onclick="handleOverlayClick(event)">
@@ -1457,6 +1527,13 @@ if (!empty($orders)) {
                 }, 2000);
             });
         }
+        /* ── Reminder Panel ── */
+        document.body.style.overflow = 'hidden';
+        function closeReminder() {
+            document.getElementById('reminderOverlay').remove();
+            document.body.style.overflow = '';
+        }
+
         function toggleJasaDrop()  { document.getElementById('jasaDrop').classList.toggle('open'); }
         document.addEventListener('click', function(e) { var d = document.getElementById('jasaDrop'); if (d && !d.contains(e.target)) d.classList.remove('open'); });
 
