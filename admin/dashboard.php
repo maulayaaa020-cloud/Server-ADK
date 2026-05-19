@@ -35,15 +35,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['toggle_maintenance'])
 
 $db = getDB();
 
-// ── Stats ──────────────────────────────────────────────────────────────────
-$stats = [];
-$stats['total']   = (int)$db->query("SELECT COUNT(*) FROM orders")->fetchColumn();
-$stats['today']   = (int)$db->query("SELECT COUNT(*) FROM orders WHERE DATE(created_at) = CURDATE()")->fetchColumn();
-$stats['paid']    = (int)$db->query("SELECT COUNT(*) FROM orders WHERE status = 'paid'")->fetchColumn();
-$stats['pending'] = (int)$db->query("SELECT COUNT(*) FROM orders WHERE status = 'pending'")->fetchColumn();
-$stats['failed']  = (int)$db->query("SELECT COUNT(*) FROM orders WHERE status = 'failed'")->fetchColumn();
-$stats['revenue']       = (float)$db->query("SELECT COALESCE(SUM(harga),0) FROM orders WHERE status = 'paid'")->fetchColumn();
-$stats['revenue_today'] = (float)$db->query("SELECT COALESCE(SUM(harga),0) FROM orders WHERE status = 'paid' AND DATE(created_at) = CURDATE()")->fetchColumn();
+// ── Stats — pre-compute semua periode ────────────────────────────────────────
+$_statPeriods = [
+    'all'   => '1=1',
+    'today' => 'DATE(created_at) = CURDATE()',
+    'month' => 'YEAR(created_at)=YEAR(NOW()) AND MONTH(created_at)=MONTH(NOW())',
+    'year'  => 'YEAR(created_at)=YEAR(NOW())',
+];
+$allStats = [];
+foreach ($_statPeriods as $p => $w) {
+    $allStats[$p] = [
+        'total'   => (int)$db->query("SELECT COUNT(*) FROM orders WHERE $w")->fetchColumn(),
+        'paid'    => (int)$db->query("SELECT COUNT(*) FROM orders WHERE status='paid' AND $w")->fetchColumn(),
+        'pending' => (int)$db->query("SELECT COUNT(*) FROM orders WHERE status='pending' AND $w")->fetchColumn(),
+        'failed'  => (int)$db->query("SELECT COUNT(*) FROM orders WHERE status='failed' AND $w")->fetchColumn(),
+        'revenue' => (float)$db->query("SELECT COALESCE(SUM(harga),0) FROM orders WHERE status='paid' AND $w")->fetchColumn(),
+    ];
+}
+$stats          = $allStats['all'];
+$stats['today'] = $allStats['today']['total']; // untuk label header
 
 // ── Filters ────────────────────────────────────────────────────────────────
 $filterStatus = $_GET['status'] ?? 'all';
@@ -245,6 +255,34 @@ function tglAdmin(string $dt): string {
         .stat-value.red    { color: #f87171; }
         .stat-value.purple { color: #a78bfa; }
         .stat-value.sm     { font-size: 18px; }
+
+        .stats-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+        .stats-toolbar-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+        }
+        .stats-period-select {
+            background: rgba(124,58,237,0.12);
+            border: 1px solid rgba(124,58,237,0.35);
+            border-radius: 8px;
+            color: #a78bfa;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 5px 10px;
+            cursor: pointer;
+            outline: none;
+            transition: 0.2s;
+        }
+        .stats-period-select:hover { border-color: #a78bfa; background: rgba(124,58,237,0.2); }
+        .stats-period-select option { background: #1a1043; color: white; }
 
         /* ===== SECTION HEADER ===== */
         .section-header {
@@ -598,34 +636,35 @@ function tglAdmin(string $dt): string {
     </div>
 
     <!-- STATS -->
+    <div class="stats-toolbar">
+        <div class="stats-toolbar-label">Statistik</div>
+        <select class="stats-period-select" onchange="switchStatPeriod(this.value)">
+            <option value="all">Semua Waktu</option>
+            <option value="today">Hari Ini</option>
+            <option value="month">Bulan Ini</option>
+            <option value="year">Tahun Ini</option>
+        </select>
+    </div>
     <div class="stats-grid">
         <div class="stat-card">
             <div class="stat-label">Total Order</div>
-            <div class="stat-value"><?= $stats['total'] ?></div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-label">Hari Ini</div>
-            <div class="stat-value purple"><?= $stats['today'] ?></div>
+            <div class="stat-value" id="sv-total"><?= $stats['total'] ?></div>
         </div>
         <div class="stat-card">
             <div class="stat-label">Paid</div>
-            <div class="stat-value green"><?= $stats['paid'] ?></div>
+            <div class="stat-value green" id="sv-paid"><?= $stats['paid'] ?></div>
         </div>
         <div class="stat-card">
             <div class="stat-label">Pending</div>
-            <div class="stat-value yellow"><?= $stats['pending'] ?></div>
+            <div class="stat-value yellow" id="sv-pending"><?= $stats['pending'] ?></div>
         </div>
         <div class="stat-card">
             <div class="stat-label">Failed</div>
-            <div class="stat-value red"><?= $stats['failed'] ?></div>
+            <div class="stat-value red" id="sv-failed"><?= $stats['failed'] ?></div>
         </div>
         <div class="stat-card">
-            <div class="stat-label">Total Pendapatan</div>
-            <div class="stat-value green sm"><?= fmtRupiah($stats['revenue']) ?></div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-label">Pendapatan Hari Ini</div>
-            <div class="stat-value green sm"><?= fmtRupiah($stats['revenue_today']) ?></div>
+            <div class="stat-label">Pendapatan</div>
+            <div class="stat-value green sm" id="sv-revenue"><?= fmtRupiah($stats['revenue']) ?></div>
         </div>
     </div>
 
@@ -812,6 +851,17 @@ function tglAdmin(string $dt): string {
 </div>
 
 <script>
+const _allStats = <?= json_encode($allStats) ?>;
+function switchStatPeriod(p) {
+    const s = _allStats[p];
+    document.getElementById('sv-total').textContent   = s.total;
+    document.getElementById('sv-paid').textContent    = s.paid;
+    document.getElementById('sv-pending').textContent = s.pending;
+    document.getElementById('sv-failed').textContent  = s.failed;
+    document.getElementById('sv-revenue').textContent =
+        'Rp ' + s.revenue.toLocaleString('id-ID');
+}
+
 function toggleSidebar() {
     document.getElementById('sidebar').classList.toggle('open');
     document.getElementById('sidebarOverlay').classList.toggle('open');
