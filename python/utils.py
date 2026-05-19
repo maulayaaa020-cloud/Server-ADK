@@ -69,6 +69,9 @@ def is_bab_heading(text):
 def is_false_bab(para):
     text  = para.text.strip()
     style = para.style.name.lower() if para.style else ""
+    # Entry daftar isi: "BAB I\tJUDUL\t1" — ada tab + nomor halaman di akhir
+    if is_toc_entry(text):
+        return True
     m = BAB_HEAD_RE.match(text)
     if m:
         sisa_raw = m.group(6) or ""
@@ -455,7 +458,7 @@ class DocProcessor:
                 continue
 
             if inside_toc:
-                if is_toc_entry(text):
+                if not text or is_toc_entry(text):
                     continue
                 else:
                     inside_toc = False
