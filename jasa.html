@@ -812,22 +812,19 @@
                 if (cvBox) cvBox.classList.remove('opts-locked');
                 if (dmBox) dmBox.classList.remove('opts-locked');
             } else {
+                sel[cvKey] = '';
+                sel[dmKey] = '';
                 if (cvBox) {
-                    sel[cvKey] = '1';
-                    cvBox.querySelector('.opts-sel-text').textContent = '1 Cover';
-                    cvBox.classList.add('has-value', 'opts-locked');
-                    cvBox.querySelectorAll('.opt-sel-item').forEach(function(i) {
-                        i.classList.toggle('selected', i.dataset.value === '1');
-                    });
+                    cvBox.querySelector('.opts-sel-text').textContent = 'Berapa lembar cover di file kamu';
+                    cvBox.classList.remove('has-value');
+                    cvBox.classList.add('opts-locked');
+                    cvBox.querySelectorAll('.opt-sel-item').forEach(function(i) { i.classList.remove('selected'); });
                 }
                 if (dmBox) {
-                    var dmDefault = (paketNum === 1) ? '1' : 'i';
-                    sel[dmKey] = dmDefault;
-                    dmBox.querySelector('.opts-sel-text').textContent = dmDefault;
-                    dmBox.classList.add('has-value', 'opts-locked');
-                    dmBox.querySelectorAll('.opt-sel-item').forEach(function(i) {
-                        i.classList.toggle('selected', i.dataset.value === dmDefault);
-                    });
+                    dmBox.querySelector('.opts-sel-text').textContent = 'Pilih';
+                    dmBox.classList.remove('has-value');
+                    dmBox.classList.add('opts-locked');
+                    dmBox.querySelectorAll('.opt-sel-item').forEach(function(i) { i.classList.remove('selected'); });
                 }
             }
         }
@@ -1090,7 +1087,8 @@
             document.getElementById('hidFont').value   = fontFinal;
             document.getElementById('hidSize').value   = sel[p.sk];
             document.getElementById('hidHidden').value = sel[p.hk];
-            const cvVal = sel['cv' + currentPaket] || '1';
+            const cvVal  = sel['cv' + currentPaket] || '1';
+            const hidVal = sel[p.hk];
             if (currentPaket === 1) {
                 document.getElementById('hidPosisi').value    = sel[p.pk];
                 document.getElementById('hidDimulai').value   = sel.dm1 || '1';
