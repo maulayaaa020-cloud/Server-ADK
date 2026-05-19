@@ -316,6 +316,16 @@
                                             <div class="opt-sel-item" data-group="cv1" data-value="3" onclick="chooseOpt(this);event.stopPropagation()">3 Cover</div>
                                         </div>
                                     </div>
+                                    <span class="opts-row-label">DIMULAI DARI</span>
+                                    <div class="opts-select opts-locked" data-group="dm1" onclick="toggleSelect(this)">
+                                        <span class="opts-sel-tri">▲</span><span class="opts-sel-text">Pilih</span>
+                                        <div class="opts-sel-dropdown">
+                                            <div class="opt-sel-item" data-group="dm1" data-value="1" onclick="chooseOpt(this);event.stopPropagation()">1</div>
+                                            <div class="opt-sel-item" data-group="dm1" data-value="2" onclick="chooseOpt(this);event.stopPropagation()">2</div>
+                                            <div class="opt-sel-item" data-group="dm1" data-value="3" onclick="chooseOpt(this);event.stopPropagation()">3</div>
+                                            <div class="opt-sel-item" data-group="dm1" data-value="4" onclick="chooseOpt(this);event.stopPropagation()">4</div>
+                                        </div>
+                                    </div>
                                 </div>
                                 <div class="opts-keterangan">HI..<small>Scroll kebawah untuk melihat priview pilihan kamuu</small></div>
                             </div>
@@ -651,7 +661,7 @@
         const sel = {
             pos1: '', pos2: '',
             pos4r: '', pos4b: '', pos4i: '',
-            f1: '', s1: '', h1: '', cv1: '',
+            f1: '', s1: '', h1: '', cv1: '', dm1: '',
             f2: '', s2: '', h2: '', cv2: '', dm2: '',
             f3: '', s3: '', h3: '', cv3: '', dm3: '',
             f4: '', s4: '', h4: '', cv4: '', dm4: '',
@@ -811,11 +821,12 @@
                     });
                 }
                 if (dmBox) {
-                    sel[dmKey] = 'i';
-                    dmBox.querySelector('.opts-sel-text').textContent = 'i';
+                    var dmDefault = (paketNum === 1) ? '1' : 'i';
+                    sel[dmKey] = dmDefault;
+                    dmBox.querySelector('.opts-sel-text').textContent = dmDefault;
                     dmBox.classList.add('has-value', 'opts-locked');
                     dmBox.querySelectorAll('.opt-sel-item').forEach(function(i) {
-                        i.classList.toggle('selected', i.dataset.value === 'i');
+                        i.classList.toggle('selected', i.dataset.value === dmDefault);
                     });
                 }
             }
@@ -836,7 +847,7 @@
                 const prev = paketInfo[currentPaket];
                 [prev.fk, prev.sk, prev.hk].forEach(k => sel[k] = '');
                 if (prev.pk) sel[prev.pk] = '';
-                if (currentPaket === 1) { sel.cv1 = ''; }
+                if (currentPaket === 1) { sel.cv1 = ''; sel.dm1 = ''; }
                 if (currentPaket === 2) { sel.cv2 = ''; sel.dm2 = ''; }
                 if (currentPaket === 3) { sel.cv3 = ''; sel.dm3 = ''; }
                 if (currentPaket === 4) {
@@ -891,7 +902,7 @@
 
             box.querySelectorAll('.opt-sel-item').forEach(function(i) { i.classList.remove('selected'); });
             el.classList.add('selected');
-            box.querySelector('.opts-sel-text').textContent = value;
+            box.querySelector('.opts-sel-text').textContent = el.textContent.trim();
             box.classList.add('has-value');
             box.classList.remove('open');
 
@@ -1044,7 +1055,10 @@
             if (currentPaket === 1 || currentPaket === 2) {
                 if (!sel[p.pk]) msgs.push('Posisi belum dipilih');
             }
-            if (currentPaket === 1 && sel.h1 === 'Ya' && !sel.cv1) msgs.push('Jumlah cover belum dipilih');
+            if (currentPaket === 1 && sel.h1 === 'Ya') {
+                if (!sel.cv1) msgs.push('Jumlah cover belum dipilih');
+                if (!sel.dm1) msgs.push('Dimulai dari belum dipilih');
+            }
             if (currentPaket === 2 && sel.h2 === 'Ya') {
                 if (!sel.cv2) msgs.push('Jumlah cover belum dipilih');
                 if (!sel.dm2) msgs.push('Dimulai dari belum dipilih');
@@ -1079,7 +1093,7 @@
             const cvVal = sel['cv' + currentPaket] || '1';
             if (currentPaket === 1) {
                 document.getElementById('hidPosisi').value    = sel[p.pk];
-                document.getElementById('hidDimulai').value   = cvVal; // 1/2/3 → angka halaman
+                document.getElementById('hidDimulai').value   = sel.dm1 || '1';
                 document.getElementById('hidNumCover').value  = cvVal;
             }
             if (currentPaket === 2) {
