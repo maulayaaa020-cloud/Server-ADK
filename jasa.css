@@ -354,16 +354,16 @@
     letter-spacing: 0.3px;
 }
 
-/* ===== OPTS FORM GRID (4-kolom: label | dropdown | label | dropdown) ===== */
+/* ===== OPTS FORM GRID (2-kolom: label | dropdown) ===== */
 .opts-form-grid {
     display: grid;
-    grid-template-columns: max-content 1fr max-content 1fr;
+    grid-template-columns: max-content 1fr;
     align-items: center;
-    column-gap: 8px;
-    row-gap: 5px;
+    column-gap: 10px;
+    row-gap: 7px;
 }
 
-.opts-placeholder { /* sel kosong penyeimbang grid */ }
+.opts-placeholder { display: none; }
 
 .opts-row-label {
     font-size: 10px;
