@@ -53,11 +53,9 @@ function keteranganList($row) {
         $items = [['ROMAWI',$pos],['BAB',$pos],['ISI BAB',$pos]];
     } elseif ($row['paket'] === 'paket4') {
         $items = [
-            ['ROMAWI',      $row['posisi']        ?: '-'],
-            ['BAB',         $extra['pos_bab']      ?: '-'],
-            ['ISI BAB',     $extra['pos_isi_bab']  ?: '-'],
-            ['Semb.Dafpus', $extra['semb_dafus']   ?: '-'],
-            ['Semb.Lamp',   $extra['semb_lamprn']  ?: '-'],
+            ['ROMAWI',  $row['posisi']       ?: '-'],
+            ['BAB',     $extra['pos_bab']    ?: '-'],
+            ['ISI BAB', $extra['pos_isi_bab'] ?: '-'],
         ];
     } else {
         $items = [['POSISI', $row['posisi'] ?: '-']];
@@ -68,6 +66,10 @@ function keteranganList($row) {
     if ($isHidden) {
         if (isset($extra['num_cover'])) $items[] = ['Jml. Cover', $numCover];
         if ($dimulai !== '-')           $items[] = ['Dimulai',    $dimulai];
+    }
+    if ($row['paket'] === 'paket4') {
+        if (!empty($extra['semb_dafus']))  $items[] = ['Semb.Dafpus', $extra['semb_dafus']];
+        if (!empty($extra['semb_lamprn'])) $items[] = ['Semb.Lamp',   $extra['semb_lamprn']];
     }
     return $items;
 }
