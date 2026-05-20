@@ -680,24 +680,40 @@
             return map[combined] || 'bottom';
         }
 
+        // Helper roman numeral increment
+        const _romanSeq = ['i','ii','iii','iv','v','vi','vii','viii'];
+        function nextRoman(r) {
+            const i = _romanSeq.indexOf(r);
+            return i >= 0 && i + 1 < _romanSeq.length ? _romanSeq[i + 1] : r;
+        }
+        // Build cover boxes (hidden)
+        function coverBoxes(nCov) {
+            const out = [];
+            for (let i = 1; i <= Math.min(nCov, 3); i++)
+                out.push({ label: i === 1 ? 'COVER' : 'COV ' + i, num: '', pos: '' });
+            return out;
+        }
+
         const paketInfo = {
             1: {
                 val: 'paket1', name: 'FULL ANGKA',
                 sub: '!! Posisi Dapat Dipilih',
                 pk: 'pos1', fk: 'f1', sk: 's1', hk: 'h1',
-                pages(hidden, pos) {
+                pages(hidden, pos, cv, dm) {
                     const pc = getPosClass(pos);
-                    if (hidden === 'Tidak') return [
+                    if (hidden !== 'Ya') return [
                         { label: 'COVER', num: '1',     pos: pc },
                         { label: '',      num: '2',     pos: pc },
                         { label: '',      num: '3',     pos: pc },
                         { label: '',      num: 'Dst..', pos: pc },
                     ];
+                    const nCov  = parseInt(cv) || 1;
+                    const start = (parseInt(dm) || 1) + 1; // dm=cover page num, content starts at dm+1
                     return [
-                        { label: 'COVER', num: '',      pos: '' },
-                        { label: '',      num: '2',     pos: pc },
-                        { label: '',      num: '3',     pos: pc },
-                        { label: '',      num: 'Dst..', pos: pc },
+                        ...coverBoxes(nCov),
+                        { label: '', num: String(start),     pos: pc },
+                        { label: '', num: String(start + 1), pos: pc },
+                        { label: '', num: 'Dst..',           pos: pc },
                     ];
                 }
             },
@@ -705,25 +721,24 @@
                 val: 'paket2', name: 'ROMAWI DAN ANGKA',
                 sub: '!! Posisi Dapat Dipilih',
                 pk: 'pos2', fk: 'f2', sk: 's2', hk: 'h2',
-                pages(hidden, pos) {
+                pages(hidden, pos, cv, dm) {
                     const pc = getPosClass(pos);
-                    if (hidden === 'Tidak') return [
+                    if (hidden !== 'Ya') return [
                         { label: 'COVER', num: 'i',     pos: pc },
                         { label: '',      num: 'ii',    pos: pc },
-                        { label: '',      num: 'iii',   pos: pc },
                         { label: '',      num: 'Dst..', pos: pc },
                         { label: 'BAB',   num: '1',     pos: pc },
-                        { label: '',      num: '2',     pos: pc },
                         { label: '',      num: 'Dst..', pos: pc },
                     ];
+                    const nCov = parseInt(cv) || 1;
+                    const r0   = dm || 'i';
                     return [
-                        { label: 'COVER', num: '',      pos: '' },
-                        { label: '',      num: 'ii',    pos: pc },
-                        { label: '',      num: 'iii',   pos: pc },
-                        { label: '',      num: 'Dst..', pos: pc },
-                        { label: 'BAB',   num: '1',     pos: pc },
-                        { label: '',      num: '2',     pos: pc },
-                        { label: '',      num: 'Dst..', pos: pc },
+                        ...coverBoxes(nCov),
+                        { label: '', num: r0,           pos: pc },
+                        { label: '', num: nextRoman(r0),pos: pc },
+                        { label: '', num: 'Dst..',      pos: pc },
+                        { label: 'BAB', num: '1',       pos: pc },
+                        { label: '',    num: 'Dst..',   pos: pc },
                     ];
                 }
             },
@@ -731,24 +746,25 @@
                 val: 'paket3', name: 'ROMAWI DAN ANGKA',
                 sub: 'Romawi: Bawah Tengah · BAB: Bawah Tengah · Isi: Kanan Atas',
                 fk: 'f3', sk: 's3', hk: 'h3',
-                pages(hidden) {
-                    if (hidden === 'Tidak') return [
+                pages(hidden, pos, cv, dm) {
+                    if (hidden !== 'Ya') return [
                         { label: 'COVER', num: 'i',     pos: 'bottom' },
                         { label: '',      num: 'ii',    pos: 'bottom' },
-                        { label: '',      num: 'iii',   pos: 'bottom' },
                         { label: '',      num: 'Dst..', pos: 'bottom' },
                         { label: 'BAB',   num: '1',     pos: 'bottom' },
                         { label: '',      num: '2',     pos: 'topright' },
                         { label: '',      num: 'Dst..', pos: 'topright' },
                     ];
+                    const nCov = parseInt(cv) || 1;
+                    const r0   = dm || 'i';
                     return [
-                        { label: 'COVER', num: '',      pos: '' },
-                        { label: '',      num: 'ii',    pos: 'bottom' },
-                        { label: '',      num: 'iii',   pos: 'bottom' },
-                        { label: '',      num: 'Dst..', pos: 'bottom' },
-                        { label: 'BAB',   num: '1',     pos: 'bottom' },
-                        { label: '',      num: '2',     pos: 'topright' },
-                        { label: '',      num: 'Dst..', pos: 'topright' },
+                        ...coverBoxes(nCov),
+                        { label: '', num: r0,            pos: 'bottom' },
+                        { label: '', num: nextRoman(r0), pos: 'bottom' },
+                        { label: '', num: 'Dst..',       pos: 'bottom' },
+                        { label: 'BAB', num: '1',        pos: 'bottom' },
+                        { label: '',    num: '2',        pos: 'topright' },
+                        { label: '',    num: 'Dst..',    pos: 'topright' },
                     ];
                 }
             },
@@ -756,11 +772,11 @@
                 val: 'paket4', name: 'ROMAWI DAN ANGKA (CUSTOM)',
                 sub: '!! 3 Point Posisi Dapat Dipilih',
                 fk: 'f4', sk: 's4', hk: 'h4',
-                pages(hidden, posR, posB, posI) {
+                pages(hidden, posR, posB, posI, cv, dm) {
                     const pcR = getPosClass(posR || 'Tengah Bawah');
                     const pcB = getPosClass(posB || 'Tengah Bawah');
                     const pcI = getPosClass(posI || 'Kanan Atas');
-                    if (hidden === 'Tidak') return [
+                    if (hidden !== 'Ya') return [
                         { label: 'COVER', num: 'i',     pos: pcR },
                         { label: '',      num: 'ii',    pos: pcR },
                         { label: '',      num: 'Dst..', pos: pcR },
@@ -768,13 +784,16 @@
                         { label: '',      num: '2',     pos: pcI },
                         { label: '',      num: 'Dst..', pos: pcI },
                     ];
+                    const nCov = parseInt(cv) || 1;
+                    const r0   = dm || 'i';
                     return [
-                        { label: 'COVER', num: '',      pos: '' },
-                        { label: '',      num: 'ii',    pos: pcR },
-                        { label: '',      num: 'Dst..', pos: pcR },
-                        { label: 'BAB',   num: '1',     pos: pcB },
-                        { label: '',      num: '2',     pos: pcI },
-                        { label: '',      num: 'Dst..', pos: pcI },
+                        ...coverBoxes(nCov),
+                        { label: '', num: r0,            pos: pcR },
+                        { label: '', num: nextRoman(r0), pos: pcR },
+                        { label: '', num: 'Dst..',       pos: pcR },
+                        { label: 'BAB', num: '1',        pos: pcB },
+                        { label: '',    num: '2',        pos: pcI },
+                        { label: '',    num: 'Dst..',    pos: pcI },
                     ];
                 }
             }
@@ -945,13 +964,19 @@
             } else if (p.pk) {
                 posLine = `<li>Posisi: ${pos || '—'}</li>`;
             }
+            const cv = sel['cv' + currentPaket] || '1';
+            const dm = sel['dm' + currentPaket] || '';
+            let coverLine = `<li>Cover: ${hidden === 'Ya' ? 'Disembunyikan' : hidden === 'Tidak' ? 'Tampil' : '—'}</li>`;
+            if (hidden === 'Ya') {
+                coverLine += `<li>Jml. Cover: ${cv} Cover</li>`;
+                if (dm) coverLine += `<li>Dimulai: ${dm}</li>`;
+            }
             document.getElementById('prevDetails').innerHTML =
-                `${posLine}<li>Font: ${font}</li><li>Size: ${size}</li>` +
-                `<li>Cover: ${hidden === 'Ya' ? 'Disembunyikan' : hidden === 'Tidak' ? 'Tampil' : '—'}</li>`;
+                `${posLine}<li>Font: ${font}</li><li>Size: ${size}</li>${coverLine}`;
 
             const pages = currentPaket === 4
-                ? p.pages(hidden, sel.pos4r, sel.pos4b, sel.pos4i)
-                : p.pages(hidden, pos);
+                ? p.pages(hidden, sel.pos4r, sel.pos4b, sel.pos4i, cv, dm)
+                : p.pages(hidden, pos, cv, dm);
             document.getElementById('prevPages').innerHTML = pages.map(pg => {
                 let inner = '';
                 if (pg.label) inner += `<span class="page-label">${pg.label}</span>`;
