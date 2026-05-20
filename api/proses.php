@@ -82,16 +82,14 @@ if (isset($_FILES['file']) && isset($_POST['paket'])) {
     $orderId = 'ADK-' . time() . '-' . bin2hex(random_bytes(3));
 
     // Paket 4: kumpulkan data extra sebagai JSON
-    $extraData = null;
+    $extraFields = ['num_cover' => $num_cover, 'dimulai_dari' => $dimulai];
     if ($paket === 'paket4') {
-        $extraData = json_encode([
-            'pos_bab'     => $pos_bab,
-            'pos_isi_bab' => $pos_isi,
-            'dimulai_dari'=> $dimulai,
-            'semb_dafus'  => $semb_dafus,
-            'semb_lamprn' => $semb_lamprn,
-        ]);
+        $extraFields['pos_bab']     = $pos_bab;
+        $extraFields['pos_isi_bab'] = $pos_isi;
+        $extraFields['semb_dafus']  = $semb_dafus;
+        $extraFields['semb_lamprn'] = $semb_lamprn;
     }
+    $extraData = json_encode($extraFields);
 
     try {
         $db   = getDB();
