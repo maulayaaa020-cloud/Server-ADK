@@ -202,6 +202,41 @@ class DocProcessor:
         self.add_page_number(p)
         self._set_pn_spacing(p)
 
+    # ── Cover advance helper ──────────────────────────────
+
+    @staticmethod
+    def advance_roman_start(doc, roman_start_p, num_cover):
+        """
+        Geser roman_start_p ke paragraf pada halaman (num_cover + 1).
+        Digunakan saat user memiliki lebih dari 1 halaman cover.
+        Menghitung page break (manual w:br type=page atau sectPr) dari awal dokumen.
+        """
+        if num_cover <= 1:
+            return roman_start_p
+
+        W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+        body_els   = list(doc.element.body)
+        target_pg  = num_cover + 1  # halaman ke-(num_cover+1) adalah awal roman
+        current_pg = 1
+
+        for el in body_els:
+            if current_pg >= target_pg:
+                return el
+            # Cek manual page break
+            page_broke = any(
+                br.get("{%s}type" % W) == 'page'
+                for br in el.iter("{%s}br" % W)
+            )
+            if not page_broke:
+                # Cek section break di pPr
+                pPr = el.find("{%s}pPr" % W)
+                if pPr is not None and pPr.find("{%s}sectPr" % W) is not None:
+                    page_broke = True
+            if page_broke:
+                current_pg += 1
+
+        return roman_start_p  # fallback jika tidak cukup halaman
+
     # ── Header / Footer helpers ───────────────────────────
 
     def purge_all_headers_footers(self):

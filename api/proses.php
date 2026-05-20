@@ -20,6 +20,9 @@ if (isset($_FILES['file']) && isset($_POST['paket'])) {
     $pos_bab    = $_POST['pos_bab']           ?? '';
     $pos_isi    = $_POST['pos_isi_bab']       ?? '';
     $dimulai    = $_POST['dimulai_dari']      ?? 'i';
+    $num_cover  = (int)($_POST['num_cover']  ?? 1);
+    if ($num_cover < 1) $num_cover = 1;
+    if ($num_cover > 5) $num_cover = 5;
     $semb_dafus = $_POST['sembunyi_dafus']    ?? 'Tidak';
     $semb_lamprn= $_POST['sembunyi_lamprn']   ?? 'Tidak';
 
@@ -79,16 +82,14 @@ if (isset($_FILES['file']) && isset($_POST['paket'])) {
     $orderId = 'ADK-' . time() . '-' . bin2hex(random_bytes(3));
 
     // Paket 4: kumpulkan data extra sebagai JSON
-    $extraData = null;
+    $extraFields = ['num_cover' => $num_cover, 'dimulai_dari' => $dimulai];
     if ($paket === 'paket4') {
-        $extraData = json_encode([
-            'pos_bab'     => $pos_bab,
-            'pos_isi_bab' => $pos_isi,
-            'dimulai_dari'=> $dimulai,
-            'semb_dafus'  => $semb_dafus,
-            'semb_lamprn' => $semb_lamprn,
-        ]);
+        $extraFields['pos_bab']     = $pos_bab;
+        $extraFields['pos_isi_bab'] = $pos_isi;
+        $extraFields['semb_dafus']  = $semb_dafus;
+        $extraFields['semb_lamprn'] = $semb_lamprn;
     }
+    $extraData = json_encode($extraFields);
 
     try {
         $db   = getDB();
@@ -125,6 +126,7 @@ if (isset($_FILES['file']) && isset($_POST['paket'])) {
     $_SESSION['pos_bab']      = $pos_bab;
     $_SESSION['pos_isi_bab']  = $pos_isi;
     $_SESSION['dimulai_dari'] = $dimulai;
+    $_SESSION['num_cover']    = $num_cover;
     $_SESSION['semb_dafus']   = $semb_dafus;
     $_SESSION['semb_lamprn']  = $semb_lamprn;
     $_SESSION['phone']        = $isGuest ? null : $phone;

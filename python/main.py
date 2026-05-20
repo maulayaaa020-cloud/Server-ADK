@@ -85,6 +85,7 @@ def main():
     dimulai     = sys.argv[10] if len(sys.argv) > 10 else 'i'
     semb_dafus  = sys.argv[11] if len(sys.argv) > 11 else 'Tidak'
     semb_lamprn = sys.argv[12] if len(sys.argv) > 12 else 'Tidak'
+    num_cover   = int(sys.argv[13]) if len(sys.argv) > 13 else 1
 
     m            = re.search(r'\d+', size_arg)
     font_size_pt = int(m.group()) if m else 12
@@ -114,6 +115,11 @@ def main():
             detected_bab_texts = [
                 DocProcessor._p_text(p)[:60] for p in bab_p_list
             ]
+            # Geser roman_start_p jika user memiliki lebih dari 1 cover
+            if num_cover > 1 and hidden_cov == 'Ya':
+                roman_start_p = DocProcessor.advance_roman_start(
+                    doc, roman_start_p, num_cover
+                )
             roman_start_p             = proc.insert_breaks(roman_start_p, bab_p_list)
             roman_sec, bab_sec_list, n_sections = proc.build_section_map(
                 roman_start_p, bab_p_list

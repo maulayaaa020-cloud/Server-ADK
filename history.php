@@ -77,7 +77,10 @@ function namaPaket($p) {
 }
 
 function keteranganList($row) {
-    $extra = !empty($row['extra_data']) ? (@json_decode($row['extra_data'], true) ?: []) : [];
+    $extra    = !empty($row['extra_data']) ? (@json_decode($row['extra_data'], true) ?: []) : [];
+    $numCover = isset($extra['num_cover'])     ? $extra['num_cover'] . ' Cover' : '-';
+    $dimulai  = $extra['dimulai_dari']         ?? '-';
+    $isHidden = $row['hidden_cover'] === 'Ya';
 
     if ($row['paket'] === 'paket3') {
         $items = [['ROMAWI','Bawah Tengah'],['BAB','Bawah Tengah'],['ISI BAB','Kanan Atas']];
@@ -86,18 +89,24 @@ function keteranganList($row) {
         $items = [['ROMAWI',$pos],['BAB',$pos],['ISI BAB',$pos]];
     } elseif ($row['paket'] === 'paket4') {
         $items = [
-            ['ROMAWI',   $row['posisi']                     ?: '-'],
-            ['BAB',      $extra['pos_bab']                  ?: '-'],
-            ['ISI BAB',  $extra['pos_isi_bab']              ?: '-'],
-            ['Dimulai',  $extra['dimulai_dari']              ?: '-'],
-            ['Semb.Dafpus', $extra['semb_dafus']            ?: '-'],
-            ['Semb.Lamp',   $extra['semb_lamprn']           ?: '-'],
+            ['ROMAWI',  $row['posisi']       ?: '-'],
+            ['BAB',     $extra['pos_bab']    ?: '-'],
+            ['ISI BAB', $extra['pos_isi_bab'] ?: '-'],
         ];
     } else {
         $items = [['POSISI', $row['posisi'] ?: '-']];
     }
+
     $items[] = ['Font',  ($row['font'] ?: '-') . ' ' . ($row['size'] ?: '')];
-    $items[] = ['Cover', $row['hidden_cover'] === 'Tidak' ? 'Tampil' : 'Disembunyikan'];
+    $items[] = ['Cover', $isHidden ? 'Disembunyikan' : 'Tampil'];
+    if ($isHidden) {
+        if (isset($extra['num_cover'])) $items[] = ['Jml. Cover', $numCover];
+        if ($dimulai !== '-')           $items[] = ['Dimulai',    $dimulai];
+    }
+    if ($row['paket'] === 'paket4') {
+        if (!empty($extra['semb_dafus']))  $items[] = ['Semb.Dafpus', $extra['semb_dafus']];
+        if (!empty($extra['semb_lamprn'])) $items[] = ['Semb.Lamp',   $extra['semb_lamprn']];
+    }
     return $items;
 }
 

@@ -37,6 +37,7 @@ $pos_isi    = $_SESSION['pos_isi_bab']  ?? 'Kanan Atas';
 $dimulai    = $_SESSION['dimulai_dari'] ?? 'i';
 $semb_dafus = $_SESSION['semb_dafus']   ?? 'Tidak';
 $semb_lamprn= $_SESSION['semb_lamprn']  ?? 'Tidak';
+$num_cover  = (int)($_SESSION['num_cover'] ?? 1);
 
 $python = PYTHON_EXE;
 $script = PYTHON_SCRIPT_DIR . '/main.py';
@@ -58,7 +59,8 @@ $cmd = "\"$python\" \"$script\" " .
     escapeshellarg($pos_isi)     . " " .
     escapeshellarg($dimulai)     . " " .
     escapeshellarg($semb_dafus)  . " " .
-    escapeshellarg($semb_lamprn) . " 2>&1";
+    escapeshellarg($semb_lamprn) . " " .
+    escapeshellarg($num_cover)   . " 2>&1";
 
 exec($cmd, $out, $status);
 
