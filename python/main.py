@@ -96,6 +96,19 @@ def main():
     try:
         from docx import Document
         doc = Document(input_file)
+    except zipfile.BadZipFile as e:
+        if 'Bad CRC' in str(e):
+            # File punya media/gambar rusak — buka ulang dengan CRC check dimatikan sementara
+            _orig_crc = zipfile.ZipExtFile._update_crc
+            try:
+                zipfile.ZipExtFile._update_crc = lambda self, newdata: None
+                doc = Document(input_file)
+            except Exception as e2:
+                _fail("FILE_READ_ERROR", f"Gagal membuka file (media rusak): {e2}")
+            finally:
+                zipfile.ZipExtFile._update_crc = _orig_crc
+        else:
+            _fail("FILE_READ_ERROR", f"Gagal membuka file: {e}")
     except Exception as e:
         _fail("FILE_READ_ERROR", f"Gagal membuka file: {e}")
 
