@@ -66,8 +66,8 @@ function keteranganList($row) {
     $items[] = ['Font',  ($row['font'] ?: '-') . ' ' . ($row['size'] ?: '')];
     $items[] = ['Cover', $isHidden ? 'Disembunyikan' : 'Tampil'];
     if ($isHidden) {
-        $items[] = ['Jml. Cover', $numCover];
-        if ($dimulai !== '-') $items[] = ['Dimulai', $dimulai];
+        if (isset($extra['num_cover'])) $items[] = ['Jml. Cover', $numCover];
+        if ($dimulai !== '-')           $items[] = ['Dimulai',    $dimulai];
     }
     return $items;
 }
