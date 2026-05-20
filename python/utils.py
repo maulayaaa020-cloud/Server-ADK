@@ -496,6 +496,24 @@ class DocProcessor:
                 if not text or is_toc_entry(text):
                     continue
                 else:
+                    # Cek lookahead: kalau dalam 8 paragraf ke depan masih ada entri TOC
+                    # (punya toc style atau punya nomor halaman), berarti kita masih di TOC.
+                    # Ini menangani entri TOC tanpa nomor halaman (misal "BAB III PENUTUP").
+                    still_in_toc = False
+                    for _lk in range(para_idx + 1, min(para_idx + 9, len(all_paras))):
+                        _lp = all_paras[_lk]
+                        _ls = (_lp.style.name.lower() if _lp.style else "")
+                        _lt = _lp.text.strip()
+                        if 'toc' in _ls:
+                            still_in_toc = True
+                            break
+                        if _lt and is_toc_entry(_lt):
+                            still_in_toc = True
+                            break
+                        if _lt and is_bab_heading(_lt):
+                            break  # konten nyata ditemukan, keluar TOC
+                    if still_in_toc:
+                        continue
                     inside_toc = False
 
             if not text:
