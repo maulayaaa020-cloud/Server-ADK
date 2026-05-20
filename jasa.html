@@ -708,7 +708,7 @@
                         { label: '',      num: 'Dst..', pos: pc },
                     ];
                     const nCov  = parseInt(cv) || 1;
-                    const start = (parseInt(dm) || 1) + 1; // dm=cover page num, content starts at dm+1
+                    const start = parseInt(dm) || 1;
                     return [
                         ...coverBoxes(nCov),
                         { label: '', num: String(start),     pos: pc },
