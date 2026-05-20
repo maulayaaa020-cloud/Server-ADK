@@ -570,7 +570,7 @@
                                     </div>
                                     <span class="opts-row-label">SEMB. DAFUS</span>
                                     <div class="opts-select" data-group="df4" onclick="toggleSelect(this)">
-                                        <span class="opts-sel-tri">▲</span><span class="opts-sel-text">Pilih</span>
+                                        <span class="opts-sel-tri">▲</span><span class="opts-sel-text">Pilih (Opsional)</span>
                                         <div class="opts-sel-dropdown">
                                             <div class="opt-sel-item" data-group="df4" data-value="Ya"    onclick="chooseOpt(this);event.stopPropagation()">Ya</div>
                                             <div class="opt-sel-item" data-group="df4" data-value="Tidak" onclick="chooseOpt(this);event.stopPropagation()">Tidak</div>
@@ -578,7 +578,7 @@
                                     </div>
                                     <span class="opts-row-label">SEMB. LAMPIRAN</span>
                                     <div class="opts-select" data-group="lp4" onclick="toggleSelect(this)">
-                                        <span class="opts-sel-tri">▲</span><span class="opts-sel-text">Pilih</span>
+                                        <span class="opts-sel-tri">▲</span><span class="opts-sel-text">Pilih (Opsional)</span>
                                         <div class="opts-sel-dropdown">
                                             <div class="opt-sel-item" data-group="lp4" data-value="Ya"    onclick="chooseOpt(this);event.stopPropagation()">Ya</div>
                                             <div class="opt-sel-item" data-group="lp4" data-value="Tidak" onclick="chooseOpt(this);event.stopPropagation()">Tidak</div>
@@ -1070,8 +1070,7 @@
                 if (!sel.pos4i) msgs.push('Posisi ISI BAB belum dipilih');
                 if (sel.h4 === 'Ya' && !sel.cv4) msgs.push('Jumlah cover belum dipilih');
                 if (sel.h4 === 'Ya' && !sel.dm4) msgs.push('Dimulai dari belum dipilih');
-                if (!sel.df4)   msgs.push('Sembunyikan Daftar Pustaka belum dipilih');
-                if (!sel.lp4)   msgs.push('Sembunyikan Lampiran belum dipilih');
+                // df4 dan lp4 opsional — tidak divalidasi wajib
             }
             const fRaw = sel[p.fk];
             const fontOtherEl = document.getElementById('fontOther' + currentPaket);
@@ -1109,8 +1108,8 @@
                 document.getElementById('hidPosIsiBab').value = sel.pos4i;
                 document.getElementById('hidDimulai').value   = sel.dm4 || 'i';
                 document.getElementById('hidNumCover').value  = cvVal;
-                document.getElementById('hidDafus').value     = sel.df4;
-                document.getElementById('hidLamprn').value    = sel.lp4;
+                document.getElementById('hidDafus').value     = sel.df4  || 'Tidak';
+                document.getElementById('hidLamprn').value    = sel.lp4  || 'Tidak';
             }
 
             if (phone) {
