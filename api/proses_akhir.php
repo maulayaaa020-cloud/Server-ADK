@@ -70,9 +70,26 @@ if ($status !== 0 || !file_exists($output_full)) {
     $logLine = date('Y-m-d H:i:s') . " | order=" . ($_SESSION['order_db_id'] ?? 'unknown') . " | status={$status}\n" . implode("\n", $out) . "\n---\n";
     file_put_contents($logDir . '/error.log', $logLine, FILE_APPEND | LOCK_EX);
 
+    // Parse output Python untuk pesan error spesifik
+    $pyJson   = @json_decode(implode('', $out), true);
+    $errCode  = $pyJson['code']    ?? '';
+    $errMsg   = $pyJson['message'] ?? '';
+
+    $pesanMap = [
+        'FORMAT_NOT_SUPPORTED' => 'Sepertinya file kamu format <b>.doc</b> (versi lama). Buka dulu di Microsoft Word, lalu klik <b>Simpan Sebagai → .docx</b>, terus upload lagi ya.',
+        'FILE_TOO_LARGE'       => 'Ups, file kamu kebesaran nih — batas maksimalnya 30 MB. Coba hapus gambar yang nggak perlu atau kompres dulu sebelum upload.',
+        'INVALID_DOCX'         => 'File-nya kayaknya rusak atau bukan Word yang beneran. Coba buka di Microsoft Word, simpan ulang, terus upload lagi.',
+        'MACRO_DETECTED'       => 'File kamu mengandung macro (biasanya format <b>.docm</b>). Simpan ulang sebagai <b>.docx</b> biasa di Word, lalu upload lagi.',
+        'FILE_READ_ERROR'      => 'File kamu nggak bisa kebaca, mungkin ada bagian yang rusak (misalnya gambar corrupt). Coba buka di Word → Simpan Sebagai → .docx baru, lalu upload lagi.',
+        'PROCESSING_ERROR'     => 'Sistemnya kesulitan memproses file ini. Kemungkinan struktur dokumennya tidak biasa. Kalau masalah berlanjut, hubungi admin ya.',
+        'FILE_SAVE_ERROR'      => 'Prosesnya sudah selesai tapi gagal nyimpen hasilnya. Coba ulangi sekali lagi, biasanya langsung berhasil.',
+    ];
+
+    $detail = $pesanMap[$errCode] ?? 'Ada yang nggak beres waktu mengerjakan dokumen kamu. Coba upload ulang, atau hubungi admin kalau masalahnya terus muncul.';
+
     echo "<div style='font-family:sans-serif;padding:40px;text-align:center;color:white;background:#0d0b1e;min-height:100vh'>";
     echo "<h2 style='color:#f87171'>Gagal memproses file</h2>";
-    echo "<p style='color:#9ca3af'>Terjadi kesalahan saat mengerjakan dokumen Anda.<br>Silakan coba lagi atau hubungi admin.</p>";
+    echo "<p style='color:#9ca3af;max-width:480px;margin:0 auto 16px'>{$detail}</p>";
     echo "<a href='../jasa.html' style='color:#a78bfa'>← Kembali</a>";
     echo "</div>";
     exit;

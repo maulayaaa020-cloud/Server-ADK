@@ -240,7 +240,26 @@ class DocProcessor:
     # ── Header / Footer helpers ───────────────────────────
 
     def purge_all_headers_footers(self):
+        # Hapus evenAndOddHeaders dari document settings agar semua halaman
+        # pakai footer yang sama (dokumen user kadang punya setting ini aktif
+        # sehingga even_page_footer lama — sering berisi angka hardcoded —
+        # muncul di semua halaman genap output).
+        _W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+        settings_el = self.doc.settings.element
+        for el in list(settings_el.findall(f'{{{_W}}}evenAndOddHeaders')):
+            settings_el.remove(el)
+
         for section in self.doc.sections:
+            # Buang referensi even header/footer dari sectPr secara langsung
+            # (tanpa mengakses via python-docx agar tidak membuat relationship baru).
+            sectPr = section._sectPr
+            for ref in list(sectPr.findall(f'{{{_W}}}footerReference')):
+                if ref.get(f'{{{_W}}}type') == 'even':
+                    sectPr.remove(ref)
+            for ref in list(sectPr.findall(f'{{{_W}}}headerReference')):
+                if ref.get(f'{{{_W}}}type') == 'even':
+                    sectPr.remove(ref)
+
             # Hanya akses first_page_header/footer jika memang dipakai di section ini.
             # Mengakses part yang tidak dipakai membuat python-docx membuat relationship
             # w:headerReference type="first" yang kemudian jadi yatim piatu saat
@@ -262,6 +281,33 @@ class DocProcessor:
                         elem.remove(extra)
                 else:
                     elem.append(OxmlElement('w:p'))
+
+    def sanitize_margins(self):
+        """Perbaiki margin yang rusak (bottom < 1cm) agar footer tidak tenggelam.
+        Hanya memperbaiki section portrait; landscape dibiarkan.
+        Saat bottom diperbaiki, pgMar.footer (footer distance) juga dinormalisasi
+        ke 1cm agar footer jelas terlihat di dalam area bottom margin."""
+        _W       = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+        _MIN     = 567   # 1 cm dalam twips — threshold 'rusak' (< 1cm)
+        _FIX     = 1134  # 2 cm dalam twips — nilai perbaikan bottom
+        _FTR_STD = 567   # 1 cm dalam twips — footer distance (gap 1cm dari tepi)
+        for sec in self.doc.sections:
+            sectPr = sec._sectPr
+            pgSz   = sectPr.find(f'{{{_W}}}pgSz')
+            if pgSz is not None and pgSz.get(f'{{{_W}}}orient') == 'landscape':
+                continue
+            pgMar = sectPr.find(f'{{{_W}}}pgMar')
+            if pgMar is None:
+                continue
+            # Hanya perbaiki bottom — right dibiarkan agar layout konten tidak berubah.
+            try:
+                bot = int(pgMar.get(f'{{{_W}}}bottom', _FIX + 1))
+            except (ValueError, TypeError):
+                bot = _FIX + 1
+            if bot < _MIN:
+                pgMar.set(f'{{{_W}}}bottom', str(_FIX))
+                # Normalisasi footer distance agar posisi footer sesuai bottom baru.
+                pgMar.set(f'{{{_W}}}footer', str(_FTR_STD))
 
     @staticmethod
     def clear_header(section):
@@ -322,6 +368,15 @@ class DocProcessor:
             type_elem = OxmlElement('w:type')
             new_sectPr.append(type_elem)
         type_elem.set(qn('w:val'), 'nextPage')
+        # Normalisasi landscape → portrait agar section break baru tidak mewarisi
+        # orientasi landscape dari template (body-level sectPr dokumen mungkin landscape).
+        pgSz = new_sectPr.find(qn('w:pgSz'))
+        if pgSz is not None and pgSz.get(qn('w:orient'), '') == 'landscape':
+            w = pgSz.get(qn('w:w'), '11910')
+            h = pgSz.get(qn('w:h'), '16840')
+            pgSz.set(qn('w:w'), h)
+            pgSz.set(qn('w:h'), w)
+            del pgSz.attrib[qn('w:orient')]
         return new_sectPr
 
     def _attach_sectPr(self, p_elem):
@@ -573,8 +628,12 @@ class DocProcessor:
 
             # Fallback: Heading 1 langsung setelah section break, bukan roman-zone heading.
             # Menangani dokumen di mana BAB I/II/III tidak punya prefix "BAB" pada teksnya.
+            # Guard: hanya aktif jika belum ada BAB bernomor ditemukan. Jika sudah ada
+            # BAB I/II/dst, fallback dimatikan agar Heading 1 sub-bab (misal "Lingkup
+            # Pekerjaan") tidak ikut terdeteksi sebagai BAB karena dokumen punya banyak
+            # section break bawaan.
             elif (roman_start_p is not None and text and not is_roman_start(text) and
-                  not lampiran_found):
+                  not lampiran_found and not found_numbered_bab):
                 _style_lower = para.style.name.lower() if para.style else ""
                 if re.match(r'^heading\s*1$', _style_lower):
                     _prev_has_sect = (

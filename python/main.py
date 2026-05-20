@@ -155,6 +155,12 @@ def main():
     except Exception as e:
         _fail("PROCESSING_ERROR", f"Gagal memproses dokumen: {e}")
 
+    # ── Perbaiki margin rusak sebelum simpan ─────────────
+    try:
+        proc.sanitize_margins()
+    except Exception:
+        pass  # non-fatal: margin asli dipertahankan jika gagal
+
     # ── Simpan ───────────────────────────────────────────
     try:
         doc.save(output_file)
