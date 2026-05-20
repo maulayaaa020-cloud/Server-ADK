@@ -240,7 +240,26 @@ class DocProcessor:
     # ── Header / Footer helpers ───────────────────────────
 
     def purge_all_headers_footers(self):
+        # Hapus evenAndOddHeaders dari document settings agar semua halaman
+        # pakai footer yang sama (dokumen user kadang punya setting ini aktif
+        # sehingga even_page_footer lama — sering berisi angka hardcoded —
+        # muncul di semua halaman genap output).
+        _W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+        settings_el = self.doc.settings.element
+        for el in list(settings_el.findall(f'{{{_W}}}evenAndOddHeaders')):
+            settings_el.remove(el)
+
         for section in self.doc.sections:
+            # Buang referensi even header/footer dari sectPr secara langsung
+            # (tanpa mengakses via python-docx agar tidak membuat relationship baru).
+            sectPr = section._sectPr
+            for ref in list(sectPr.findall(f'{{{_W}}}footerReference')):
+                if ref.get(f'{{{_W}}}type') == 'even':
+                    sectPr.remove(ref)
+            for ref in list(sectPr.findall(f'{{{_W}}}headerReference')):
+                if ref.get(f'{{{_W}}}type') == 'even':
+                    sectPr.remove(ref)
+
             # Hanya akses first_page_header/footer jika memang dipakai di section ini.
             # Mengakses part yang tidak dipakai membuat python-docx membuat relationship
             # w:headerReference type="first" yang kemudian jadi yatim piatu saat
