@@ -210,29 +210,42 @@ class DocProcessor:
         Geser roman_start_p ke paragraf pada halaman (num_cover + 1).
         Digunakan saat user memiliki lebih dari 1 halaman cover.
         Menghitung page break (manual w:br type=page atau sectPr) dari awal dokumen.
+
+        Guard: jika roman_start_p belum melewati (num_cover - 1) page break dari awal,
+        dokumen tidak punya cukup halaman cover → kembalikan roman_start_p apa adanya.
         """
         if num_cover <= 1:
             return roman_start_p
 
         W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
-        body_els   = list(doc.element.body)
-        target_pg  = num_cover + 1  # halaman ke-(num_cover+1) adalah awal roman
-        current_pg = 1
+        body_els = list(doc.element.body)
 
+        def _has_break(el):
+            if any(br.get("{%s}type" % W) == 'page' for br in el.iter("{%s}br" % W)):
+                return True
+            pPr = el.find("{%s}pPr" % W)
+            return pPr is not None and pPr.find("{%s}sectPr" % W) is not None
+
+        # Hitung page break sebelum roman_start_p
+        try:
+            rsp_idx = body_els.index(roman_start_p)
+        except ValueError:
+            return roman_start_p
+
+        breaks_before = sum(1 for el in body_els[:rsp_idx] if _has_break(el))
+
+        # Jika roman_start_p belum melewati num_cover-1 page break,
+        # dokumen tidak punya num_cover halaman cover → jangan advance
+        if breaks_before < num_cover - 1:
+            return roman_start_p
+
+        # Advance ke halaman (num_cover + 1) dihitung dari awal dokumen
+        target_pg  = num_cover + 1
+        current_pg = 1
         for el in body_els:
             if current_pg >= target_pg:
                 return el
-            # Cek manual page break
-            page_broke = any(
-                br.get("{%s}type" % W) == 'page'
-                for br in el.iter("{%s}br" % W)
-            )
-            if not page_broke:
-                # Cek section break di pPr
-                pPr = el.find("{%s}pPr" % W)
-                if pPr is not None and pPr.find("{%s}sectPr" % W) is not None:
-                    page_broke = True
-            if page_broke:
+            if _has_break(el):
                 current_pg += 1
 
         return roman_start_p  # fallback jika tidak cukup halaman
