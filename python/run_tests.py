@@ -22,8 +22,20 @@ MAIN_PY = os.path.join(_HERE, 'main.py')
 PYTHON  = r'D:\Freelaces\Server\python.exe'
 TMP_OUT = os.path.join(_ROOT, 'output', '_test_tmp.docx')
 
-# Parameter default untuk semua test (bisa di-override per test case)
-DEFAULT_ARGS = ['paket3', 'Times New Roman', '12 pt', 'Ya', 'Tengah Bawah']
+# Parameter default untuk semua test — harus sama persis dengan form website:
+#   paket3 | Times New Roman | 12pt | sembunyikan cover | Tengah Bawah
+#   pos_bab=Tengah Bawah | pos_isi_bab=Kanan Atas | dimulai=ii | 1 cover
+DEFAULT_ARGS = [
+    'paket3', 'Times New Roman', '12 pt',
+    'Ya',           # hidden_cov
+    'Tengah Bawah', # posisi roman
+    'Tengah Bawah', # pos_bab  (paket4 only, ignored paket3)
+    'Kanan Atas',   # pos_isi_bab (paket4 only, ignored paket3)
+    'ii',           # dimulai_dari
+    'Tidak',        # semb_dafus
+    'Tidak',        # semb_lamprn
+    '1',            # num_cover
+]
 
 
 # ── helpers ───────────────────────────────────────────────────────────────────
@@ -49,13 +61,35 @@ def save_cases(cases):
         json.dump(cases, f, ensure_ascii=False, indent=2)
 
 
+def read_page_nums(docx_path):
+    """Baca pgNumType (fmt + start) dari setiap section di output .docx.
+    Ini yang membuktikan dimulai_dari=ii benar-benar diterapkan ke file."""
+    try:
+        sys.path.insert(0, _HERE)
+        from docx import Document
+        from docx.oxml.ns import qn
+        doc = Document(docx_path)
+        result = []
+        for sec in doc.sections:
+            pn    = sec._sectPr.find(qn('w:pgNumType'))
+            fmt   = pn.get(qn('w:fmt'),   'decimal') if pn is not None else 'decimal'
+            start = pn.get(qn('w:start'), None)      if pn is not None else None
+            result.append({'fmt': fmt, 'start': start})
+        return result
+    except Exception:
+        return []
+
+
 def snapshot(result):
-    """Ambil bagian yang relevan dari output main.py sebagai expected."""
-    return {
+    """Ambil bagian yang relevan dari output main.py + page numbers dari output file."""
+    snap = {
         'detected_bab':   result.get('detected_bab', []),
         'total_sections': result.get('total_sections', 0),
         'sections':       result.get('sections', []),
     }
+    if os.path.exists(TMP_OUT):
+        snap['page_nums'] = read_page_nums(TMP_OUT)
+    return snap
 
 
 def diff_results(expected, actual):
@@ -80,6 +114,15 @@ def diff_results(expected, actual):
                 f"    exp: {repr(es.get('first_content'))}\n"
                 f"    got: {repr(gs.get('first_content'))}"
             )
+    # Cek page numbers (membuktikan dimulai_dari diterapkan ke file output)
+    exp_pn = expected.get('page_nums', [])
+    got_pn = actual.get('page_nums', [])
+    if exp_pn and got_pn:
+        for i, (ep, gp) in enumerate(zip(exp_pn, got_pn)):
+            if ep.get('fmt') != gp.get('fmt') or ep.get('start') != gp.get('start'):
+                diffs.append(
+                    f"  section[{i}] page_num: exp={ep} got={gp}"
+                )
     return diffs
 
 

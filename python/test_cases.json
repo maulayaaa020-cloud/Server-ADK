@@ -56,6 +56,52 @@
         "index": 10,
         "first_content": "LAMPIRAN"
       }
+    ],
+    "page_nums": [
+      {
+        "fmt": "lowerRoman",
+        "start": "1"
+      },
+      {
+        "fmt": "lowerRoman",
+        "start": null
+      },
+      {
+        "fmt": "lowerRoman",
+        "start": null
+      },
+      {
+        "fmt": "lowerRoman",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": "1"
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      }
     ]
   },
   "Docx 8.docx": {
@@ -159,6 +205,96 @@
         "index": 21,
         "first_content": "LAMPIRAN"
       }
+    ],
+    "page_nums": [
+      {
+        "fmt": "lowerRoman",
+        "start": "1"
+      },
+      {
+        "fmt": "lowerRoman",
+        "start": null
+      },
+      {
+        "fmt": "lowerRoman",
+        "start": null
+      },
+      {
+        "fmt": "lowerRoman",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": "1"
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      }
     ]
   },
   "Docx 17.docx": {
@@ -208,6 +344,44 @@
       {
         "index": 8,
         "first_content": "DAFTAR PUSTAKA"
+      }
+    ],
+    "page_nums": [
+      {
+        "fmt": "lowerRoman",
+        "start": "1"
+      },
+      {
+        "fmt": "lowerRoman",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": "1"
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
       }
     ]
   },
@@ -296,6 +470,80 @@
         "index": 17,
         "first_content": "LAMPIRAN"
       }
+    ],
+    "page_nums": [
+      {
+        "fmt": "lowerRoman",
+        "start": "1"
+      },
+      {
+        "fmt": "lowerRoman",
+        "start": null
+      },
+      {
+        "fmt": "lowerRoman",
+        "start": null
+      },
+      {
+        "fmt": "lowerRoman",
+        "start": null
+      },
+      {
+        "fmt": "lowerRoman",
+        "start": null
+      },
+      {
+        "fmt": "lowerRoman",
+        "start": null
+      },
+      {
+        "fmt": "lowerRoman",
+        "start": null
+      },
+      {
+        "fmt": "lowerRoman",
+        "start": null
+      },
+      {
+        "fmt": "lowerRoman",
+        "start": null
+      },
+      {
+        "fmt": "lowerRoman",
+        "start": null
+      },
+      {
+        "fmt": "lowerRoman",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": "1"
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      }
     ]
   },
   "Docx 10.docx": {
@@ -326,6 +574,28 @@
       {
         "index": 4,
         "first_content": "DAFTAR PUSTAKA"
+      }
+    ],
+    "page_nums": [
+      {
+        "fmt": "lowerRoman",
+        "start": "1"
+      },
+      {
+        "fmt": "lowerRoman",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": "1"
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
       }
     ]
   },
@@ -385,6 +655,52 @@
         "index": 10,
         "first_content": "Lampiran I Pedoman Wawancara"
       }
+    ],
+    "page_nums": [
+      {
+        "fmt": "lowerRoman",
+        "start": "1"
+      },
+      {
+        "fmt": "lowerRoman",
+        "start": null
+      },
+      {
+        "fmt": "lowerRoman",
+        "start": null
+      },
+      {
+        "fmt": "lowerRoman",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": "1"
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      }
     ]
   },
   "Docx 7.docx": {
@@ -415,6 +731,28 @@
       {
         "index": 4,
         "first_content": "BAB III"
+      }
+    ],
+    "page_nums": [
+      {
+        "fmt": "lowerRoman",
+        "start": "1"
+      },
+      {
+        "fmt": "lowerRoman",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": "1"
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
       }
     ]
   },
@@ -471,6 +809,48 @@
         "index": 9,
         "first_content": "LAMPIRAN"
       }
+    ],
+    "page_nums": [
+      {
+        "fmt": "lowerRoman",
+        "start": "1"
+      },
+      {
+        "fmt": "lowerRoman",
+        "start": null
+      },
+      {
+        "fmt": "lowerRoman",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": "1"
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      }
     ]
   },
   "Docx 2.docx": {
@@ -510,6 +890,36 @@
       {
         "index": 6,
         "first_content": "DAFTAR PUSTAKA"
+      }
+    ],
+    "page_nums": [
+      {
+        "fmt": "lowerRoman",
+        "start": "1"
+      },
+      {
+        "fmt": "lowerRoman",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": "1"
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
       }
     ]
   },
@@ -556,6 +966,40 @@
       {
         "index": 7,
         "first_content": "DAFTAR PUSTAKA"
+      }
+    ],
+    "page_nums": [
+      {
+        "fmt": "lowerRoman",
+        "start": "1"
+      },
+      {
+        "fmt": "lowerRoman",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": "1"
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
       }
     ]
   },
@@ -611,6 +1055,48 @@
       {
         "index": 9,
         "first_content": ""
+      }
+    ],
+    "page_nums": [
+      {
+        "fmt": "lowerRoman",
+        "start": "1"
+      },
+      {
+        "fmt": "lowerRoman",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": "1"
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
       }
     ]
   },
@@ -675,6 +1161,56 @@
         "index": 11,
         "first_content": "LAMPIRAN"
       }
+    ],
+    "page_nums": [
+      {
+        "fmt": "lowerRoman",
+        "start": "1"
+      },
+      {
+        "fmt": "lowerRoman",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": "1"
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      }
     ]
   },
   "Docx 4.docx": {
@@ -709,6 +1245,32 @@
       {
         "index": 5,
         "first_content": "BAB III\nMETODE PENELITIAN"
+      }
+    ],
+    "page_nums": [
+      {
+        "fmt": "lowerRoman",
+        "start": "1"
+      },
+      {
+        "fmt": "lowerRoman",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": "1"
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
       }
     ]
   },
@@ -745,6 +1307,32 @@
         "index": 5,
         "first_content": "BAB III\nMETODE PENELITIAN"
       }
+    ],
+    "page_nums": [
+      {
+        "fmt": "lowerRoman",
+        "start": "1"
+      },
+      {
+        "fmt": "lowerRoman",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": "1"
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      }
     ]
   },
   "Docx 15.docx": {
@@ -774,6 +1362,28 @@
       {
         "index": 4,
         "first_content": "DAFTAR PUSTAKA"
+      }
+    ],
+    "page_nums": [
+      {
+        "fmt": "lowerRoman",
+        "start": "1"
+      },
+      {
+        "fmt": "lowerRoman",
+        "start": null
+      },
+      {
+        "fmt": "lowerRoman",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": "1"
+      },
+      {
+        "fmt": "decimal",
+        "start": null
       }
     ]
   },
@@ -819,6 +1429,40 @@
       {
         "index": 7,
         "first_content": "BAB V EVALUASI, PENDAMPINGAN, DAN PENGEMBANGAN PRO"
+      }
+    ],
+    "page_nums": [
+      {
+        "fmt": "lowerRoman",
+        "start": "1"
+      },
+      {
+        "fmt": "lowerRoman",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": "1"
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
       }
     ]
   },
@@ -879,6 +1523,52 @@
       {
         "index": 10,
         "first_content": "LAMPIRAN"
+      }
+    ],
+    "page_nums": [
+      {
+        "fmt": "lowerRoman",
+        "start": "1"
+      },
+      {
+        "fmt": "lowerRoman",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": "1"
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
       }
     ]
   }
