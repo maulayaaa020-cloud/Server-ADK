@@ -338,7 +338,18 @@ class DocProcessor:
 
     @staticmethod
     def _p_text(p_elem):
-        return ''.join(t.text or '' for t in p_elem.findall('.//' + qn('w:t'))).strip()
+        # Kumpulkan teks hanya dari run biasa, lewati subtree drawing/shape
+        _SKIP = {qn('w:drawing'), qn('w:pict')}
+        result = []
+        def _collect(el):
+            if el.tag in _SKIP:
+                return
+            if el.tag == qn('w:t'):
+                result.append(el.text or '')
+            for child in el:
+                _collect(child)
+        _collect(p_elem)
+        return ''.join(result).strip()
 
     @staticmethod
     def _p_has_content(p_elem):
@@ -545,30 +556,63 @@ class DocProcessor:
             lower = text.lower()
 
             if is_toc_heading(lower):
-                inside_toc    = True
-                toc_start_idx = para_idx
+                if not inside_toc:
+                    toc_start_idx = para_idx  # hanya catat saat pertama masuk TOC
+                inside_toc = True
                 if roman_start_p is None:
                     roman_start_p = para._p
                 continue
 
             if inside_toc:
-                # Keluar TOC hanya jika ada section break / page break SETELAH
-                # toc_start_idx — ini menandakan konten baru dimulai di halaman
-                # terpisah. Scope dibatasi agar sectPr sebelum TOC (misal cover)
-                # tidak memicu exit terlalu dini.
-                # _has_page_break_before memeriksa sectPr DAN w:br type=page.
+                # [Fix A] Keluar TOC jika ada section break / page break SETELAH
+                # toc_start_idx dalam window 15 paragraf ke belakang.
+                # Window 15 agar page break yang beberapa paragraf sebelum BAB
+                # (misal di paragraf kosong) tetap terdeteksi.
                 prev_has_break = self._has_page_break_before(
                     all_paras,
-                    max(toc_start_idx + 1, para_idx - 5),
+                    max(toc_start_idx + 1, para_idx - 15),
                     para_idx
                 )
                 if prev_has_break or self._para_has_page_break_before(para):
                     inside_toc = False
                     # Lanjut ke pemrosesan normal (tidak continue)
-                else:
-                    # Tetap dalam TOC — skip semua konten termasuk BAB heading
-                    # tanpa nomor halaman yang tidak bisa dibedakan dari entri TOC.
+                elif not text or is_toc_entry(text):
                     continue
+                else:
+                    # [Fix D] Paragraf ini sendiri adalah BAB heading tanpa
+                    # page break / Heading style → kemungkinan entri TOC tanpa
+                    # nomor halaman → tetap dalam TOC.
+                    _cur_style = (para.style.name.lower() if para.style else "")
+                    if (is_bab_heading(text)
+                            and not re.search(r'heading', _cur_style)
+                            and not self._para_has_page_break_before(para)):
+                        continue
+
+                    # Cek lookahead: kalau dalam 8 paragraf ke depan masih ada
+                    # entri TOC (punya toc style atau nomor halaman), tetap di TOC.
+                    still_in_toc = False
+                    for _lk in range(para_idx + 1, min(para_idx + 9, len(all_paras))):
+                        _lp = all_paras[_lk]
+                        _ls = (_lp.style.name.lower() if _lp.style else "")
+                        _lt = _lp.text.strip()
+                        if 'toc' in _ls:
+                            still_in_toc = True
+                            break
+                        if _lt and is_toc_entry(_lt):
+                            still_in_toc = True
+                            break
+                        if _lt and is_bab_heading(_lt):
+                            # [Fix B] Hanya keluar TOC jika BAB heading ini punya
+                            # indikator nyata (Heading style atau page break).
+                            _lp_heading = bool(re.search(r'heading', _ls))
+                            _lp_has_brk = self._para_has_page_break_before(_lp)
+                            if _lp_heading or _lp_has_brk:
+                                break  # BAB heading nyata → keluar TOC
+                            still_in_toc = True
+                            break
+                    if still_in_toc:
+                        continue
+                    inside_toc = False
 
             if not text:
                 continue
@@ -650,13 +694,13 @@ class DocProcessor:
                 last_bab_para_idx = para_idx
 
             # Fallback: Heading 1 langsung setelah section break, bukan roman-zone heading.
-            # Menangani dokumen di mana BAB I/II/III tidak punya prefix "BAB" pada teksnya.
-            # Guard: hanya aktif jika belum ada BAB bernomor ditemukan. Jika sudah ada
-            # BAB I/II/dst, fallback dimatikan agar Heading 1 sub-bab (misal "Lingkup
-            # Pekerjaan") tidak ikut terdeteksi sebagai BAB karena dokumen punya banyak
-            # section break bawaan.
+            # Menangani dokumen di mana BAB I/II/III tidak punya prefix "BAB" pada teksnya
+            # (autonumber dari Word list numbering — teks hanya "PENDAHULUAN" dll).
+            # Guard found_numbered_bab dihapus agar BAB II, III, dst. yang juga autonumber
+            # tetap terdeteksi. Pengaman utama: wajib Heading 1 + sectPr pada paragraf
+            # sebelumnya sehingga sub-bab biasa tidak ikut terdeteksi.
             elif (roman_start_p is not None and text and not is_roman_start(text) and
-                  not lampiran_found and not found_numbered_bab):
+                  not lampiran_found):
                 _style_lower = para.style.name.lower() if para.style else ""
                 if re.match(r'^heading\s*1$', _style_lower):
                     _prev_has_sect = (
