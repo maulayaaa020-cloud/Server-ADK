@@ -598,7 +598,9 @@ class DocProcessor:
                 if prev_has_break or self._para_has_page_break_before(para):
                     inside_toc = False
                     # Lanjut ke pemrosesan normal (tidak continue)
-                elif not text or is_toc_entry(text):
+                elif not text or is_toc_entry(text) or re.match(r'^\d+\.\d', text):
+                    # [Fix E] Entri sub-bab bernomor seperti "2.1 Sistem", "3.5triangulasi"
+                    # (pola X.Y tanpa nomor halaman) adalah bagian dari TOC → tetap di TOC.
                     continue
                 else:
                     # [Fix D] Paragraf ini sendiri adalah BAB heading tanpa
@@ -621,6 +623,10 @@ class DocProcessor:
                             still_in_toc = True
                             break
                         if _lt and is_toc_entry(_lt):
+                            still_in_toc = True
+                            break
+                        # [Fix E] Sub-bab bernomor (e.g. "2.1", "4.2.1") = sinyal masih di TOC
+                        if _lt and re.match(r'^\d+\.\d', _lt):
                             still_in_toc = True
                             break
                         if _lt and is_bab_heading(_lt):
