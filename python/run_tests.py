@@ -2,10 +2,11 @@
 run_tests.py — Regression test suite untuk ADK page numbering.
 
 Usage:
-  python run_tests.py              Jalankan semua test, bandingkan dengan expected
-  python run_tests.py --lock       Simpan output saat ini sebagai expected (setelah konfirmasi manual)
-  python run_tests.py --add <path> Tambah file baru ke test suite (interaktif)
-  python run_tests.py --show       Tampilkan semua expected results
+  python run_tests.py                    Jalankan semua test, bandingkan dengan expected
+  python run_tests.py --lock             Simpan output saat ini sebagai expected
+  python run_tests.py --add <path>       Tambah file baru ke test suite (interaktif)
+  python run_tests.py --show             Tampilkan semua expected results
+  python run_tests.py --preview <folder> Simpan semua output .docx ke folder untuk dicek manual
 
 Cara kerja:
   1. Setelah konfirmasi manual bahwa N file sudah benar → jalankan --lock
@@ -80,15 +81,16 @@ def read_page_nums(docx_path):
         return []
 
 
-def snapshot(result):
+def snapshot(result, docx_path=None):
     """Ambil bagian yang relevan dari output main.py + page numbers dari output file."""
     snap = {
         'detected_bab':   result.get('detected_bab', []),
         'total_sections': result.get('total_sections', 0),
         'sections':       result.get('sections', []),
     }
-    if os.path.exists(TMP_OUT):
-        snap['page_nums'] = read_page_nums(TMP_OUT)
+    target = docx_path or TMP_OUT
+    if os.path.exists(target):
+        snap['page_nums'] = read_page_nums(target)
     return snap
 
 
@@ -238,6 +240,49 @@ def cmd_show(cases):
     print(f"Total: {len(cases)} file")
 
 
+def cmd_preview(cases, out_folder):
+    """Jalankan semua file dan simpan output ke folder — bisa dibuka manual."""
+    os.makedirs(out_folder, exist_ok=True)
+    passed = failed = errored = skipped = 0
+    for name, meta in cases.items():
+        path = meta.get('path', '')
+        if not os.path.exists(path):
+            print(f"  SKIP {name}  (file tidak ada)")
+            skipped += 1
+            continue
+        stem    = os.path.splitext(name)[0]
+        out_path = os.path.join(out_folder, f"{stem}_p3.docx")
+        cmd = [PYTHON, MAIN_PY, path, out_path] + (meta.get('args') or DEFAULT_ARGS)
+        res = subprocess.run(cmd, capture_output=True, text=True, encoding='utf-8')
+        try:
+            result = json.loads(res.stdout)
+        except Exception:
+            result = {'status': 'error', 'message': (res.stderr or res.stdout or '').strip()[:200]}
+
+        if result.get('status') != 'success':
+            errored += 1
+            print(f"  ERR  {name}  {result.get('message','')[:80]}")
+            continue
+
+        snap  = snapshot(result, out_path)
+        diffs = diff_results(meta, snap)
+        status = 'FAIL' if diffs else 'PASS'
+        if diffs:
+            failed += 1
+            print(f"  {status} {name}")
+            for d in diffs:
+                print(d)
+        else:
+            passed += 1
+            print(f"  {status} {name}  ->  {out_path}")
+
+    total = passed + failed + errored
+    print(f"\n{'='*50}")
+    print(f"  {passed}/{total} PASS  |  {failed} FAIL  |  {errored} ERR  |  {skipped} SKIP")
+    print(f"  Output tersimpan di: {out_folder}")
+    print(f"{'='*50}")
+
+
 # ── main ──────────────────────────────────────────────────────────────────────
 
 if __name__ == '__main__':
@@ -253,6 +298,11 @@ if __name__ == '__main__':
         cmd_add(cases, sys.argv[2])
     elif cmd == '--show':
         cmd_show(cases)
+    elif cmd == '--preview':
+        if len(sys.argv) < 3:
+            print("Usage: run_tests.py --preview <output_folder>")
+            sys.exit(1)
+        cmd_preview(cases, sys.argv[2])
     elif cmd in ('', '--run'):
         cmd_run(cases)
     else:
