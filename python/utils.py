@@ -533,8 +533,11 @@ class DocProcessor:
         lampiran_found     = False
         last_bab_para_idx  = None
         found_numbered_bab = False
-        seen_bab_numbers   = set()   # cegah BAB dengan nomor sama terdeteksi dua kali
+        # bab_num_key → {'idx': int, 'has_break': bool, 'is_heading': bool}
+        # Memungkinkan penggantian entri lama (TOC palsu) dengan entri nyata
+        seen_bab_info      = {}
         inside_toc         = False
+        toc_start_idx      = -1   # index paragraf saat inside_toc terakhir di-set True
         all_paras          = list(self.doc.paragraphs)
 
         for para_idx, para in enumerate(all_paras):
@@ -542,34 +545,30 @@ class DocProcessor:
             lower = text.lower()
 
             if is_toc_heading(lower):
-                inside_toc = True
+                inside_toc    = True
+                toc_start_idx = para_idx
                 if roman_start_p is None:
                     roman_start_p = para._p
                 continue
 
             if inside_toc:
-                if not text or is_toc_entry(text):
-                    continue
-                else:
-                    # Cek lookahead: kalau dalam 8 paragraf ke depan masih ada entri TOC
-                    # (punya toc style atau punya nomor halaman), berarti kita masih di TOC.
-                    # Ini menangani entri TOC tanpa nomor halaman (misal "BAB III PENUTUP").
-                    still_in_toc = False
-                    for _lk in range(para_idx + 1, min(para_idx + 9, len(all_paras))):
-                        _lp = all_paras[_lk]
-                        _ls = (_lp.style.name.lower() if _lp.style else "")
-                        _lt = _lp.text.strip()
-                        if 'toc' in _ls:
-                            still_in_toc = True
-                            break
-                        if _lt and is_toc_entry(_lt):
-                            still_in_toc = True
-                            break
-                        if _lt and is_bab_heading(_lt):
-                            break  # konten nyata ditemukan, keluar TOC
-                    if still_in_toc:
-                        continue
+                # Keluar TOC hanya jika ada section break / page break SETELAH
+                # toc_start_idx — ini menandakan konten baru dimulai di halaman
+                # terpisah. Scope dibatasi agar sectPr sebelum TOC (misal cover)
+                # tidak memicu exit terlalu dini.
+                # _has_page_break_before memeriksa sectPr DAN w:br type=page.
+                prev_has_break = self._has_page_break_before(
+                    all_paras,
+                    max(toc_start_idx + 1, para_idx - 5),
+                    para_idx
+                )
+                if prev_has_break or self._para_has_page_break_before(para):
                     inside_toc = False
+                    # Lanjut ke pemrosesan normal (tidak continue)
+                else:
+                    # Tetap dalam TOC — skip semua konten termasuk BAB heading
+                    # tanpa nomor halaman yang tidak bisa dibedakan dari entri TOC.
+                    continue
 
             if not text:
                 continue
@@ -585,24 +584,44 @@ class DocProcessor:
                     if lampiran_found:
                         continue
                     lampiran_found = True
+
+                _style_lower  = (para.style.name.lower() if para.style else "")
+                _is_heading   = bool(re.search(r'heading', _style_lower))
+                _has_brk_para = self._para_has_page_break_before(para)
+
                 if is_numbered_bab:
                     found_numbered_bab = True
                     m_num = BAB_HEAD_RE.match(text)
                     bab_num_key = m_num.group(2).strip().lower() if m_num else None
-                    if bab_num_key and bab_num_key in seen_bab_numbers:
-                        continue  # Nomor BAB sudah terdeteksi → duplikat, skip
+                    if bab_num_key and bab_num_key in seen_bab_info:
+                        # [Fix C] Ganti entri lama jika yang baru lebih terpercaya
+                        # (punya page break / Heading style, sedangkan lama tidak).
+                        # Gunakan _has_page_break_before (cek sectPr + pgbr dalam window)
+                        # agar section break sebelum BAB nyata ikut terdeteksi.
+                        old = seen_bab_info[bab_num_key]
+                        if last_bab_para_idx is not None:
+                            _win_c = max(last_bab_para_idx + 1, para_idx - 15)
+                            _full_brk = (self._has_page_break_before(all_paras, _win_c, para_idx)
+                                         or _has_brk_para)
+                        else:
+                            _full_brk = _has_brk_para
+                        if (_full_brk or _is_heading) and not (old['has_break'] or old['is_heading']):
+                            bab_p_list[old['idx']] = para._p
+                            old['has_break']  = _full_brk
+                            old['is_heading'] = _is_heading
+                            last_bab_para_idx = para_idx  # update untuk window berikutnya
+                        continue  # duplikat sudah ditangani
                 else:
                     bab_num_key = None
                 if last_bab_para_idx is not None:
                     _window = max(last_bab_para_idx + 1, para_idx - 15)
                     has_break = self._has_page_break_before(all_paras, _window, para_idx)
                     if not has_break:
-                        has_break = self._para_has_page_break_before(para)
+                        has_break = _has_brk_para
                     # "Heading X" style + page break → langsung dipercaya.
                     # Non-heading style + page break → tetap cek forward_count karena sectPr
                     # di body text (misal Sistematika Penulisan) bisa memicu false positive.
-                    _style_lower = (para.style.name.lower() if para.style else "")
-                    _trusted = has_break and bool(re.search(r'heading', _style_lower))
+                    _trusted = has_break and _is_heading
                     if not _trusted:
                         # Lampiran & Daftar Pustaka dibebaskan dari forward_count
                         _is_endpoint = bool(re.match(
@@ -623,7 +642,11 @@ class DocProcessor:
                                 continue
                 bab_p_list.append(para._p)
                 if bab_num_key:
-                    seen_bab_numbers.add(bab_num_key)
+                    seen_bab_info[bab_num_key] = {
+                        'idx':       len(bab_p_list) - 1,
+                        'has_break': _has_brk_para,
+                        'is_heading': _is_heading,
+                    }
                 last_bab_para_idx = para_idx
 
             # Fallback: Heading 1 langsung setelah section break, bukan roman-zone heading.
