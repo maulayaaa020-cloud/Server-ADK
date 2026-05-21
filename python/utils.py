@@ -678,7 +678,27 @@ class DocProcessor:
                             last_bab_para_idx = para_idx  # update untuk window berikutnya
                         continue  # duplikat sudah ditangani
                 else:
-                    bab_num_key = None
+                    # [Fix C-ext] Deduplikasi DAFTAR PUSTAKA / LAMPIRAN sama seperti BAB bernomor.
+                    # Mencegah entri TOC palsu (tanpa page break) bertahan saat entri asli ditemukan.
+                    _ep = re.match(
+                        r'^\s*(daftar\s*pust?aka|lampiran|appendix|referensi|references?|bibliography)',
+                        text, re.IGNORECASE
+                    )
+                    bab_num_key = re.sub(r'\s+', '', _ep.group(1).lower()) if _ep else None
+                    if bab_num_key and bab_num_key in seen_bab_info:
+                        old = seen_bab_info[bab_num_key]
+                        if last_bab_para_idx is not None:
+                            _win_c = max(last_bab_para_idx + 1, para_idx - 15)
+                            _full_brk = (self._has_page_break_before(all_paras, _win_c, para_idx)
+                                         or _has_brk_para)
+                        else:
+                            _full_brk = _has_brk_para
+                        if (_full_brk or _is_heading) and not (old['has_break'] or old['is_heading']):
+                            bab_p_list[old['idx']] = para._p
+                            old['has_break']  = _full_brk
+                            old['is_heading'] = _is_heading
+                            last_bab_para_idx = para_idx
+                        continue
                 if last_bab_para_idx is not None:
                     _window = max(last_bab_para_idx + 1, para_idx - 15)
                     has_break = self._has_page_break_before(all_paras, _window, para_idx)
