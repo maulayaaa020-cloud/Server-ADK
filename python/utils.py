@@ -40,7 +40,7 @@ ROMAN_START_KEYWORDS = [
 
 _ROMAN_PAT = r'm{0,4}(cm|cd|d?c{0,3})(xc|xl|l?x{0,3})(ix|iv|v?i{0,3})'
 BAB_HEAD_RE = re.compile(
-    rf'^\s*(bab|chapter)\s+({_ROMAN_PAT}|\d+)\b(.*?)$',
+    rf'^\s*(bab|chapter)\s*[-.]?\s+({_ROMAN_PAT}|\d+)\.?\b(.*?)$',
     re.IGNORECASE | re.DOTALL
 )
 
@@ -48,6 +48,15 @@ BAB_HEAD_RE = re.compile(
 def is_roman_start(text):
     lower = text.strip().lower()
     return any(lower == k or lower.startswith(k) for k in ROMAN_START_KEYWORDS)
+
+
+def _has_toc_field(p_elem):
+    """Cek apakah paragraf mengandung field TOC otomatis Word ({TOC} field)."""
+    W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+    for instr in p_elem.iter('{%s}instrText' % W):
+        if instr.text and 'TOC' in instr.text.upper():
+            return True
+    return False
 
 
 def is_bab_heading(text):
@@ -568,7 +577,7 @@ class DocProcessor:
             text  = para.text.strip()
             lower = text.lower()
 
-            if is_toc_heading(lower):
+            if is_toc_heading(lower) or _has_toc_field(para._p):
                 if not inside_toc:
                     toc_start_idx = para_idx  # hanya catat saat pertama masuk TOC
                 inside_toc = True
@@ -724,6 +733,43 @@ class DocProcessor:
                         bab_p_list.append(para._p)
                         found_numbered_bab = True
                         last_bab_para_idx = para_idx
+
+        # Fallback: cari roman_start_p di dalam sel tabel jika belum ditemukan.
+        # Beberapa template cover universitas memakai tabel untuk layout,
+        # sehingga keyword seperti "KATA PENGANTAR" ada di w:tc bukan w:p biasa.
+        if roman_start_p is None:
+            W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+            body_ch = list(self.doc.element.body)
+            for elem in body_ch:
+                if not elem.tag.endswith('}tbl'):
+                    continue
+                found_in_tbl = False
+                for tc in elem.iter('{%s}tc' % W):
+                    for p_el in tc.findall('{%s}p' % W):
+                        cell_text = ''.join(
+                            t.text or '' for t in p_el.iter('{%s}t' % W)
+                        ).strip()
+                        if is_roman_start(cell_text):
+                            found_in_tbl = True
+                            break
+                    if found_in_tbl:
+                        break
+                if found_in_tbl:
+                    # Gunakan paragraf pertama setelah tabel ini sebagai roman_start_p
+                    tbl_idx = body_ch.index(elem)
+                    for k in range(tbl_idx + 1, len(body_ch)):
+                        if body_ch[k].tag.endswith('}p'):
+                            roman_start_p = body_ch[k]
+                            break
+                    break
+
+        # Pastikan urutan bab_p_list sesuai posisi di dokumen.
+        # Fix C (replacement) bisa membuat entry tidak berurutan.
+        _body = list(self.doc.element.body)
+        def _body_pos(p):
+            try: return _body.index(p)
+            except ValueError: return len(_body)
+        bab_p_list.sort(key=_body_pos)
 
         return roman_start_p, bab_p_list
 

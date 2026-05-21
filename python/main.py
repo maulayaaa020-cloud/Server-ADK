@@ -1,11 +1,11 @@
-"""
-main.py — Entry point pemrosesan dokumen ADK.
+﻿"""
+main.py â€” Entry point pemrosesan dokumen ADK.
 Usage: python main.py <input.docx> <output.docx> [paket] [font] [size] [hidden_cover] [posisi]
 
 Paket:
-  paket1 — Full Angka, posisi bebas
-  paket2 — Romawi + Angka, posisi bebas seragam
-  paket3 — Romawi + Angka, posisi tetap (Populer Skripsi)  [default]
+  paket1 â€” Full Angka, posisi bebas
+  paket2 â€” Romawi + Angka, posisi bebas seragam
+  paket3 â€” Romawi + Angka, posisi tetap (Populer Skripsi)  [default]
 """
 import sys
 import re
@@ -79,26 +79,26 @@ def main():
     size_arg    = sys.argv[5]  if len(sys.argv) > 5  else '12 pt'
     hidden_cov  = sys.argv[6]  if len(sys.argv) > 6  else 'Ya'
     posisi      = sys.argv[7]  if len(sys.argv) > 7  else 'Tengah Bawah'
-    # Paket 4 – custom per-zona
+    # Paket 4 â€“ custom per-zona
     pos_bab     = sys.argv[8]  if len(sys.argv) > 8  else 'Tengah Bawah'
     pos_isi_bab = sys.argv[9]  if len(sys.argv) > 9  else 'Kanan Atas'
     dimulai     = sys.argv[10] if len(sys.argv) > 10 else 'i'
     semb_dafus  = sys.argv[11] if len(sys.argv) > 11 else 'Tidak'
     semb_lamprn = sys.argv[12] if len(sys.argv) > 12 else 'Tidak'
-    num_cover   = int(sys.argv[13]) if len(sys.argv) > 13 else 1
+    num_cover   = max(1, min(int(sys.argv[13]) if len(sys.argv) > 13 else 1, 6))
 
     m            = re.search(r'\d+', size_arg)
     font_size_pt = int(m.group()) if m else 12
 
     validate_file(input_file)
 
-    # ── Buka dokumen ─────────────────────────────────────
+    # â”€â”€ Buka dokumen â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     try:
         from docx import Document
         doc = Document(input_file)
     except zipfile.BadZipFile as e:
         if 'Bad CRC' in str(e):
-            # File punya media/gambar rusak — buka ulang dengan CRC check dimatikan sementara
+            # File punya media/gambar rusak â€” buka ulang dengan CRC check dimatikan sementara
             _orig_crc = zipfile.ZipExtFile._update_crc
             try:
                 zipfile.ZipExtFile._update_crc = lambda self, newdata: None
@@ -112,7 +112,7 @@ def main():
     except Exception as e:
         _fail("FILE_READ_ERROR", f"Gagal membuka file: {e}")
 
-    # ── Proses ───────────────────────────────────────────
+    # â”€â”€ Proses â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     try:
         proc = DocProcessor(doc, font_arg, font_size_pt)
         proc.purge_all_headers_footers()
@@ -123,7 +123,7 @@ def main():
             paket1.apply(proc, hidden_cov, posisi, dimulai_dari=dimulai)
 
         else:
-            # Paket 2, 3, 4: butuh deteksi zona → Phase 1-3 dulu
+            # Paket 2, 3, 4: butuh deteksi zona â†’ Phase 1-3 dulu
             roman_start_p, bab_p_list = proc.scan_zones()
             detected_bab_texts = [
                 DocProcessor._p_text(p)[:60] for p in bab_p_list
@@ -155,19 +155,19 @@ def main():
     except Exception as e:
         _fail("PROCESSING_ERROR", f"Gagal memproses dokumen: {e}")
 
-    # ── Perbaiki margin rusak sebelum simpan ─────────────
+    # â”€â”€ Perbaiki margin rusak sebelum simpan â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     try:
         proc.sanitize_margins()
     except Exception:
         pass  # non-fatal: margin asli dipertahankan jika gagal
 
-    # ── Simpan ───────────────────────────────────────────
+    # â”€â”€ Simpan â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     try:
         doc.save(output_file)
     except Exception as e:
         _fail("FILE_SAVE_ERROR", f"Gagal menyimpan file: {e}")
 
-    # ── Output ringkasan (dibaca PHP) ─────────────────────
+    # â”€â”€ Output ringkasan (dibaca PHP) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     out_paras  = list(doc.paragraphs)
     out_breaks = [i for i, p in enumerate(out_paras) if DocProcessor._has_sectPr(p._p)]
     out_bounds = [0] + [bi + 1 for bi in out_breaks]
@@ -182,6 +182,25 @@ def main():
                 first_text = t[:50]
                 break
         sections_info.append({"index": sec_idx, "first_content": first_text})
+
+    # Log jika deteksi BAB atau zona romawi bermasalah (bantu debug file liar)
+    if paket != 'paket1' and (not detected_bab_texts or roman_start_p is None):
+        try:
+            import datetime, os
+            log_dir  = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'logs')
+            os.makedirs(log_dir, exist_ok=True)
+            log_path = os.path.join(log_dir, 'detection_issues.log')
+            ts       = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            fname    = os.path.basename(input_file)
+            issue    = []
+            if roman_start_p is None:
+                issue.append('roman_start_p=None')
+            if not detected_bab_texts:
+                issue.append('no_bab_detected')
+            with open(log_path, 'a', encoding='utf-8') as lf:
+                lf.write(f"[{ts}] {fname} | paket={paket} | {', '.join(issue)}\n")
+        except Exception:
+            pass  # logging non-fatal
 
     print(json.dumps({
         "status":         "success",
