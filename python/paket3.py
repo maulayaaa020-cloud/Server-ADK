@@ -23,6 +23,7 @@ def apply(proc, roman_sec, bab_sec_list, n_sections, hidden_cov, dimulai_dari='i
 
     cov_show      = None if hidden_cov == 'Ya' else (WD_ALIGN_PARAGRAPH.CENTER, False)
     first_bab_sec = bab_sec_list[0] if bab_sec_list else None
+    first_roman_done = False
 
     for i, section in enumerate(proc.doc.sections):
         try:
@@ -38,7 +39,11 @@ def apply(proc, roman_sec, bab_sec_list, n_sections, hidden_cov, dimulai_dari='i
 
             # ── Romawi zone ──
             if first_bab_sec is None or i < first_bab_sec:
-                proc.fmt_roman(section)
+                if not first_roman_done and hidden_cov == 'Ya':
+                    proc.fmt_roman(section, start=roman_start_num)
+                    first_roman_done = True
+                else:
+                    proc.fmt_roman(section)
                 continue
 
             # ── BAB zone ──

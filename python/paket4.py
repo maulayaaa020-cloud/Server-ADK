@@ -71,6 +71,7 @@ def apply(proc, roman_sec, bab_sec_list, n_sections, hidden_cov,
 
     cov_show      = None if hidden_cov == 'Ya' else (align_romawi, top_romawi)
     first_bab_sec = bab_sec_list[0] if bab_sec_list else None
+    first_roman_done = False
 
     # Identifikasi section yang termasuk dafpus / lampiran
     dafpus_secs  = set()
@@ -110,12 +111,18 @@ def apply(proc, roman_sec, bab_sec_list, n_sections, hidden_cov,
                 continue
 
             # ── Romawi zone ─────────────────────────────────────────────────
-            # Tidak perlu reset start — cover_start sudah mengatur urutan
             if first_bab_sec is None or i < first_bab_sec:
-                proc.fmt_uniform_section(
-                    section, align_romawi, top_romawi,
-                    fmt='lowerRoman', start=None
-                )
+                if not first_roman_done and hidden_cov == 'Ya':
+                    proc.fmt_uniform_section(
+                        section, align_romawi, top_romawi,
+                        fmt='lowerRoman', start=roman_start_num
+                    )
+                    first_roman_done = True
+                else:
+                    proc.fmt_uniform_section(
+                        section, align_romawi, top_romawi,
+                        fmt='lowerRoman', start=None
+                    )
                 continue
 
             # ── BAB zone ────────────────────────────────────────────────────

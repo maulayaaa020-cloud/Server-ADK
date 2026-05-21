@@ -23,6 +23,7 @@ def apply(proc, roman_sec, bab_sec_list, n_sections, hidden_cov, posisi,
     top           = proc._is_top(posisi)
     cov_show      = None if hidden_cov == 'Ya' else (align, top)
     first_bab_sec = bab_sec_list[0] if bab_sec_list else None
+    first_roman_done = False
 
     for i, section in enumerate(proc.doc.sections):
 
@@ -38,7 +39,11 @@ def apply(proc, roman_sec, bab_sec_list, n_sections, hidden_cov, posisi,
 
         # ── Romawi zone ──
         if first_bab_sec is None or i < first_bab_sec:
-            proc.fmt_uniform_section(section, align, top, fmt='lowerRoman')
+            if not first_roman_done and hidden_cov == 'Ya':
+                proc.fmt_uniform_section(section, align, top, fmt='lowerRoman', start=roman_start_num)
+                first_roman_done = True
+            else:
+                proc.fmt_uniform_section(section, align, top, fmt='lowerRoman')
             continue
 
         # ── BAB zone ──

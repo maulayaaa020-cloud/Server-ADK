@@ -733,8 +733,7 @@ class DocProcessor:
                 else:
                     self._place_num_in_part(section.footer, align)
             else:
-                # hidden_cov='Ya': sembunyikan cover 1 via first-page footer,
-                # cover 2+ tampilkan via regular header/footer sesuai visible_pos
+                # hidden_cov='Ya': sembunyikan semua halaman cover
                 section.different_first_page_header_footer = True
                 fph = section.first_page_header
                 fph.is_linked_to_previous = False
@@ -744,27 +743,26 @@ class DocProcessor:
                 fpf.is_linked_to_previous = False
                 for p in fpf.paragraphs:
                     self.clear_paragraph(p)
-                if _vis_top:
-                    self._place_num_in_part(section.header, _vis_align)
-                else:
-                    self._place_num_in_part(section.footer, _vis_align)
+                # Bersihkan regular header/footer agar cover 2+ (dalam section yang sama) juga tersembunyi
+                self.clear_header(section)
+                self.clear_footer(section)
         else:
             section.different_first_page_header_footer = False
             self.set_page_number_format(section, 'lowerRoman')
-            # Sampul ke-2 dst (section terpisah) tampilkan nomor sesuai visible_pos
+            # Sampul ke-2 dst (section terpisah)
             if show_pos:
+                # hidden_cov='Tidak': tampilkan nomor
                 align, top = show_pos
                 if top:
                     self._place_num_in_part(section.header, align)
                 else:
                     self._place_num_in_part(section.footer, align)
             else:
-                if _vis_top:
-                    self._place_num_in_part(section.header, _vis_align)
-                else:
-                    self._place_num_in_part(section.footer, _vis_align)
+                # hidden_cov='Ya': sembunyikan semua cover — jangan tampilkan nomor
+                self.clear_header(section)
+                self.clear_footer(section)
 
-    def fmt_roman(self, section):
+    def fmt_roman(self, section, start=None):
         section.different_first_page_header_footer = False
         self.clear_header(section)
         f = section.footer
@@ -774,7 +772,7 @@ class DocProcessor:
         p.alignment = WD_ALIGN_PARAGRAPH.CENTER
         self.add_page_number(p)
         self._set_pn_spacing(p)
-        self.set_page_number_format(section, 'lowerRoman')
+        self.set_page_number_format(section, 'lowerRoman', start)
 
     def fmt_bab_first(self, section, reset_to_1=False):
         section.different_first_page_header_footer = True
