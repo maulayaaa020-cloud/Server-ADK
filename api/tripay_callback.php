@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../includes/config.php';
 require_once __DIR__ . '/../includes/db.php';
+require_once __DIR__ . '/../includes/log.php';
 
 $rawBody           = file_get_contents('php://input');
 $callbackSignature = $_SERVER['HTTP_X_CALLBACK_SIGNATURE'] ?? '';
@@ -22,20 +23,22 @@ if (!$merchantRef || !$status) {
     exit(json_encode(['success' => false, 'message' => 'Invalid payload']));
 }
 
-error_log("[TriPay callback] merchant_ref={$merchantRef} status={$status}");
+adk_log('payment', 'TriPay callback', ['ref' => $merchantRef, 'status' => $status]);
 
 try {
     $db = getDB();
 
     if ($status === 'PAID') {
-        $db->prepare("UPDATE orders SET status = 'paid' WHERE order_id = :ref AND status = 'pending'")
-           ->execute([':ref' => $merchantRef]);
+        $affected = $db->prepare("UPDATE orders SET status = 'paid' WHERE order_id = :ref AND status = 'pending'");
+        $affected->execute([':ref' => $merchantRef]);
+        adk_log('payment', 'Order PAID', ['ref' => $merchantRef, 'rows' => $affected->rowCount()]);
     } elseif (in_array($status, ['EXPIRED', 'FAILED', 'REFUND'])) {
         $db->prepare("UPDATE orders SET status = 'failed' WHERE order_id = :ref AND status = 'pending'")
            ->execute([':ref' => $merchantRef]);
+        adk_log('payment', 'Order ' . $status, ['ref' => $merchantRef]);
     }
 } catch (Exception $e) {
-    error_log("[TriPay callback] DB error: " . $e->getMessage());
+    adk_log('error', 'TriPay callback DB error', ['ref' => $merchantRef, 'err' => $e->getMessage()]);
     http_response_code(500);
     exit;
 }
