@@ -107,66 +107,46 @@ if (!$jobId) {
 <script>
 const JOB   = <?= json_encode($jobId) ?>;
 const DB_ID = <?= (int)$dbId ?>;
-let attempts = 0;
-let interval = 2000; // mulai 2 detik, naik perlahan
-
-function poll() {
-    fetch('/adk/api/job_status.php?job=' + encodeURIComponent(JOB) + '&db_id=' + DB_ID)
-        .then(r => r.json())
-        .then(data => {
-            attempts++;
-
-            if (data.status === 'done') {
-                document.getElementById('spinner').style.borderTopColor = '#34d399';
-                document.getElementById('title').textContent = 'Selesai! Mengalihkan...';
-                document.getElementById('desc').textContent  = 'File kamu sudah siap diunduh.';
-                document.getElementById('step').innerHTML    = '';
-                setTimeout(() => { window.location.href = '/adk/history.php'; }, 800);
-                return;
-            }
-
-            if (data.status === 'failed') {
-                showError(data.message || 'Gagal memproses file. Coba upload ulang.');
-                return;
-            }
-
-            if (data.status === 'queued') {
-                document.getElementById('spinner').style.borderTopColor = '#fbbf24';
-                document.getElementById('title').textContent = 'Menunggu giliran...';
-                document.getElementById('desc').textContent  = 'Server sedang sibuk. File kamu dalam antrian.';
-            }
-
-            // Update estimasi
-            const secs = Math.round(attempts * (interval / 1000));
-            document.getElementById('step').innerHTML = 'Sudah menunggu: <span>' + secs + ' detik</span>';
-
-            // Naikkan interval perlahan (max 5 detik)
-            if (interval < 5000) interval += 200;
-
-            // Timeout 5 menit
-            if (attempts > 150) {
-                showError('Proses terlalu lama. Coba upload ulang atau hubungi admin.');
-                return;
-            }
-
-            setTimeout(poll, interval);
-        })
-        .catch(() => {
-            // Network error, coba lagi
-            setTimeout(poll, interval);
-        });
-}
+// Timer penghitung waktu (tampilan saja)
+const startTime = Date.now();
+const timerEl   = document.getElementById('step');
+setInterval(() => {
+    const secs = Math.round((Date.now() - startTime) / 1000);
+    timerEl.innerHTML = 'Sudah menunggu: <span>' + secs + ' detik</span>';
+}, 1000);
 
 function showError(msg) {
     document.getElementById('card').innerHTML =
-        '<div class="err-icon">⚠️</div>' +
+        '<div class="err-icon">&#9888;&#65039;</div>' +
         '<h2 style="color:#f87171">Gagal memproses file</h2>' +
         '<div class="err-msg">' + msg + '</div>' +
-        '<a href="/adk/jasa.html" class="btn-back">← Upload ulang</a>';
+        '<a href="/adk/jasa.html" class="btn-back">&larr; Upload ulang</a>';
 }
 
-// Mulai polling setelah 1.5 detik (beri waktu Python start)
-setTimeout(poll, 1500);
+// Satu AJAX call ke run_job.php — PHP jalankan Python, browser tunggu hasilnya.
+// Tidak ada polling, tidak ada background process — simple dan reliable.
+fetch('/adk/api/run_job.php?job=' + encodeURIComponent(JOB) + '&db_id=' + DB_ID, {
+    method: 'GET',
+    signal: AbortSignal.timeout ? AbortSignal.timeout(300000) : undefined  // 5 menit max
+})
+.then(r => {
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    return r.json();
+})
+.then(data => {
+    if (data.status === 'done') {
+        document.getElementById('spinner').style.borderTopColor = '#34d399';
+        document.getElementById('title').textContent = 'Selesai!';
+        document.getElementById('desc').textContent  = 'File kamu sudah siap diunduh.';
+        timerEl.innerHTML = '';
+        setTimeout(() => { window.location.href = '/adk/history.php'; }, 600);
+    } else {
+        showError(data.message || 'Gagal memproses file. Coba upload ulang.');
+    }
+})
+.catch(err => {
+    showError('Koneksi terputus atau proses timeout. Cek history — mungkin file sudah selesai. Jika belum, coba upload ulang.');
+});
 </script>
 </body>
 </html>
