@@ -85,7 +85,10 @@ def is_false_bab(para):
     if m:
         sisa_raw = m.group(6) or ""
         sisa = sisa_raw.strip()
-        if not sisa_raw.startswith('\n'):
+        # Heading 1 dengan teks BAB → pasti BAB nyata, skip length check.
+        # "BAB II PENGARUH JENIS MINUMAN TERHADAP KONDISI GIGI (SIMULASI...)" boleh panjang.
+        _is_h1 = bool(re.match(r'^heading\s*1$', style))
+        if not _is_h1 and not sisa_raw.startswith('\n'):
             if len(sisa) > 60:
                 return True
             if len(text.split()) > 8:
@@ -598,9 +601,13 @@ class DocProcessor:
                 if prev_has_break or self._para_has_page_break_before(para):
                     inside_toc = False
                     # Lanjut ke pemrosesan normal (tidak continue)
-                elif not text or is_toc_entry(text) or re.match(r'^\d+\.\d', text):
+                elif not text or is_toc_entry(text) or (
                     # [Fix E] Entri sub-bab bernomor seperti "2.1 Sistem", "3.5triangulasi"
-                    # (pola X.Y tanpa nomor halaman) adalah bagian dari TOC → tetap di TOC.
+                    # adalah bagian dari TOC — HANYA jika bukan Heading style.
+                    # Guard heading: "1.2 Rumusan masalah" (Heading 2) adalah konten nyata, bukan TOC.
+                    re.match(r'^\d+\.\d', text) and
+                    not re.search(r'heading', para.style.name.lower() if para.style else '')
+                ):
                     continue
                 else:
                     # [Fix D] Paragraf ini sendiri adalah BAB heading tanpa
@@ -626,7 +633,8 @@ class DocProcessor:
                             still_in_toc = True
                             break
                         # [Fix E] Sub-bab bernomor (e.g. "2.1", "4.2.1") = sinyal masih di TOC
-                        if _lt and re.match(r'^\d+\.\d', _lt):
+                        # Hanya jika bukan Heading style — Heading 2 "1.2 Judul" adalah konten nyata
+                        if _lt and re.match(r'^\d+\.\d', _lt) and not re.search(r'heading', _ls):
                             still_in_toc = True
                             break
                         if _lt and is_bab_heading(_lt):

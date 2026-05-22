@@ -1,1575 +1,1655 @@
-﻿{
-    "Docx 12.docx":  {
-                         "detected_bab":  [
-                                              "PENDAHULUAN",
-                                              "TINJAUAN PUSTAKA",
-                                              "METODOLOGI PENELITIAN",
-                                              "BAB IVHASIL DAN PEMBAHASAN",
-                                              "BAB VPENUTUP",
-                                              "DAFTAR PUSTAKA",
-                                              "LAMPIRAN"
-                                          ],
-                         "total_sections":  11,
-                         "sections":  [
-                                          {
-                                              "index":  0,
-                                              "first_content":  "SKRIPSI"
-                                          },
-                                          {
-                                              "index":  1,
-                                              "first_content":  "SKRIPSI"
-                                          },
-                                          {
-                                              "index":  2,
-                                              "first_content":  "HALAMAN PERSETUJUAN SKRIPSI"
-                                          },
-                                          {
-                                              "index":  3,
-                                              "first_content":  "Pembimbing Pendamping, Bapak Nanang Wahyudin, S.E."
-                                          },
-                                          {
-                                              "index":  4,
-                                              "first_content":  "PENDAHULUAN"
-                                          },
-                                          {
-                                              "index":  5,
-                                              "first_content":  "TINJAUAN PUSTAKA"
-                                          },
-                                          {
-                                              "index":  6,
-                                              "first_content":  "METODOLOGI PENELITIAN"
-                                          },
-                                          {
-                                              "index":  7,
-                                              "first_content":  "BAB IV\nHASIL DAN PEMBAHASAN"
-                                          },
-                                          {
-                                              "index":  8,
-                                              "first_content":  "BAB V\nPENUTUP"
-                                          },
-                                          {
-                                              "index":  9,
-                                              "first_content":  "DAFTAR PUSTAKA"
-                                          },
-                                          {
-                                              "index":  10,
-                                              "first_content":  "LAMPIRAN"
-                                          }
-                                      ],
-                         "page_nums":  [
-                                           {
-                                               "fmt":  "lowerRoman",
-                                               "start":  "1"
-                                           },
-                                           {
-                                               "fmt":  "lowerRoman",
-                                               "start":  null
-                                           },
-                                           {
-                                               "fmt":  "lowerRoman",
-                                               "start":  null
-                                           },
-                                           {
-                                               "fmt":  "lowerRoman",
-                                               "start":  null
-                                           },
-                                           {
-                                               "fmt":  "decimal",
-                                               "start":  "1"
-                                           },
-                                           {
-                                               "fmt":  "decimal",
-                                               "start":  null
-                                           },
-                                           {
-                                               "fmt":  "decimal",
-                                               "start":  null
-                                           },
-                                           {
-                                               "fmt":  "decimal",
-                                               "start":  null
-                                           },
-                                           {
-                                               "fmt":  "decimal",
-                                               "start":  null
-                                           },
-                                           {
-                                               "fmt":  "decimal",
-                                               "start":  null
-                                           },
-                                           {
-                                               "fmt":  "decimal",
-                                               "start":  null
-                                           }
-                                       ],
-                         "path":  "test_files/Docx 12.docx"
-                     },
-    "Docx 8.docx":  {
-                        "detected_bab":  [
-                                             "BAB I PENDAHULUAN",
-                                             "BAB IITINJAUAN PUSTAKA",
-                                             "BAB IIIKERANGKA KONSEP DAN METODE PENELITIAN",
-                                             "BAB IVHASIL DAN PEMBAHASAN",
-                                             "BAB VPENUTUP",
-                                             "DAFTAR PUSTAKA",
-                                             "LAMPIRAN"
-                                         ],
-                        "total_sections":  22,
-                        "sections":  [
-                                         {
-                                             "index":  0,
-                                             "first_content":  "TUGAS AKHIR"
-                                         },
-                                         {
-                                             "index":  1,
-                                             "first_content":  "TUGAS AKHIR"
-                                         },
-                                         {
-                                             "index":  2,
-                                             "first_content":  "PERSETUJUAN PEMBIMBING"
-                                         },
-                                         {
-                                             "index":  3,
-                                             "first_content":  "HALAMAN PENGESAHAN"
-                                         },
-                                         {
-                                             "index":  4,
-                                             "first_content":  "BAB I \nPENDAHULUAN"
-                                         },
-                                         {
-                                             "index":  5,
-                                             "first_content":  "BAB II\nTINJAUAN PUSTAKA"
-                                         },
-                                         {
-                                             "index":  6,
-                                             "first_content":  "Tuba Falopi"
-                                         },
-                                         {
-                                             "index":  7,
-                                             "first_content":  "WOC"
-                                         },
-                                         {
-                                             "index":  8,
-                                             "first_content":  "Pertumbuhan nodul, biasanya dijumpai pada endoserv"
-                                         },
-                                         {
-                                             "index":  9,
-                                             "first_content":  "Pemeriksaan penunjang"
-                                         },
-                                         {
-                                             "index":  10,
-                                             "first_content":  "Cone biopsi, yaitu dengan cara mengambil sedikit d"
-                                         },
-                                         {
-                                             "index":  11,
-                                             "first_content":  "Kombinasi"
-                                         },
-                                         {
-                                             "index":  12,
-                                             "first_content":  "Konsep Asuhan Keperawatan"
-                                         },
-                                         {
-                                             "index":  13,
-                                             "first_content":  "BAB III\nKERANGKA KONSEP DAN METODE PENELITIAN"
-                                         },
-                                         {
-                                             "index":  14,
-                                             "first_content":  "Gambar 3.1 Alur Pikir"
-                                         },
-                                         {
-                                             "index":  15,
-                                             "first_content":  "Fokus Studi"
-                                         },
-                                         {
-                                             "index":  16,
-                                             "first_content":  "Definisi Luaran Keparawatan"
-                                         },
-                                         {
-                                             "index":  17,
-                                             "first_content":  "BAB IV\nHASIL DAN PEMBAHASAN"
-                                         },
-                                         {
-                                             "index":  18,
-                                             "first_content":  "Analisa Data"
-                                         },
-                                         {
-                                             "index":  19,
-                                             "first_content":  "BAB V\nPENUTUP"
-                                         },
-                                         {
-                                             "index":  20,
-                                             "first_content":  "DAFTAR PUSTAKA"
-                                         },
-                                         {
-                                             "index":  21,
-                                             "first_content":  "LAMPIRAN"
-                                         }
-                                     ],
-                        "page_nums":  [
-                                          {
-                                              "fmt":  "lowerRoman",
-                                              "start":  "1"
-                                          },
-                                          {
-                                              "fmt":  "lowerRoman",
-                                              "start":  null
-                                          },
-                                          {
-                                              "fmt":  "lowerRoman",
-                                              "start":  null
-                                          },
-                                          {
-                                              "fmt":  "lowerRoman",
-                                              "start":  null
-                                          },
-                                          {
-                                              "fmt":  "decimal",
-                                              "start":  "1"
-                                          },
-                                          {
-                                              "fmt":  "decimal",
-                                              "start":  null
-                                          },
-                                          {
-                                              "fmt":  "decimal",
-                                              "start":  null
-                                          },
-                                          {
-                                              "fmt":  "decimal",
-                                              "start":  null
-                                          },
-                                          {
-                                              "fmt":  "decimal",
-                                              "start":  null
-                                          },
-                                          {
-                                              "fmt":  "decimal",
-                                              "start":  null
-                                          },
-                                          {
-                                              "fmt":  "decimal",
-                                              "start":  null
-                                          },
-                                          {
-                                              "fmt":  "decimal",
-                                              "start":  null
-                                          },
-                                          {
-                                              "fmt":  "decimal",
-                                              "start":  null
-                                          },
-                                          {
-                                              "fmt":  "decimal",
-                                              "start":  null
-                                          },
-                                          {
-                                              "fmt":  "decimal",
-                                              "start":  null
-                                          },
-                                          {
-                                              "fmt":  "decimal",
-                                              "start":  null
-                                          },
-                                          {
-                                              "fmt":  "decimal",
-                                              "start":  null
-                                          },
-                                          {
-                                              "fmt":  "decimal",
-                                              "start":  null
-                                          },
-                                          {
-                                              "fmt":  "decimal",
-                                              "start":  null
-                                          },
-                                          {
-                                              "fmt":  "decimal",
-                                              "start":  null
-                                          },
-                                          {
-                                              "fmt":  "decimal",
-                                              "start":  null
-                                          },
-                                          {
-                                              "fmt":  "decimal",
-                                              "start":  null
-                                          }
-                                      ],
-                        "path":  "test_files/Docx 8.docx"
-                    },
-    "Docx 17.docx":  {
-                         "detected_bab":  [
-                                              "BAB I",
-                                              "BAB II",
-                                              "BAB III",
-                                              "BAB IV",
-                                              "BAB V",
-                                              "DAFTAR PUSTAKA"
-                                          ],
-                         "total_sections":  9,
-                         "sections":  [
-                                          {
-                                              "index":  0,
-                                              "first_content":  "TUGAS PENELITIAN"
-                                          },
-                                          {
-                                              "index":  1,
-                                              "first_content":  "DAFTAR ISI"
-                                          },
-                                          {
-                                              "index":  2,
-                                              "first_content":  "BAB I"
-                                          },
-                                          {
-                                              "index":  3,
-                                              "first_content":  "Selain itu, elemen perdagangan langsung yang melib"
-                                          },
-                                          {
-                                              "index":  4,
-                                              "first_content":  "BAB II"
-                                          },
-                                          {
-                                              "index":  5,
-                                              "first_content":  "BAB III"
-                                          },
-                                          {
-                                              "index":  6,
-                                              "first_content":  "BAB IV"
-                                          },
-                                          {
-                                              "index":  7,
-                                              "first_content":  "BAB V"
-                                          },
-                                          {
-                                              "index":  8,
-                                              "first_content":  "DAFTAR PUSTAKA"
-                                          }
-                                      ],
-                         "page_nums":  [
-                                           {
-                                               "fmt":  "lowerRoman",
-                                               "start":  "1"
-                                           },
-                                           {
-                                               "fmt":  "lowerRoman",
-                                               "start":  null
-                                           },
-                                           {
-                                               "fmt":  "decimal",
-                                               "start":  "1"
-                                           },
-                                           {
-                                               "fmt":  "decimal",
-                                               "start":  null
-                                           },
-                                           {
-                                               "fmt":  "decimal",
-                                               "start":  null
-                                           },
-                                           {
-                                               "fmt":  "decimal",
-                                               "start":  null
-                                           },
-                                           {
-                                               "fmt":  "decimal",
-                                               "start":  null
-                                           },
-                                           {
-                                               "fmt":  "decimal",
-                                               "start":  null
-                                           },
-                                           {
-                                               "fmt":  "decimal",
-                                               "start":  null
-                                           }
-                                       ],
-                         "path":  "test_files/Docx 17.docx"
-                     },
-    "Docx 5.docx":  {
-                        "detected_bab":  [
-                                             "BAB I PENDAHULUAN",
-                                             "BAB IIKAJIAN PUSTAKA DAN KERANGKA BERPIKIR",
-                                             "BAB IIIMETODE PENELITIAN",
-                                             "BAB IVHASIL PENELITIAN DAN PEMBAHASAN",
-                                             "BAB VKESIMPULAN DAN SARAN",
-                                             "DAFTAR PUSTAKA",
-                                             "LAMPIRAN"
-                                         ],
-                        "total_sections":  18,
-                        "sections":  [
-                                         {
-                                             "index":  0,
-                                             "first_content":  "PENGEMBANGAN MEDIA PEMBELAJARAN INTERAKTIF \nBERBAS"
-                                         },
-                                         {
-                                             "index":  1,
-                                             "first_content":  "PERNYATAAN KEASLIAN TULISAN"
-                                         },
-                                         {
-                                             "index":  2,
-                                             "first_content":  ""
-                                         },
-                                         {
-                                             "index":  3,
-                                             "first_content":  "ABSTRAK"
-                                         },
-                                         {
-                                             "index":  4,
-                                             "first_content":  "ABSTRACT"
-                                         },
-                                         {
-                                             "index":  5,
-                                             "first_content":  "MOTTO"
-                                         },
-                                         {
-                                             "index":  6,
-                                             "first_content":  "PERSEMBAHAN"
-                                         },
-                                         {
-                                             "index":  7,
-                                             "first_content":  "PRAKATA"
-                                         },
-                                         {
-                                             "index":  8,
-                                             "first_content":  "DAFTAR ISI"
-                                         },
-                                         {
-                                             "index":  9,
-                                             "first_content":  "DAFTAR GAMBAR"
-                                         },
-                                         {
-                                             "index":  10,
-                                             "first_content":  "DAFTAR LAMPIRAN"
-                                         },
-                                         {
-                                             "index":  11,
-                                             "first_content":  "BAB I \nPENDAHULUAN"
-                                         },
-                                         {
-                                             "index":  12,
-                                             "first_content":  "BAB II\nKAJIAN PUSTAKA DAN KERANGKA BERPIKIR"
-                                         },
-                                         {
-                                             "index":  13,
-                                             "first_content":  "BAB III\nMETODE PENELITIAN"
-                                         },
-                                         {
-                                             "index":  14,
-                                             "first_content":  "BAB IV\nHASIL PENELITIAN DAN PEMBAHASAN"
-                                         },
-                                         {
-                                             "index":  15,
-                                             "first_content":  "BAB V\nKESIMPULAN DAN SARAN"
-                                         },
-                                         {
-                                             "index":  16,
-                                             "first_content":  "DAFTAR PUSTAKA"
-                                         },
-                                         {
-                                             "index":  17,
-                                             "first_content":  "LAMPIRAN"
-                                         }
-                                     ],
-                        "page_nums":  [
-                                          {
-                                              "fmt":  "lowerRoman",
-                                              "start":  "1"
-                                          },
-                                          {
-                                              "fmt":  "lowerRoman",
-                                              "start":  null
-                                          },
-                                          {
-                                              "fmt":  "lowerRoman",
-                                              "start":  null
-                                          },
-                                          {
-                                              "fmt":  "lowerRoman",
-                                              "start":  null
-                                          },
-                                          {
-                                              "fmt":  "lowerRoman",
-                                              "start":  null
-                                          },
-                                          {
-                                              "fmt":  "lowerRoman",
-                                              "start":  null
-                                          },
-                                          {
-                                              "fmt":  "lowerRoman",
-                                              "start":  null
-                                          },
-                                          {
-                                              "fmt":  "lowerRoman",
-                                              "start":  null
-                                          },
-                                          {
-                                              "fmt":  "lowerRoman",
-                                              "start":  null
-                                          },
-                                          {
-                                              "fmt":  "lowerRoman",
-                                              "start":  null
-                                          },
-                                          {
-                                              "fmt":  "lowerRoman",
-                                              "start":  null
-                                          },
-                                          {
-                                              "fmt":  "decimal",
-                                              "start":  "1"
-                                          },
-                                          {
-                                              "fmt":  "decimal",
-                                              "start":  null
-                                          },
-                                          {
-                                              "fmt":  "decimal",
-                                              "start":  null
-                                          },
-                                          {
-                                              "fmt":  "decimal",
-                                              "start":  null
-                                          },
-                                          {
-                                              "fmt":  "decimal",
-                                              "start":  null
-                                          },
-                                          {
-                                              "fmt":  "decimal",
-                                              "start":  null
-                                          },
-                                          {
-                                              "fmt":  "decimal",
-                                              "start":  null
-                                          }
-                                      ],
-                        "path":  "test_files/Docx 5.docx"
-                    },
-    "Docx 10.docx":  {
-                         "detected_bab":  [
-                                              "BAB II",
-                                              "BAB III",
-                                              "DAFTAR PUSTAKA"
-                                          ],
-                         "total_sections":  5,
-                         "sections":  [
-                                          {
-                                              "index":  0,
-                                              "first_content":  "MAKALAH BAHASA INDONESIA KELAS XI"
-                                          },
-                                          {
-                                              "index":  1,
-                                              "first_content":  "KATA PENGANTAR"
-                                          },
-                                          {
-                                              "index":  2,
-                                              "first_content":  "BAB II"
-                                          },
-                                          {
-                                              "index":  3,
-                                              "first_content":  "BAB III"
-                                          },
-                                          {
-                                              "index":  4,
-                                              "first_content":  "DAFTAR PUSTAKA"
-                                          }
-                                      ],
-                         "page_nums":  [
-                                           {
-                                               "fmt":  "lowerRoman",
-                                               "start":  "1"
-                                           },
-                                           {
-                                               "fmt":  "lowerRoman",
-                                               "start":  null
-                                           },
-                                           {
-                                               "fmt":  "decimal",
-                                               "start":  "1"
-                                           },
-                                           {
-                                               "fmt":  "decimal",
-                                               "start":  null
-                                           },
-                                           {
-                                               "fmt":  "decimal",
-                                               "start":  null
-                                           }
-                                       ],
-                         "path":  "test_files/Docx 10.docx"
-                     },
-    "Docx 3.docx":  {
-                        "detected_bab":  [
-                                             "BAB II KAJIAN PUSTAKA",
-                                             "BAB III METODOLOGI PENELITIAN",
-                                             "BAB IV HASIL PENELITIAN DAN PEMBAHASAN",
-                                             "BAB V KESIMPULAN DAN SARAN",
-                                             "DAFTAR PUSTAKA",
-                                             "LAMPIRAN"
-                                         ],
-                        "total_sections":  11,
-                        "sections":  [
-                                         {
-                                             "index":  0,
-                                             "first_content":  "UNIVERSITAS NASIONAL"
-                                         },
-                                         {
-                                             "index":  1,
-                                             "first_content":  "HALAMAN PENGESAHAN SKRIPSI HALAMAN PERSETUJUAN SKR"
-                                         },
-                                         {
-                                             "index":  2,
-                                             "first_content":  "DAFTAR ISI"
-                                         },
-                                         {
-                                             "index":  3,
-                                             "first_content":  "DAFTAR TABEL"
-                                         },
-                                         {
-                                             "index":  4,
-                                             "first_content":  "BAB II \nKAJIAN PUSTAKA"
-                                         },
-                                         {
-                                             "index":  5,
-                                             "first_content":  "BAB III \nMETODOLOGI PENELITIAN"
-                                         },
-                                         {
-                                             "index":  6,
-                                             "first_content":  "BAB IV \nHASIL PENELITIAN DAN PEMBAHASAN"
-                                         },
-                                         {
-                                             "index":  7,
-                                             "first_content":  "BAB V \nKESIMPULAN DAN SARAN"
-                                         },
-                                         {
-                                             "index":  8,
-                                             "first_content":  "DAFTAR PUSTAKA"
-                                         },
-                                         {
-                                             "index":  9,
-                                             "first_content":  "LAMPIRAN"
-                                         },
-                                         {
-                                             "index":  10,
-                                             "first_content":  "Lampiran I Pedoman Wawancara"
-                                         }
-                                     ],
-                        "page_nums":  [
-                                          {
-                                              "fmt":  "lowerRoman",
-                                              "start":  "1"
-                                          },
-                                          {
-                                              "fmt":  "lowerRoman",
-                                              "start":  null
-                                          },
-                                          {
-                                              "fmt":  "lowerRoman",
-                                              "start":  null
-                                          },
-                                          {
-                                              "fmt":  "lowerRoman",
-                                              "start":  null
-                                          },
-                                          {
-                                              "fmt":  "decimal",
-                                              "start":  "1"
-                                          },
-                                          {
-                                              "fmt":  "decimal",
-                                              "start":  null
-                                          },
-                                          {
-                                              "fmt":  "decimal",
-                                              "start":  null
-                                          },
-                                          {
-                                              "fmt":  "decimal",
-                                              "start":  null
-                                          },
-                                          {
-                                              "fmt":  "decimal",
-                                              "start":  null
-                                          },
-                                          {
-                                              "fmt":  "decimal",
-                                              "start":  null
-                                          },
-                                          {
-                                              "fmt":  "decimal",
-                                              "start":  null
-                                          }
-                                      ],
-                        "path":  "test_files/Docx 3.docx"
-                    },
-    "Docx 7.docx":  {
-                        "detected_bab":  [
-                                             "BAB IPENDAHULUAN",
-                                             "BAB II",
-                                             "BAB III"
-                                         ],
-                        "total_sections":  5,
-                        "sections":  [
-                                         {
-                                             "index":  0,
-                                             "first_content":  "LAPORAN KERJA PRAKTEK"
-                                         },
-                                         {
-                                             "index":  1,
-                                             "first_content":  "LEMBAR PENGESAHAN"
-                                         },
-                                         {
-                                             "index":  2,
-                                             "first_content":  "BAB I\nPENDAHULUAN"
-                                         },
-                                         {
-                                             "index":  3,
-                                             "first_content":  "BAB II"
-                                         },
-                                         {
-                                             "index":  4,
-                                             "first_content":  "BAB III"
-                                         }
-                                     ],
-                        "page_nums":  [
-                                          {
-                                              "fmt":  "lowerRoman",
-                                              "start":  "1"
-                                          },
-                                          {
-                                              "fmt":  "lowerRoman",
-                                              "start":  null
-                                          },
-                                          {
-                                              "fmt":  "decimal",
-                                              "start":  "1"
-                                          },
-                                          {
-                                              "fmt":  "decimal",
-                                              "start":  null
-                                          },
-                                          {
-                                              "fmt":  "decimal",
-                                              "start":  null
-                                          }
-                                      ],
-                        "path":  "test_files/Docx 7.docx"
-                    },
-    "Docx 1.docx":  {
-                        "detected_bab":  [
-                                             "BAB IPENDAHULUAN",
-                                             "BAB IILANDASAN TEORI",
-                                             "BAB IIIMETODE PENELITIAN[",
-                                             "BAB IVPEMBAHASAN",
-                                             "BAB VPENUTUP",
-                                             "DAFTAR PUSAKA",
-                                             "LAMPIRAN"
-                                         ],
-                        "total_sections":  10,
-                        "sections":  [
-                                         {
-                                             "index":  0,
-                                             "first_content":  "Karya Tulis Ilmiah"
-                                         },
-                                         {
-                                             "index":  1,
-                                             "first_content":  "KATA PENGANTAR"
-                                         },
-                                         {
-                                             "index":  2,
-                                             "first_content":  "DAFTAR ISI"
-                                         },
-                                         {
-                                             "index":  3,
-                                             "first_content":  "BAB I\nPENDAHULUAN"
-                                         },
-                                         {
-                                             "index":  4,
-                                             "first_content":  "BAB II\nLANDASAN TEORI"
-                                         },
-                                         {
-                                             "index":  5,
-                                             "first_content":  "BAB III\nMETODE PENELITIAN["
-                                         },
-                                         {
-                                             "index":  6,
-                                             "first_content":  "BAB IV\nPEMBAHASAN"
-                                         },
-                                         {
-                                             "index":  7,
-                                             "first_content":  "BAB V\nPENUTUP"
-                                         },
-                                         {
-                                             "index":  8,
-                                             "first_content":  "DAFTAR PUSAKA"
-                                         },
-                                         {
-                                             "index":  9,
-                                             "first_content":  "LAMPIRAN"
-                                         }
-                                     ],
-                        "page_nums":  [
-                                          {
-                                              "fmt":  "lowerRoman",
-                                              "start":  "1"
-                                          },
-                                          {
-                                              "fmt":  "lowerRoman",
-                                              "start":  null
-                                          },
-                                          {
-                                              "fmt":  "lowerRoman",
-                                              "start":  null
-                                          },
-                                          {
-                                              "fmt":  "decimal",
-                                              "start":  "1"
-                                          },
-                                          {
-                                              "fmt":  "decimal",
-                                              "start":  null
-                                          },
-                                          {
-                                              "fmt":  "decimal",
-                                              "start":  null
-                                          },
-                                          {
-                                              "fmt":  "decimal",
-                                              "start":  null
-                                          },
-                                          {
-                                              "fmt":  "decimal",
-                                              "start":  null
-                                          },
-                                          {
-                                              "fmt":  "decimal",
-                                              "start":  null
-                                          },
-                                          {
-                                              "fmt":  "decimal",
-                                              "start":  null
-                                          }
-                                      ],
-                        "path":  "test_files/Docx 1.docx"
-                    },
-    "Docx 2.docx":  {
-                        "detected_bab":  [
-                                             "BAB IPENDAHULUAN",
-                                             "BAB II KAJIAN TEORI DAN KAJIAN LITERA",
-                                             "BAB III METODE PENELITIAN",
-                                             "DAFTAR PUSTAKA"
-                                         ],
-                        "total_sections":  7,
-                        "sections":  [
-                                         {
-                                             "index":  0,
-                                             "first_content":  "PENGARUH DAYA TARIK KONSERVASI PENYU TERHADAP MINA"
-                                         },
-                                         {
-                                             "index":  1,
-                                             "first_content":  "PENGARUH DAYA TARIK KONSERVASI PENYU TERHADAP MINA"
-                                         },
-                                         {
-                                             "index":  2,
-                                             "first_content":  "BAB I\nPENDAHULUAN"
-                                         },
-                                         {
-                                             "index":  3,
-                                             "first_content":  "BAB II  KAJIAN LITERATUR DAN KAJIAN TEORI"
-                                         },
-                                         {
-                                             "index":  4,
-                                             "first_content":  "BAB II \nKAJIAN TEORI DAN KAJIAN LITERA"
-                                         },
-                                         {
-                                             "index":  5,
-                                             "first_content":  "BAB III \nMETODE PENELITIAN"
-                                         },
-                                         {
-                                             "index":  6,
-                                             "first_content":  "DAFTAR PUSTAKA"
-                                         }
-                                     ],
-                        "page_nums":  [
-                                          {
-                                              "fmt":  "lowerRoman",
-                                              "start":  "1"
-                                          },
-                                          {
-                                              "fmt":  "lowerRoman",
-                                              "start":  null
-                                          },
-                                          {
-                                              "fmt":  "decimal",
-                                              "start":  "1"
-                                          },
-                                          {
-                                              "fmt":  "decimal",
-                                              "start":  null
-                                          },
-                                          {
-                                              "fmt":  "decimal",
-                                              "start":  null
-                                          },
-                                          {
-                                              "fmt":  "decimal",
-                                              "start":  null
-                                          },
-                                          {
-                                              "fmt":  "decimal",
-                                              "start":  null
-                                          }
-                                      ],
-                        "path":  "test_files/Docx 2.docx"
-                    },
-    "Docx 6.docx":  {
-                        "detected_bab":  [
-                                             "BAB I PENDAHULUAN",
-                                             "BAB IILANDASAN TEORI",
-                                             "BAB IIIMETODOLOGI PENELITIAN",
-                                             "BAB IV PEMBAHASAN \u0026 IMPLEMENTASI",
-                                             "BAB V KESIMPULAN \u0026 SARAN",
-                                             "DAFTAR PUSTAKA"
-                                         ],
-                        "total_sections":  8,
-                        "sections":  [
-                                         {
-                                             "index":  0,
-                                             "first_content":  "TUGAS LAPORAN"
-                                         },
-                                         {
-                                             "index":  1,
-                                             "first_content":  "DAFTAR ISI"
-                                         },
-                                         {
-                                             "index":  2,
-                                             "first_content":  "BAB I \nPENDAHULUAN"
-                                         },
-                                         {
-                                             "index":  3,
-                                             "first_content":  "BAB II\nLANDASAN TEORI"
-                                         },
-                                         {
-                                             "index":  4,
-                                             "first_content":  "BAB III\nMETODOLOGI PENELITIAN"
-                                         },
-                                         {
-                                             "index":  5,
-                                             "first_content":  "BAB IV \nPEMBAHASAN \u0026 IMPLEMENTASI"
-                                         },
-                                         {
-                                             "index":  6,
-                                             "first_content":  "BAB V \nKESIMPULAN \u0026 SARAN"
-                                         },
-                                         {
-                                             "index":  7,
-                                             "first_content":  "DAFTAR PUSTAKA"
-                                         }
-                                     ],
-                        "page_nums":  [
-                                          {
-                                              "fmt":  "lowerRoman",
-                                              "start":  "1"
-                                          },
-                                          {
-                                              "fmt":  "lowerRoman",
-                                              "start":  null
-                                          },
-                                          {
-                                              "fmt":  "decimal",
-                                              "start":  "1"
-                                          },
-                                          {
-                                              "fmt":  "decimal",
-                                              "start":  null
-                                          },
-                                          {
-                                              "fmt":  "decimal",
-                                              "start":  null
-                                          },
-                                          {
-                                              "fmt":  "decimal",
-                                              "start":  null
-                                          },
-                                          {
-                                              "fmt":  "decimal",
-                                              "start":  null
-                                          },
-                                          {
-                                              "fmt":  "decimal",
-                                              "start":  null
-                                          }
-                                      ],
-                        "path":  "test_files/Docx 6.docx"
-                    },
-    "Docx 16.docx":  {
-                         "detected_bab":  [
-                                              "BAB 1",
-                                              "BAB 2",
-                                              "BAB 3",
-                                              "BAB 4",
-                                              "BAB 5",
-                                              "DAFTAR PUSTAKA",
-                                              "LAMPIRAN"
-                                          ],
-                         "total_sections":  10,
-                         "sections":  [
-                                          {
-                                              "index":  0,
-                                              "first_content":  "SKRIPSI"
-                                          },
-                                          {
-                                              "index":  1,
-                                              "first_content":  "LEMBAR PERSETUJUAN"
-                                          },
-                                          {
-                                              "index":  2,
-                                              "first_content":  "BAB 1"
-                                          },
-                                          {
-                                              "index":  3,
-                                              "first_content":  "BAB 2"
-                                          },
-                                          {
-                                              "index":  4,
-                                              "first_content":  "BAB 3"
-                                          },
-                                          {
-                                              "index":  5,
-                                              "first_content":  "BAB 4"
-                                          },
-                                          {
-                                              "index":  6,
-                                              "first_content":  "BAB 5"
-                                          },
-                                          {
-                                              "index":  7,
-                                              "first_content":  "DAFTAR PUSTAKA"
-                                          },
-                                          {
-                                              "index":  8,
-                                              "first_content":  "LAMPIRAN"
-                                          },
-                                          {
-                                              "index":  9,
-                                              "first_content":  ""
-                                          }
-                                      ],
-                         "page_nums":  [
-                                           {
-                                               "fmt":  "lowerRoman",
-                                               "start":  "1"
-                                           },
-                                           {
-                                               "fmt":  "lowerRoman",
-                                               "start":  null
-                                           },
-                                           {
-                                               "fmt":  "decimal",
-                                               "start":  "1"
-                                           },
-                                           {
-                                               "fmt":  "decimal",
-                                               "start":  null
-                                           },
-                                           {
-                                               "fmt":  "decimal",
-                                               "start":  null
-                                           },
-                                           {
-                                               "fmt":  "decimal",
-                                               "start":  null
-                                           },
-                                           {
-                                               "fmt":  "decimal",
-                                               "start":  null
-                                           },
-                                           {
-                                               "fmt":  "decimal",
-                                               "start":  null
-                                           },
-                                           {
-                                               "fmt":  "decimal",
-                                               "start":  null
-                                           },
-                                           {
-                                               "fmt":  "decimal",
-                                               "start":  null
-                                           }
-                                       ],
-                         "path":  "test_files/Docx 16.docx"
-                     },
-    "Docx 14.docx":  {
-                         "detected_bab":  [
-                                              "BAB I",
-                                              "BAB II",
-                                              "BAB III",
-                                              "BAB IV",
-                                              "BAB V",
-                                              "DAFTAR PUSTAKA",
-                                              "LAMPIRAN"
-                                          ],
-                         "total_sections":  12,
-                         "sections":  [
-                                          {
-                                              "index":  0,
-                                              "first_content":  "ANALISIS PEMBELAJARAN KERAJINAN TANGAN PADA MATA P"
-                                          },
-                                          {
-                                              "index":  1,
-                                              "first_content":  "ANALISIS PEMBELAJARAN KERAJINAN TANGAN PADA MATA P"
-                                          },
-                                          {
-                                              "index":  2,
-                                              "first_content":  "BAB I"
-                                          },
-                                          {
-                                              "index":  3,
-                                              "first_content":  "praktiknya, implementasi pembelajaran kerajinan ta"
-                                          },
-                                          {
-                                              "index":  4,
-                                              "first_content":  "BAB II"
-                                          },
-                                          {
-                                              "index":  5,
-                                              "first_content":  "Kerajinan tangan berbasis daur ulang sampah merupa"
-                                          },
-                                          {
-                                              "index":  6,
-                                              "first_content":  "BAB III"
-                                          },
-                                          {
-                                              "index":  7,
-                                              "first_content":  "BAB IV"
-                                          },
-                                          {
-                                              "index":  8,
-                                              "first_content":  "Struktur Organisasi Madrasah"
-                                          },
-                                          {
-                                              "index":  9,
-                                              "first_content":  "BAB V"
-                                          },
-                                          {
-                                              "index":  10,
-                                              "first_content":  "DAFTAR PUSTAKA"
-                                          },
-                                          {
-                                              "index":  11,
-                                              "first_content":  "LAMPIRAN"
-                                          }
-                                      ],
-                         "page_nums":  [
-                                           {
-                                               "fmt":  "lowerRoman",
-                                               "start":  "1"
-                                           },
-                                           {
-                                               "fmt":  "lowerRoman",
-                                               "start":  null
-                                           },
-                                           {
-                                               "fmt":  "decimal",
-                                               "start":  "1"
-                                           },
-                                           {
-                                               "fmt":  "decimal",
-                                               "start":  null
-                                           },
-                                           {
-                                               "fmt":  "decimal",
-                                               "start":  null
-                                           },
-                                           {
-                                               "fmt":  "decimal",
-                                               "start":  null
-                                           },
-                                           {
-                                               "fmt":  "decimal",
-                                               "start":  null
-                                           },
-                                           {
-                                               "fmt":  "decimal",
-                                               "start":  null
-                                           },
-                                           {
-                                               "fmt":  "decimal",
-                                               "start":  null
-                                           },
-                                           {
-                                               "fmt":  "decimal",
-                                               "start":  null
-                                           },
-                                           {
-                                               "fmt":  "decimal",
-                                               "start":  null
-                                           },
-                                           {
-                                               "fmt":  "decimal",
-                                               "start":  null
-                                           }
-                                       ],
-                         "path":  "test_files/Docx 14.docx"
-                     },
-    "Docx 4.docx":  {
-                        "detected_bab":  [
-                                             "BAB IPENDAHULUAN",
-                                             "BAB IITINJAUAN PUSTAKA",
-                                             "BAB IIIMETODE PENELITIAN"
-                                         ],
-                        "total_sections":  6,
-                        "sections":  [
-                                         {
-                                             "index":  0,
-                                             "first_content":  "LAPORAN KERJA PRAKTIK"
-                                         },
-                                         {
-                                             "index":  1,
-                                             "first_content":  "DAFTAR ISI"
-                                         },
-                                         {
-                                             "index":  2,
-                                             "first_content":  "BAB I\nPENDAHULUAN"
-                                         },
-                                         {
-                                             "index":  3,
-                                             "first_content":  "BAB II\nTINJAUAN PUSTAKA"
-                                         },
-                                         {
-                                             "index":  4,
-                                             "first_content":  ""
-                                         },
-                                         {
-                                             "index":  5,
-                                             "first_content":  "BAB III\nMETODE PENELITIAN"
-                                         }
-                                     ],
-                        "page_nums":  [
-                                          {
-                                              "fmt":  "lowerRoman",
-                                              "start":  "1"
-                                          },
-                                          {
-                                              "fmt":  "lowerRoman",
-                                              "start":  null
-                                          },
-                                          {
-                                              "fmt":  "decimal",
-                                              "start":  "1"
-                                          },
-                                          {
-                                              "fmt":  "decimal",
-                                              "start":  null
-                                          },
-                                          {
-                                              "fmt":  "decimal",
-                                              "start":  null
-                                          },
-                                          {
-                                              "fmt":  "decimal",
-                                              "start":  null
-                                          }
-                                      ],
-                        "path":  "test_files/Docx 4.docx"
-                    },
-    "Docx 13.docx":  {
-                         "detected_bab":  [
-                                              "BAB IPENDAHULUAN",
-                                              "BAB IITINJAUAN PUSTAKA",
-                                              "BAB IIIMETODE PENELITIAN"
-                                          ],
-                         "total_sections":  6,
-                         "sections":  [
-                                          {
-                                              "index":  0,
-                                              "first_content":  "LAPORAN KERJA PRAKTIK"
-                                          },
-                                          {
-                                              "index":  1,
-                                              "first_content":  "DAFTAR ISI"
-                                          },
-                                          {
-                                              "index":  2,
-                                              "first_content":  "BAB I\nPENDAHULUAN"
-                                          },
-                                          {
-                                              "index":  3,
-                                              "first_content":  "BAB II\nTINJAUAN PUSTAKA"
-                                          },
-                                          {
-                                              "index":  4,
-                                              "first_content":  ""
-                                          },
-                                          {
-                                              "index":  5,
-                                              "first_content":  "BAB III\nMETODE PENELITIAN"
-                                          }
-                                      ],
-                         "page_nums":  [
-                                           {
-                                               "fmt":  "lowerRoman",
-                                               "start":  "1"
-                                           },
-                                           {
-                                               "fmt":  "lowerRoman",
-                                               "start":  null
-                                           },
-                                           {
-                                               "fmt":  "decimal",
-                                               "start":  "1"
-                                           },
-                                           {
-                                               "fmt":  "decimal",
-                                               "start":  null
-                                           },
-                                           {
-                                               "fmt":  "decimal",
-                                               "start":  null
-                                           },
-                                           {
-                                               "fmt":  "decimal",
-                                               "start":  null
-                                           }
-                                       ],
-                         "path":  "test_files/Docx 13.docx"
-                     },
-    "Docx 15.docx":  {
-                         "detected_bab":  [
-                                              "BAB I PENDAHULUAN",
-                                              "DAFTAR PUSTAKA"
-                                          ],
-                         "total_sections":  5,
-                         "sections":  [
-                                          {
-                                              "index":  0,
-                                              "first_content":  "PENGEMBANGAN USAHA LELE MARINASI SIAP MASAK MELALU"
-                                          },
-                                          {
-                                              "index":  1,
-                                              "first_content":  "KATA PENGANTAR"
-                                          },
-                                          {
-                                              "index":  2,
-                                              "first_content":  ""
-                                          },
-                                          {
-                                              "index":  3,
-                                              "first_content":  "BAB I \nPENDAHULUAN"
-                                          },
-                                          {
-                                              "index":  4,
-                                              "first_content":  "DAFTAR PUSTAKA"
-                                          }
-                                      ],
-                         "page_nums":  [
-                                           {
-                                               "fmt":  "lowerRoman",
-                                               "start":  "1"
-                                           },
-                                           {
-                                               "fmt":  "lowerRoman",
-                                               "start":  null
-                                           },
-                                           {
-                                               "fmt":  "lowerRoman",
-                                               "start":  null
-                                           },
-                                           {
-                                               "fmt":  "decimal",
-                                               "start":  "1"
-                                           },
-                                           {
-                                               "fmt":  "decimal",
-                                               "start":  null
-                                           }
-                                       ],
-                         "path":  "test_files/Docx 15.docx"
-                     },
-    "Docx 11.docx":  {
-                         "detected_bab":  [
-                                              "BAB I KARAKTERISTIK MADRASAH",
-                                              "BAB II VISI, MISI, DAN TUJUAN",
-                                              "BAB III PENGORGANISASIAN",
-                                              "BAB IV PERENCANAAN PEMBELAJARAN",
-                                              "BAB V EVALUASI, PENDAMPINGAN, DAN PENGEMBANGAN PROFESIONAL"
-                                          ],
-                         "total_sections":  8,
-                         "sections":  [
-                                          {
-                                              "index":  0,
-                                              "first_content":  "COVER"
-                                          },
-                                          {
-                                              "index":  1,
-                                              "first_content":  "REKOMENDASI PENGAWAS"
-                                          },
-                                          {
-                                              "index":  2,
-                                              "first_content":  "BAB I KARAKTERISTIK MADRASAH"
-                                          },
-                                          {
-                                              "index":  3,
-                                              "first_content":  "BAB II VISI, MISI, DAN TUJUAN"
-                                          },
-                                          {
-                                              "index":  4,
-                                              "first_content":  "BAB III PENGORGANISASIAN"
-                                          },
-                                          {
-                                              "index":  5,
-                                              "first_content":  "Madrasah Karakter Unggul Moderat"
-                                          },
-                                          {
-                                              "index":  6,
-                                              "first_content":  "BAB IV PERENCANAAN PEMBELAJARAN"
-                                          },
-                                          {
-                                              "index":  7,
-                                              "first_content":  "BAB V EVALUASI, PENDAMPINGAN, DAN PENGEMBANGAN PRO"
-                                          }
-                                      ],
-                         "page_nums":  [
-                                           {
-                                               "fmt":  "lowerRoman",
-                                               "start":  "1"
-                                           },
-                                           {
-                                               "fmt":  "lowerRoman",
-                                               "start":  null
-                                           },
-                                           {
-                                               "fmt":  "decimal",
-                                               "start":  "1"
-                                           },
-                                           {
-                                               "fmt":  "decimal",
-                                               "start":  null
-                                           },
-                                           {
-                                               "fmt":  "decimal",
-                                               "start":  null
-                                           },
-                                           {
-                                               "fmt":  "decimal",
-                                               "start":  null
-                                           },
-                                           {
-                                               "fmt":  "decimal",
-                                               "start":  null
-                                           },
-                                           {
-                                               "fmt":  "decimal",
-                                               "start":  null
-                                           }
-                                       ],
-                         "path":  "test_files/Docx 11.docx"
-                     },
-    "Docx 9.docx":  {
-                        "detected_bab":  [
-                                             "BAB IPENDAHULUAN",
-                                             "BAB IITINJAUAN PUSTAKA",
-                                             "BAB IIIKERANGKA PIKIR",
-                                             "BAB IVMETODE PENELITIAN",
-                                             "BAB VHASIL DAN PEMBAHASAN",
-                                             "BAB VIPENUTUP",
-                                             "DAFTAR PUSTAKA",
-                                             "LAMPIRAN"
-                                         ],
-                        "total_sections":  11,
-                        "sections":  [
-                                         {
-                                             "index":  0,
-                                             "first_content":  "TUGAS AHKIR"
-                                         },
-                                         {
-                                             "index":  1,
-                                             "first_content":  "HALAMAN PERNYATAAN PERSETUJUAN PENYERAHAN\nTUGAS AH"
-                                         },
-                                         {
-                                             "index":  2,
-                                             "first_content":  "BAB I\nPENDAHULUAN"
-                                         },
-                                         {
-                                             "index":  3,
-                                             "first_content":  "BAB II\nTINJAUAN PUSTAKA"
-                                         },
-                                         {
-                                             "index":  4,
-                                             "first_content":  "WOC"
-                                         },
-                                         {
-                                             "index":  5,
-                                             "first_content":  "BAB III\nKERANGKA PIKIR"
-                                         },
-                                         {
-                                             "index":  6,
-                                             "first_content":  "BAB IV\nMETODE PENELITIAN"
-                                         },
-                                         {
-                                             "index":  7,
-                                             "first_content":  "BAB V\nHASIL DAN PEMBAHASAN"
-                                         },
-                                         {
-                                             "index":  8,
-                                             "first_content":  "BAB VI\nPENUTUP"
-                                         },
-                                         {
-                                             "index":  9,
-                                             "first_content":  "DAFTAR PUSTAKA"
-                                         },
-                                         {
-                                             "index":  10,
-                                             "first_content":  "LAMPIRAN"
-                                         }
-                                     ],
-                        "page_nums":  [
-                                          {
-                                              "fmt":  "lowerRoman",
-                                              "start":  "1"
-                                          },
-                                          {
-                                              "fmt":  "lowerRoman",
-                                              "start":  null
-                                          },
-                                          {
-                                              "fmt":  "decimal",
-                                              "start":  "1"
-                                          },
-                                          {
-                                              "fmt":  "decimal",
-                                              "start":  null
-                                          },
-                                          {
-                                              "fmt":  "decimal",
-                                              "start":  null
-                                          },
-                                          {
-                                              "fmt":  "decimal",
-                                              "start":  null
-                                          },
-                                          {
-                                              "fmt":  "decimal",
-                                              "start":  null
-                                          },
-                                          {
-                                              "fmt":  "decimal",
-                                              "start":  null
-                                          },
-                                          {
-                                              "fmt":  "decimal",
-                                              "start":  null
-                                          },
-                                          {
-                                              "fmt":  "decimal",
-                                              "start":  null
-                                          },
-                                          {
-                                              "fmt":  "decimal",
-                                              "start":  null
-                                          }
-                                      ],
-                        "path":  "test_files/Docx 9.docx"
-                    }
+{
+  "Docx 12.docx": {
+    "detected_bab": [
+      "PENDAHULUAN",
+      "TINJAUAN PUSTAKA",
+      "METODOLOGI PENELITIAN",
+      "BAB IVHASIL DAN PEMBAHASAN",
+      "BAB VPENUTUP",
+      "DAFTAR PUSTAKA",
+      "LAMPIRAN"
+    ],
+    "total_sections": 11,
+    "sections": [
+      {
+        "index": 0,
+        "first_content": "SKRIPSI"
+      },
+      {
+        "index": 1,
+        "first_content": "SKRIPSI"
+      },
+      {
+        "index": 2,
+        "first_content": "HALAMAN PERSETUJUAN SKRIPSI"
+      },
+      {
+        "index": 3,
+        "first_content": "Pembimbing Pendamping, Bapak Nanang Wahyudin, S.E."
+      },
+      {
+        "index": 4,
+        "first_content": "PENDAHULUAN"
+      },
+      {
+        "index": 5,
+        "first_content": "TINJAUAN PUSTAKA"
+      },
+      {
+        "index": 6,
+        "first_content": "METODOLOGI PENELITIAN"
+      },
+      {
+        "index": 7,
+        "first_content": "BAB IV\nHASIL DAN PEMBAHASAN"
+      },
+      {
+        "index": 8,
+        "first_content": "BAB V\nPENUTUP"
+      },
+      {
+        "index": 9,
+        "first_content": "DAFTAR PUSTAKA"
+      },
+      {
+        "index": 10,
+        "first_content": "LAMPIRAN"
+      }
+    ],
+    "page_nums": [
+      {
+        "fmt": "lowerRoman",
+        "start": "1"
+      },
+      {
+        "fmt": "lowerRoman",
+        "start": null
+      },
+      {
+        "fmt": "lowerRoman",
+        "start": null
+      },
+      {
+        "fmt": "lowerRoman",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": "1"
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      }
+    ],
+    "path": "test_files/Docx 12.docx"
+  },
+  "Docx 8.docx": {
+    "detected_bab": [
+      "BAB I PENDAHULUAN",
+      "BAB IITINJAUAN PUSTAKA",
+      "BAB IIIKERANGKA KONSEP DAN METODE PENELITIAN",
+      "BAB IVHASIL DAN PEMBAHASAN",
+      "BAB VPENUTUP",
+      "DAFTAR PUSTAKA",
+      "LAMPIRAN"
+    ],
+    "total_sections": 22,
+    "sections": [
+      {
+        "index": 0,
+        "first_content": "TUGAS AKHIR"
+      },
+      {
+        "index": 1,
+        "first_content": "TUGAS AKHIR"
+      },
+      {
+        "index": 2,
+        "first_content": "PERSETUJUAN PEMBIMBING"
+      },
+      {
+        "index": 3,
+        "first_content": "HALAMAN PENGESAHAN"
+      },
+      {
+        "index": 4,
+        "first_content": "BAB I \nPENDAHULUAN"
+      },
+      {
+        "index": 5,
+        "first_content": "BAB II\nTINJAUAN PUSTAKA"
+      },
+      {
+        "index": 6,
+        "first_content": "Tuba Falopi"
+      },
+      {
+        "index": 7,
+        "first_content": "WOC"
+      },
+      {
+        "index": 8,
+        "first_content": "Pertumbuhan nodul, biasanya dijumpai pada endoserv"
+      },
+      {
+        "index": 9,
+        "first_content": "Pemeriksaan penunjang"
+      },
+      {
+        "index": 10,
+        "first_content": "Cone biopsi, yaitu dengan cara mengambil sedikit d"
+      },
+      {
+        "index": 11,
+        "first_content": "Kombinasi"
+      },
+      {
+        "index": 12,
+        "first_content": "Konsep Asuhan Keperawatan"
+      },
+      {
+        "index": 13,
+        "first_content": "BAB III\nKERANGKA KONSEP DAN METODE PENELITIAN"
+      },
+      {
+        "index": 14,
+        "first_content": "Gambar 3.1 Alur Pikir"
+      },
+      {
+        "index": 15,
+        "first_content": "Fokus Studi"
+      },
+      {
+        "index": 16,
+        "first_content": "Definisi Luaran Keparawatan"
+      },
+      {
+        "index": 17,
+        "first_content": "BAB IV\nHASIL DAN PEMBAHASAN"
+      },
+      {
+        "index": 18,
+        "first_content": "Analisa Data"
+      },
+      {
+        "index": 19,
+        "first_content": "BAB V\nPENUTUP"
+      },
+      {
+        "index": 20,
+        "first_content": "DAFTAR PUSTAKA"
+      },
+      {
+        "index": 21,
+        "first_content": "LAMPIRAN"
+      }
+    ],
+    "page_nums": [
+      {
+        "fmt": "lowerRoman",
+        "start": "1"
+      },
+      {
+        "fmt": "lowerRoman",
+        "start": null
+      },
+      {
+        "fmt": "lowerRoman",
+        "start": null
+      },
+      {
+        "fmt": "lowerRoman",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": "1"
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      }
+    ],
+    "path": "test_files/Docx 8.docx"
+  },
+  "Docx 17.docx": {
+    "detected_bab": [
+      "BAB I",
+      "BAB II",
+      "BAB III",
+      "BAB IV",
+      "BAB V",
+      "DAFTAR PUSTAKA"
+    ],
+    "total_sections": 9,
+    "sections": [
+      {
+        "index": 0,
+        "first_content": "TUGAS PENELITIAN"
+      },
+      {
+        "index": 1,
+        "first_content": "DAFTAR ISI"
+      },
+      {
+        "index": 2,
+        "first_content": "BAB I"
+      },
+      {
+        "index": 3,
+        "first_content": "Selain itu, elemen perdagangan langsung yang melib"
+      },
+      {
+        "index": 4,
+        "first_content": "BAB II"
+      },
+      {
+        "index": 5,
+        "first_content": "BAB III"
+      },
+      {
+        "index": 6,
+        "first_content": "BAB IV"
+      },
+      {
+        "index": 7,
+        "first_content": "BAB V"
+      },
+      {
+        "index": 8,
+        "first_content": "DAFTAR PUSTAKA"
+      }
+    ],
+    "page_nums": [
+      {
+        "fmt": "lowerRoman",
+        "start": "1"
+      },
+      {
+        "fmt": "lowerRoman",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": "1"
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      }
+    ],
+    "path": "test_files/Docx 17.docx"
+  },
+  "Docx 5.docx": {
+    "detected_bab": [
+      "BAB I PENDAHULUAN",
+      "BAB IIKAJIAN PUSTAKA DAN KERANGKA BERPIKIR",
+      "BAB IIIMETODE PENELITIAN",
+      "BAB IVHASIL PENELITIAN DAN PEMBAHASAN",
+      "BAB VKESIMPULAN DAN SARAN",
+      "DAFTAR PUSTAKA",
+      "LAMPIRAN"
+    ],
+    "total_sections": 18,
+    "sections": [
+      {
+        "index": 0,
+        "first_content": "PENGEMBANGAN MEDIA PEMBELAJARAN INTERAKTIF \nBERBAS"
+      },
+      {
+        "index": 1,
+        "first_content": "PERNYATAAN KEASLIAN TULISAN"
+      },
+      {
+        "index": 2,
+        "first_content": ""
+      },
+      {
+        "index": 3,
+        "first_content": "ABSTRAK"
+      },
+      {
+        "index": 4,
+        "first_content": "ABSTRACT"
+      },
+      {
+        "index": 5,
+        "first_content": "MOTTO"
+      },
+      {
+        "index": 6,
+        "first_content": "PERSEMBAHAN"
+      },
+      {
+        "index": 7,
+        "first_content": "PRAKATA"
+      },
+      {
+        "index": 8,
+        "first_content": "DAFTAR ISI"
+      },
+      {
+        "index": 9,
+        "first_content": "DAFTAR GAMBAR"
+      },
+      {
+        "index": 10,
+        "first_content": "DAFTAR LAMPIRAN"
+      },
+      {
+        "index": 11,
+        "first_content": "BAB I \nPENDAHULUAN"
+      },
+      {
+        "index": 12,
+        "first_content": "BAB II\nKAJIAN PUSTAKA DAN KERANGKA BERPIKIR"
+      },
+      {
+        "index": 13,
+        "first_content": "BAB III\nMETODE PENELITIAN"
+      },
+      {
+        "index": 14,
+        "first_content": "BAB IV\nHASIL PENELITIAN DAN PEMBAHASAN"
+      },
+      {
+        "index": 15,
+        "first_content": "BAB V\nKESIMPULAN DAN SARAN"
+      },
+      {
+        "index": 16,
+        "first_content": "DAFTAR PUSTAKA"
+      },
+      {
+        "index": 17,
+        "first_content": "LAMPIRAN"
+      }
+    ],
+    "page_nums": [
+      {
+        "fmt": "lowerRoman",
+        "start": "1"
+      },
+      {
+        "fmt": "lowerRoman",
+        "start": null
+      },
+      {
+        "fmt": "lowerRoman",
+        "start": null
+      },
+      {
+        "fmt": "lowerRoman",
+        "start": null
+      },
+      {
+        "fmt": "lowerRoman",
+        "start": null
+      },
+      {
+        "fmt": "lowerRoman",
+        "start": null
+      },
+      {
+        "fmt": "lowerRoman",
+        "start": null
+      },
+      {
+        "fmt": "lowerRoman",
+        "start": null
+      },
+      {
+        "fmt": "lowerRoman",
+        "start": null
+      },
+      {
+        "fmt": "lowerRoman",
+        "start": null
+      },
+      {
+        "fmt": "lowerRoman",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": "1"
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      }
+    ],
+    "path": "test_files/Docx 5.docx"
+  },
+  "Docx 10.docx": {
+    "detected_bab": [
+      "BAB I",
+      "BAB II",
+      "BAB III",
+      "DAFTAR PUSTAKA"
+    ],
+    "total_sections": 6,
+    "sections": [
+      {
+        "index": 0,
+        "first_content": "MAKALAH BAHASA INDONESIA KELAS XI"
+      },
+      {
+        "index": 1,
+        "first_content": "KATA PENGANTAR"
+      },
+      {
+        "index": 2,
+        "first_content": "BAB I"
+      },
+      {
+        "index": 3,
+        "first_content": "BAB II"
+      },
+      {
+        "index": 4,
+        "first_content": "BAB III"
+      },
+      {
+        "index": 5,
+        "first_content": "DAFTAR PUSTAKA"
+      }
+    ],
+    "page_nums": [
+      {
+        "fmt": "lowerRoman",
+        "start": "1"
+      },
+      {
+        "fmt": "lowerRoman",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": "1"
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      }
+    ],
+    "path": "test_files/Docx 10.docx"
+  },
+  "Docx 3.docx": {
+    "detected_bab": [
+      "BAB IPENDAHULUAN",
+      "BAB II KAJIAN PUSTAKA",
+      "BAB III METODOLOGI PENELITIAN",
+      "BAB IV HASIL PENELITIAN DAN PEMBAHASAN",
+      "BAB V KESIMPULAN DAN SARAN",
+      "DAFTAR PUSTAKA",
+      "LAMPIRAN"
+    ],
+    "total_sections": 12,
+    "sections": [
+      {
+        "index": 0,
+        "first_content": "UNIVERSITAS NASIONAL"
+      },
+      {
+        "index": 1,
+        "first_content": "HALAMAN PENGESAHAN SKRIPSI HALAMAN PERSETUJUAN SKR"
+      },
+      {
+        "index": 2,
+        "first_content": "DAFTAR ISI"
+      },
+      {
+        "index": 3,
+        "first_content": "DAFTAR TABEL"
+      },
+      {
+        "index": 4,
+        "first_content": "BAB I\nPENDAHULUAN"
+      },
+      {
+        "index": 5,
+        "first_content": "BAB II \nKAJIAN PUSTAKA"
+      },
+      {
+        "index": 6,
+        "first_content": "BAB III \nMETODOLOGI PENELITIAN"
+      },
+      {
+        "index": 7,
+        "first_content": "BAB IV \nHASIL PENELITIAN DAN PEMBAHASAN"
+      },
+      {
+        "index": 8,
+        "first_content": "BAB V \nKESIMPULAN DAN SARAN"
+      },
+      {
+        "index": 9,
+        "first_content": "DAFTAR PUSTAKA"
+      },
+      {
+        "index": 10,
+        "first_content": "LAMPIRAN"
+      },
+      {
+        "index": 11,
+        "first_content": "Lampiran I Pedoman Wawancara"
+      }
+    ],
+    "page_nums": [
+      {
+        "fmt": "lowerRoman",
+        "start": "1"
+      },
+      {
+        "fmt": "lowerRoman",
+        "start": null
+      },
+      {
+        "fmt": "lowerRoman",
+        "start": null
+      },
+      {
+        "fmt": "lowerRoman",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": "1"
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      }
+    ],
+    "path": "test_files/Docx 3.docx"
+  },
+  "Docx 7.docx": {
+    "detected_bab": [
+      "BAB IPENDAHULUAN",
+      "BAB II",
+      "BAB III"
+    ],
+    "total_sections": 5,
+    "sections": [
+      {
+        "index": 0,
+        "first_content": "LAPORAN KERJA PRAKTEK"
+      },
+      {
+        "index": 1,
+        "first_content": "LEMBAR PENGESAHAN"
+      },
+      {
+        "index": 2,
+        "first_content": "BAB I\nPENDAHULUAN"
+      },
+      {
+        "index": 3,
+        "first_content": "BAB II"
+      },
+      {
+        "index": 4,
+        "first_content": "BAB III"
+      }
+    ],
+    "page_nums": [
+      {
+        "fmt": "lowerRoman",
+        "start": "1"
+      },
+      {
+        "fmt": "lowerRoman",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": "1"
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      }
+    ],
+    "path": "test_files/Docx 7.docx"
+  },
+  "Docx 1.docx": {
+    "detected_bab": [
+      "BAB IPENDAHULUAN",
+      "BAB IILANDASAN TEORI",
+      "BAB IIIMETODE PENELITIAN[",
+      "BAB IVPEMBAHASAN",
+      "BAB VPENUTUP",
+      "DAFTAR PUSAKA",
+      "LAMPIRAN"
+    ],
+    "total_sections": 10,
+    "sections": [
+      {
+        "index": 0,
+        "first_content": "Karya Tulis Ilmiah"
+      },
+      {
+        "index": 1,
+        "first_content": "KATA PENGANTAR"
+      },
+      {
+        "index": 2,
+        "first_content": "DAFTAR ISI"
+      },
+      {
+        "index": 3,
+        "first_content": "BAB I\nPENDAHULUAN"
+      },
+      {
+        "index": 4,
+        "first_content": "BAB II\nLANDASAN TEORI"
+      },
+      {
+        "index": 5,
+        "first_content": "BAB III\nMETODE PENELITIAN["
+      },
+      {
+        "index": 6,
+        "first_content": "BAB IV\nPEMBAHASAN"
+      },
+      {
+        "index": 7,
+        "first_content": "BAB V\nPENUTUP"
+      },
+      {
+        "index": 8,
+        "first_content": "DAFTAR PUSAKA"
+      },
+      {
+        "index": 9,
+        "first_content": "LAMPIRAN"
+      }
+    ],
+    "page_nums": [
+      {
+        "fmt": "lowerRoman",
+        "start": "1"
+      },
+      {
+        "fmt": "lowerRoman",
+        "start": null
+      },
+      {
+        "fmt": "lowerRoman",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": "1"
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      }
+    ],
+    "path": "test_files/Docx 1.docx"
+  },
+  "Docx 2.docx": {
+    "detected_bab": [
+      "BAB IPENDAHULUAN",
+      "BAB II KAJIAN TEORI DAN KAJIAN LITERA",
+      "BAB III METODE PENELITIAN",
+      "DAFTAR PUSTAKA"
+    ],
+    "total_sections": 7,
+    "sections": [
+      {
+        "index": 0,
+        "first_content": "PENGARUH DAYA TARIK KONSERVASI PENYU TERHADAP MINA"
+      },
+      {
+        "index": 1,
+        "first_content": "PENGARUH DAYA TARIK KONSERVASI PENYU TERHADAP MINA"
+      },
+      {
+        "index": 2,
+        "first_content": "BAB I\nPENDAHULUAN"
+      },
+      {
+        "index": 3,
+        "first_content": "BAB II  KAJIAN LITERATUR DAN KAJIAN TEORI"
+      },
+      {
+        "index": 4,
+        "first_content": "BAB II \nKAJIAN TEORI DAN KAJIAN LITERA"
+      },
+      {
+        "index": 5,
+        "first_content": "BAB III \nMETODE PENELITIAN"
+      },
+      {
+        "index": 6,
+        "first_content": "DAFTAR PUSTAKA"
+      }
+    ],
+    "page_nums": [
+      {
+        "fmt": "lowerRoman",
+        "start": "1"
+      },
+      {
+        "fmt": "lowerRoman",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": "1"
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      }
+    ],
+    "path": "test_files/Docx 2.docx"
+  },
+  "Docx 6.docx": {
+    "detected_bab": [
+      "BAB I PENDAHULUAN",
+      "BAB IILANDASAN TEORI",
+      "BAB IIIMETODOLOGI PENELITIAN",
+      "BAB IV PEMBAHASAN & IMPLEMENTASI",
+      "BAB V KESIMPULAN & SARAN",
+      "DAFTAR PUSTAKA"
+    ],
+    "total_sections": 8,
+    "sections": [
+      {
+        "index": 0,
+        "first_content": "TUGAS LAPORAN"
+      },
+      {
+        "index": 1,
+        "first_content": "DAFTAR ISI"
+      },
+      {
+        "index": 2,
+        "first_content": "BAB I \nPENDAHULUAN"
+      },
+      {
+        "index": 3,
+        "first_content": "BAB II\nLANDASAN TEORI"
+      },
+      {
+        "index": 4,
+        "first_content": "BAB III\nMETODOLOGI PENELITIAN"
+      },
+      {
+        "index": 5,
+        "first_content": "BAB IV \nPEMBAHASAN & IMPLEMENTASI"
+      },
+      {
+        "index": 6,
+        "first_content": "BAB V \nKESIMPULAN & SARAN"
+      },
+      {
+        "index": 7,
+        "first_content": "DAFTAR PUSTAKA"
+      }
+    ],
+    "page_nums": [
+      {
+        "fmt": "lowerRoman",
+        "start": "1"
+      },
+      {
+        "fmt": "lowerRoman",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": "1"
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      }
+    ],
+    "path": "test_files/Docx 6.docx"
+  },
+  "Docx 16.docx": {
+    "detected_bab": [
+      "BAB 1",
+      "BAB 2",
+      "BAB 3",
+      "BAB 4",
+      "BAB 5",
+      "DAFTAR PUSTAKA",
+      "LAMPIRAN"
+    ],
+    "total_sections": 10,
+    "sections": [
+      {
+        "index": 0,
+        "first_content": "SKRIPSI"
+      },
+      {
+        "index": 1,
+        "first_content": "LEMBAR PERSETUJUAN"
+      },
+      {
+        "index": 2,
+        "first_content": "BAB 1"
+      },
+      {
+        "index": 3,
+        "first_content": "BAB 2"
+      },
+      {
+        "index": 4,
+        "first_content": "BAB 3"
+      },
+      {
+        "index": 5,
+        "first_content": "BAB 4"
+      },
+      {
+        "index": 6,
+        "first_content": "BAB 5"
+      },
+      {
+        "index": 7,
+        "first_content": "DAFTAR PUSTAKA"
+      },
+      {
+        "index": 8,
+        "first_content": "LAMPIRAN"
+      },
+      {
+        "index": 9,
+        "first_content": ""
+      }
+    ],
+    "page_nums": [
+      {
+        "fmt": "lowerRoman",
+        "start": "1"
+      },
+      {
+        "fmt": "lowerRoman",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": "1"
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      }
+    ],
+    "path": "test_files/Docx 16.docx"
+  },
+  "Docx 14.docx": {
+    "detected_bab": [
+      "BAB I",
+      "BAB II",
+      "BAB III",
+      "BAB IV",
+      "BAB V",
+      "DAFTAR PUSTAKA",
+      "LAMPIRAN"
+    ],
+    "total_sections": 12,
+    "sections": [
+      {
+        "index": 0,
+        "first_content": "ANALISIS PEMBELAJARAN KERAJINAN TANGAN PADA MATA P"
+      },
+      {
+        "index": 1,
+        "first_content": "ANALISIS PEMBELAJARAN KERAJINAN TANGAN PADA MATA P"
+      },
+      {
+        "index": 2,
+        "first_content": "BAB I"
+      },
+      {
+        "index": 3,
+        "first_content": "praktiknya, implementasi pembelajaran kerajinan ta"
+      },
+      {
+        "index": 4,
+        "first_content": "BAB II"
+      },
+      {
+        "index": 5,
+        "first_content": "Kerajinan tangan berbasis daur ulang sampah merupa"
+      },
+      {
+        "index": 6,
+        "first_content": "BAB III"
+      },
+      {
+        "index": 7,
+        "first_content": "BAB IV"
+      },
+      {
+        "index": 8,
+        "first_content": "Struktur Organisasi Madrasah"
+      },
+      {
+        "index": 9,
+        "first_content": "BAB V"
+      },
+      {
+        "index": 10,
+        "first_content": "DAFTAR PUSTAKA"
+      },
+      {
+        "index": 11,
+        "first_content": "LAMPIRAN"
+      }
+    ],
+    "page_nums": [
+      {
+        "fmt": "lowerRoman",
+        "start": "1"
+      },
+      {
+        "fmt": "lowerRoman",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": "1"
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      }
+    ],
+    "path": "test_files/Docx 14.docx"
+  },
+  "Docx 4.docx": {
+    "detected_bab": [
+      "BAB IPENDAHULUAN",
+      "BAB IITINJAUAN PUSTAKA",
+      "BAB IIIMETODE PENELITIAN"
+    ],
+    "total_sections": 6,
+    "sections": [
+      {
+        "index": 0,
+        "first_content": "LAPORAN KERJA PRAKTIK"
+      },
+      {
+        "index": 1,
+        "first_content": "DAFTAR ISI"
+      },
+      {
+        "index": 2,
+        "first_content": "BAB I\nPENDAHULUAN"
+      },
+      {
+        "index": 3,
+        "first_content": "BAB II\nTINJAUAN PUSTAKA"
+      },
+      {
+        "index": 4,
+        "first_content": ""
+      },
+      {
+        "index": 5,
+        "first_content": "BAB III\nMETODE PENELITIAN"
+      }
+    ],
+    "page_nums": [
+      {
+        "fmt": "lowerRoman",
+        "start": "1"
+      },
+      {
+        "fmt": "lowerRoman",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": "1"
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      }
+    ],
+    "path": "test_files/Docx 4.docx"
+  },
+  "Docx 13.docx": {
+    "detected_bab": [
+      "BAB IPENDAHULUAN",
+      "BAB IITINJAUAN PUSTAKA",
+      "BAB IIIMETODE PENELITIAN"
+    ],
+    "total_sections": 6,
+    "sections": [
+      {
+        "index": 0,
+        "first_content": "LAPORAN KERJA PRAKTIK"
+      },
+      {
+        "index": 1,
+        "first_content": "DAFTAR ISI"
+      },
+      {
+        "index": 2,
+        "first_content": "BAB I\nPENDAHULUAN"
+      },
+      {
+        "index": 3,
+        "first_content": "BAB II\nTINJAUAN PUSTAKA"
+      },
+      {
+        "index": 4,
+        "first_content": ""
+      },
+      {
+        "index": 5,
+        "first_content": "BAB III\nMETODE PENELITIAN"
+      }
+    ],
+    "page_nums": [
+      {
+        "fmt": "lowerRoman",
+        "start": "1"
+      },
+      {
+        "fmt": "lowerRoman",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": "1"
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      }
+    ],
+    "path": "test_files/Docx 13.docx"
+  },
+  "Docx 15.docx": {
+    "detected_bab": [
+      "BAB I PENDAHULUAN",
+      "DAFTAR PUSTAKA"
+    ],
+    "total_sections": 5,
+    "sections": [
+      {
+        "index": 0,
+        "first_content": "PENGEMBANGAN USAHA LELE MARINASI SIAP MASAK MELALU"
+      },
+      {
+        "index": 1,
+        "first_content": "KATA PENGANTAR"
+      },
+      {
+        "index": 2,
+        "first_content": ""
+      },
+      {
+        "index": 3,
+        "first_content": "BAB I \nPENDAHULUAN"
+      },
+      {
+        "index": 4,
+        "first_content": "DAFTAR PUSTAKA"
+      }
+    ],
+    "page_nums": [
+      {
+        "fmt": "lowerRoman",
+        "start": "1"
+      },
+      {
+        "fmt": "lowerRoman",
+        "start": null
+      },
+      {
+        "fmt": "lowerRoman",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": "1"
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      }
+    ],
+    "path": "test_files/Docx 15.docx"
+  },
+  "Docx 11.docx": {
+    "detected_bab": [
+      "BAB I KARAKTERISTIK MADRASAH",
+      "BAB II VISI, MISI, DAN TUJUAN",
+      "BAB III PENGORGANISASIAN",
+      "BAB IV PERENCANAAN PEMBELAJARAN",
+      "BAB V EVALUASI, PENDAMPINGAN, DAN PENGEMBANGAN PROFESIONAL"
+    ],
+    "total_sections": 8,
+    "sections": [
+      {
+        "index": 0,
+        "first_content": "COVER"
+      },
+      {
+        "index": 1,
+        "first_content": "REKOMENDASI PENGAWAS"
+      },
+      {
+        "index": 2,
+        "first_content": "BAB I KARAKTERISTIK MADRASAH"
+      },
+      {
+        "index": 3,
+        "first_content": "BAB II VISI, MISI, DAN TUJUAN"
+      },
+      {
+        "index": 4,
+        "first_content": "BAB III PENGORGANISASIAN"
+      },
+      {
+        "index": 5,
+        "first_content": "Madrasah Karakter Unggul Moderat"
+      },
+      {
+        "index": 6,
+        "first_content": "BAB IV PERENCANAAN PEMBELAJARAN"
+      },
+      {
+        "index": 7,
+        "first_content": "BAB V EVALUASI, PENDAMPINGAN, DAN PENGEMBANGAN PRO"
+      }
+    ],
+    "page_nums": [
+      {
+        "fmt": "lowerRoman",
+        "start": "1"
+      },
+      {
+        "fmt": "lowerRoman",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": "1"
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      }
+    ],
+    "path": "test_files/Docx 11.docx"
+  },
+  "Docx 9.docx": {
+    "detected_bab": [
+      "BAB IPENDAHULUAN",
+      "BAB IITINJAUAN PUSTAKA",
+      "BAB IIIKERANGKA PIKIR",
+      "BAB IVMETODE PENELITIAN",
+      "BAB VHASIL DAN PEMBAHASAN",
+      "BAB VIPENUTUP",
+      "DAFTAR PUSTAKA",
+      "LAMPIRAN"
+    ],
+    "total_sections": 11,
+    "sections": [
+      {
+        "index": 0,
+        "first_content": "TUGAS AHKIR"
+      },
+      {
+        "index": 1,
+        "first_content": "HALAMAN PERNYATAAN PERSETUJUAN PENYERAHAN\nTUGAS AH"
+      },
+      {
+        "index": 2,
+        "first_content": "BAB I\nPENDAHULUAN"
+      },
+      {
+        "index": 3,
+        "first_content": "BAB II\nTINJAUAN PUSTAKA"
+      },
+      {
+        "index": 4,
+        "first_content": "WOC"
+      },
+      {
+        "index": 5,
+        "first_content": "BAB III\nKERANGKA PIKIR"
+      },
+      {
+        "index": 6,
+        "first_content": "BAB IV\nMETODE PENELITIAN"
+      },
+      {
+        "index": 7,
+        "first_content": "BAB V\nHASIL DAN PEMBAHASAN"
+      },
+      {
+        "index": 8,
+        "first_content": "BAB VI\nPENUTUP"
+      },
+      {
+        "index": 9,
+        "first_content": "DAFTAR PUSTAKA"
+      },
+      {
+        "index": 10,
+        "first_content": "LAMPIRAN"
+      }
+    ],
+    "page_nums": [
+      {
+        "fmt": "lowerRoman",
+        "start": "1"
+      },
+      {
+        "fmt": "lowerRoman",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": "1"
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      }
+    ],
+    "path": "test_files/Docx 9.docx"
+  },
+  "Docx 18.docx": {
+    "path": "test_files/Docx 18.docx",
+    "detected_bab": [
+      "BAB I PENDAHULUAN",
+      "BAB II PENGARUH JENIS MINUMAN TERHADAP KONDISI GIGI (SIMULAS",
+      "BAB III SIMPULAN DAN SARAN",
+      "DAFTAR PUSTAKA"
+    ],
+    "total_sections": 6,
+    "sections": [
+      {
+        "index": 0,
+        "first_content": "Pengaruh Jenis Minuman terhadap Kondisi Gigi"
+      },
+      {
+        "index": 1,
+        "first_content": "Lembar Pengesahan"
+      },
+      {
+        "index": 2,
+        "first_content": "BAB I PENDAHULUAN"
+      },
+      {
+        "index": 3,
+        "first_content": "BAB II PENGARUH JENIS MINUMAN TERHADAP KONDISI GIG"
+      },
+      {
+        "index": 4,
+        "first_content": "BAB III SIMPULAN DAN SARAN"
+      },
+      {
+        "index": 5,
+        "first_content": "DAFTAR PUSTAKA"
+      }
+    ],
+    "page_nums": [
+      {
+        "fmt": "lowerRoman",
+        "start": "1"
+      },
+      {
+        "fmt": "lowerRoman",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": "1"
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      },
+      {
+        "fmt": "decimal",
+        "start": null
+      }
+    ]
+  }
 }
