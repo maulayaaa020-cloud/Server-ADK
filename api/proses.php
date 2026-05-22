@@ -114,7 +114,10 @@ if (isset($_FILES['file']) && isset($_POST['paket'])) {
         ]);
         $dbId = $db->lastInsertId();
     } catch (Exception $e) {
-        $dbId = null;
+        error_log('[ADK] ORDER INSERT FAIL: ' . $e->getMessage());
+        http_response_code(500);
+        echo json_encode(['ok' => false, 'error' => 'Gagal membuat order. Coba lagi.']);
+        exit;
     }
 
     $_SESSION['file']         = $namaBaru;
