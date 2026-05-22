@@ -24,7 +24,9 @@ define('ADMIN_EMAIL',         'email@kamu.com');
 define('ADMIN_PASSWORD_HASH', '$2y$12$...');
 
 // URL aplikasi
-define('APP_URL', 'http://localhost/adk');
+define('APP_URL',   'http://localhost/adk');
+// Base path: '' di VPS/production (domain root), '/adk' di localhost XAMPP
+define('BASE_PATH', '');
 
 // Path Python
 define('PYTHON_EXE',        'C:\\path\\to\\python.exe');

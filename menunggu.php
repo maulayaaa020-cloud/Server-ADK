@@ -105,8 +105,9 @@ if (!$jobId) {
 </div>
 
 <script>
-const JOB   = <?= json_encode($jobId) ?>;
-const DB_ID = <?= (int)$dbId ?>;
+const JOB      = <?= json_encode($jobId) ?>;
+const DB_ID    = <?= (int)$dbId ?>;
+const BASE     = <?= json_encode(rtrim(defined('BASE_PATH') ? BASE_PATH : '', '/')) ?>;
 // Timer penghitung waktu (tampilan saja)
 const startTime = Date.now();
 const timerEl   = document.getElementById('step');
@@ -120,14 +121,13 @@ function showError(msg) {
         '<div class="err-icon">&#9888;&#65039;</div>' +
         '<h2 style="color:#f87171">Gagal memproses file</h2>' +
         '<div class="err-msg">' + msg + '</div>' +
-        '<a href="/adk/jasa.html" class="btn-back">&larr; Upload ulang</a>';
+        '<a href="' + BASE + '/jasa.html" class="btn-back">&larr; Upload ulang</a>';
 }
 
 // Satu AJAX call ke run_job.php — PHP jalankan Python, browser tunggu hasilnya.
-// Tidak ada polling, tidak ada background process — simple dan reliable.
-fetch('/adk/api/run_job.php?job=' + encodeURIComponent(JOB) + '&db_id=' + DB_ID, {
+fetch(BASE + '/api/run_job.php?job=' + encodeURIComponent(JOB) + '&db_id=' + DB_ID, {
     method: 'GET',
-    signal: AbortSignal.timeout ? AbortSignal.timeout(300000) : undefined  // 5 menit max
+    signal: AbortSignal.timeout ? AbortSignal.timeout(300000) : undefined
 })
 .then(r => {
     if (!r.ok) throw new Error('HTTP ' + r.status);
@@ -139,7 +139,7 @@ fetch('/adk/api/run_job.php?job=' + encodeURIComponent(JOB) + '&db_id=' + DB_ID,
         document.getElementById('title').textContent = 'Selesai!';
         document.getElementById('desc').textContent  = 'File kamu sudah siap diunduh.';
         timerEl.innerHTML = '';
-        setTimeout(() => { window.location.href = '/adk/history.php'; }, 600);
+        setTimeout(() => { window.location.href = BASE + '/history.php'; }, 600);
     } else {
         showError(data.message || 'Gagal memproses file. Coba upload ulang.');
     }
