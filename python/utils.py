@@ -40,7 +40,7 @@ ROMAN_START_KEYWORDS = [
 
 _ROMAN_PAT = r'm{0,4}(cm|cd|d?c{0,3})(xc|xl|l?x{0,3})(ix|iv|v?i{0,3})'
 BAB_HEAD_RE = re.compile(
-    rf'^\s*(bab|chapter)\s+({_ROMAN_PAT}|\d+)\b(.*?)$',
+    rf'^\s*(bab|chapter)\s*[-.]?\s+({_ROMAN_PAT}|\d+)\.?\b(.*?)$',
     re.IGNORECASE | re.DOTALL
 )
 
@@ -48,6 +48,15 @@ BAB_HEAD_RE = re.compile(
 def is_roman_start(text):
     lower = text.strip().lower()
     return any(lower == k or lower.startswith(k) for k in ROMAN_START_KEYWORDS)
+
+
+def _has_toc_field(p_elem):
+    """Cek apakah paragraf mengandung field TOC otomatis Word ({TOC} field)."""
+    W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+    for instr in p_elem.iter('{%s}instrText' % W):
+        if instr.text and 'TOC' in instr.text.upper():
+            return True
+    return False
 
 
 def is_bab_heading(text):
@@ -76,7 +85,10 @@ def is_false_bab(para):
     if m:
         sisa_raw = m.group(6) or ""
         sisa = sisa_raw.strip()
-        if not sisa_raw.startswith('\n'):
+        # Heading 1 dengan teks BAB → pasti BAB nyata, skip length check.
+        # "BAB II PENGARUH JENIS MINUMAN TERHADAP KONDISI GIGI (SIMULASI...)" boleh panjang.
+        _is_h1 = bool(re.match(r'^heading\s*1$', style))
+        if not _is_h1 and not sisa_raw.startswith('\n'):
             if len(sisa) > 60:
                 return True
             if len(text.split()) > 8:
@@ -210,29 +222,42 @@ class DocProcessor:
         Geser roman_start_p ke paragraf pada halaman (num_cover + 1).
         Digunakan saat user memiliki lebih dari 1 halaman cover.
         Menghitung page break (manual w:br type=page atau sectPr) dari awal dokumen.
+
+        Guard: jika roman_start_p belum melewati (num_cover - 1) page break dari awal,
+        dokumen tidak punya cukup halaman cover → kembalikan roman_start_p apa adanya.
         """
         if num_cover <= 1:
             return roman_start_p
 
         W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
-        body_els   = list(doc.element.body)
-        target_pg  = num_cover + 1  # halaman ke-(num_cover+1) adalah awal roman
-        current_pg = 1
+        body_els = list(doc.element.body)
 
+        def _has_break(el):
+            if any(br.get("{%s}type" % W) == 'page' for br in el.iter("{%s}br" % W)):
+                return True
+            pPr = el.find("{%s}pPr" % W)
+            return pPr is not None and pPr.find("{%s}sectPr" % W) is not None
+
+        # Hitung page break sebelum roman_start_p
+        try:
+            rsp_idx = body_els.index(roman_start_p)
+        except ValueError:
+            return roman_start_p
+
+        breaks_before = sum(1 for el in body_els[:rsp_idx] if _has_break(el))
+
+        # Jika roman_start_p belum melewati num_cover-1 page break,
+        # dokumen tidak punya num_cover halaman cover → jangan advance
+        if breaks_before < num_cover - 1:
+            return roman_start_p
+
+        # Advance ke halaman (num_cover + 1) dihitung dari awal dokumen
+        target_pg  = num_cover + 1
+        current_pg = 1
         for el in body_els:
             if current_pg >= target_pg:
                 return el
-            # Cek manual page break
-            page_broke = any(
-                br.get("{%s}type" % W) == 'page'
-                for br in el.iter("{%s}br" % W)
-            )
-            if not page_broke:
-                # Cek section break di pPr
-                pPr = el.find("{%s}pPr" % W)
-                if pPr is not None and pPr.find("{%s}sectPr" % W) is not None:
-                    page_broke = True
-            if page_broke:
+            if _has_break(el):
                 current_pg += 1
 
         return roman_start_p  # fallback jika tidak cukup halaman
@@ -338,7 +363,18 @@ class DocProcessor:
 
     @staticmethod
     def _p_text(p_elem):
-        return ''.join(t.text or '' for t in p_elem.findall('.//' + qn('w:t'))).strip()
+        # Kumpulkan teks hanya dari run biasa, lewati subtree drawing/shape
+        _SKIP = {qn('w:drawing'), qn('w:pict')}
+        result = []
+        def _collect(el):
+            if el.tag in _SKIP:
+                return
+            if el.tag == qn('w:t'):
+                result.append(el.text or '')
+            for child in el:
+                _collect(child)
+        _collect(p_elem)
+        return ''.join(result).strip()
 
     @staticmethod
     def _p_has_content(p_elem):
@@ -533,27 +569,58 @@ class DocProcessor:
         lampiran_found     = False
         last_bab_para_idx  = None
         found_numbered_bab = False
-        seen_bab_numbers   = set()   # cegah BAB dengan nomor sama terdeteksi dua kali
+        # bab_num_key → {'idx': int, 'has_break': bool, 'is_heading': bool}
+        # Memungkinkan penggantian entri lama (TOC palsu) dengan entri nyata
+        seen_bab_info      = {}
         inside_toc         = False
+        toc_start_idx      = -1   # index paragraf saat inside_toc terakhir di-set True
         all_paras          = list(self.doc.paragraphs)
 
         for para_idx, para in enumerate(all_paras):
             text  = para.text.strip()
             lower = text.lower()
 
-            if is_toc_heading(lower):
+            if is_toc_heading(lower) or _has_toc_field(para._p):
+                if not inside_toc:
+                    toc_start_idx = para_idx  # hanya catat saat pertama masuk TOC
                 inside_toc = True
                 if roman_start_p is None:
                     roman_start_p = para._p
                 continue
 
             if inside_toc:
-                if not text or is_toc_entry(text):
+                # [Fix A] Keluar TOC jika ada section break / page break SETELAH
+                # toc_start_idx dalam window 15 paragraf ke belakang.
+                # Window 15 agar page break yang beberapa paragraf sebelum BAB
+                # (misal di paragraf kosong) tetap terdeteksi.
+                prev_has_break = self._has_page_break_before(
+                    all_paras,
+                    max(toc_start_idx + 1, para_idx - 15),
+                    para_idx
+                )
+                if prev_has_break or self._para_has_page_break_before(para):
+                    inside_toc = False
+                    # Lanjut ke pemrosesan normal (tidak continue)
+                elif not text or is_toc_entry(text) or (
+                    # [Fix E] Entri sub-bab bernomor seperti "2.1 Sistem", "3.5triangulasi"
+                    # adalah bagian dari TOC — HANYA jika bukan Heading style.
+                    # Guard heading: "1.2 Rumusan masalah" (Heading 2) adalah konten nyata, bukan TOC.
+                    re.match(r'^\d+\.\d', text) and
+                    not re.search(r'heading', para.style.name.lower() if para.style else '')
+                ):
                     continue
                 else:
-                    # Cek lookahead: kalau dalam 8 paragraf ke depan masih ada entri TOC
-                    # (punya toc style atau punya nomor halaman), berarti kita masih di TOC.
-                    # Ini menangani entri TOC tanpa nomor halaman (misal "BAB III PENUTUP").
+                    # [Fix D] Paragraf ini sendiri adalah BAB heading tanpa
+                    # page break / Heading style → kemungkinan entri TOC tanpa
+                    # nomor halaman → tetap dalam TOC.
+                    _cur_style = (para.style.name.lower() if para.style else "")
+                    if (is_bab_heading(text)
+                            and not re.search(r'heading', _cur_style)
+                            and not self._para_has_page_break_before(para)):
+                        continue
+
+                    # Cek lookahead: kalau dalam 8 paragraf ke depan masih ada
+                    # entri TOC (punya toc style atau nomor halaman), tetap di TOC.
                     still_in_toc = False
                     for _lk in range(para_idx + 1, min(para_idx + 9, len(all_paras))):
                         _lp = all_paras[_lk]
@@ -565,8 +632,20 @@ class DocProcessor:
                         if _lt and is_toc_entry(_lt):
                             still_in_toc = True
                             break
+                        # [Fix E] Sub-bab bernomor (e.g. "2.1", "4.2.1") = sinyal masih di TOC
+                        # Hanya jika bukan Heading style — Heading 2 "1.2 Judul" adalah konten nyata
+                        if _lt and re.match(r'^\d+\.\d', _lt) and not re.search(r'heading', _ls):
+                            still_in_toc = True
+                            break
                         if _lt and is_bab_heading(_lt):
-                            break  # konten nyata ditemukan, keluar TOC
+                            # [Fix B] Hanya keluar TOC jika BAB heading ini punya
+                            # indikator nyata (Heading style atau page break).
+                            _lp_heading = bool(re.search(r'heading', _ls))
+                            _lp_has_brk = self._para_has_page_break_before(_lp)
+                            if _lp_heading or _lp_has_brk:
+                                break  # BAB heading nyata → keluar TOC
+                            still_in_toc = True
+                            break
                     if still_in_toc:
                         continue
                     inside_toc = False
@@ -585,24 +664,64 @@ class DocProcessor:
                     if lampiran_found:
                         continue
                     lampiran_found = True
+
+                _style_lower  = (para.style.name.lower() if para.style else "")
+                _is_heading   = bool(re.search(r'heading', _style_lower))
+                _has_brk_para = self._para_has_page_break_before(para)
+
                 if is_numbered_bab:
                     found_numbered_bab = True
                     m_num = BAB_HEAD_RE.match(text)
                     bab_num_key = m_num.group(2).strip().lower() if m_num else None
-                    if bab_num_key and bab_num_key in seen_bab_numbers:
-                        continue  # Nomor BAB sudah terdeteksi → duplikat, skip
+                    if bab_num_key and bab_num_key in seen_bab_info:
+                        # [Fix C] Ganti entri lama jika yang baru lebih terpercaya
+                        # (punya page break / Heading style, sedangkan lama tidak).
+                        # Gunakan _has_page_break_before (cek sectPr + pgbr dalam window)
+                        # agar section break sebelum BAB nyata ikut terdeteksi.
+                        old = seen_bab_info[bab_num_key]
+                        if last_bab_para_idx is not None:
+                            _win_c = max(last_bab_para_idx + 1, para_idx - 15)
+                            _full_brk = (self._has_page_break_before(all_paras, _win_c, para_idx)
+                                         or _has_brk_para)
+                        else:
+                            _full_brk = _has_brk_para
+                        if (_full_brk or _is_heading) and not (old['has_break'] or old['is_heading']):
+                            bab_p_list[old['idx']] = para._p
+                            old['has_break']  = _full_brk
+                            old['is_heading'] = _is_heading
+                            last_bab_para_idx = para_idx  # update untuk window berikutnya
+                        continue  # duplikat sudah ditangani
                 else:
-                    bab_num_key = None
+                    # [Fix C-ext] Deduplikasi DAFTAR PUSTAKA / LAMPIRAN sama seperti BAB bernomor.
+                    # Mencegah entri TOC palsu (tanpa page break) bertahan saat entri asli ditemukan.
+                    _ep = re.match(
+                        r'^\s*(daftar\s*pust?aka|lampiran|appendix|referensi|references?|bibliography)',
+                        text, re.IGNORECASE
+                    )
+                    bab_num_key = re.sub(r'\s+', '', _ep.group(1).lower()) if _ep else None
+                    if bab_num_key and bab_num_key in seen_bab_info:
+                        old = seen_bab_info[bab_num_key]
+                        if last_bab_para_idx is not None:
+                            _win_c = max(last_bab_para_idx + 1, para_idx - 15)
+                            _full_brk = (self._has_page_break_before(all_paras, _win_c, para_idx)
+                                         or _has_brk_para)
+                        else:
+                            _full_brk = _has_brk_para
+                        if (_full_brk or _is_heading) and not (old['has_break'] or old['is_heading']):
+                            bab_p_list[old['idx']] = para._p
+                            old['has_break']  = _full_brk
+                            old['is_heading'] = _is_heading
+                            last_bab_para_idx = para_idx
+                        continue
                 if last_bab_para_idx is not None:
                     _window = max(last_bab_para_idx + 1, para_idx - 15)
                     has_break = self._has_page_break_before(all_paras, _window, para_idx)
                     if not has_break:
-                        has_break = self._para_has_page_break_before(para)
+                        has_break = _has_brk_para
                     # "Heading X" style + page break → langsung dipercaya.
                     # Non-heading style + page break → tetap cek forward_count karena sectPr
                     # di body text (misal Sistematika Penulisan) bisa memicu false positive.
-                    _style_lower = (para.style.name.lower() if para.style else "")
-                    _trusted = has_break and bool(re.search(r'heading', _style_lower))
+                    _trusted = has_break and _is_heading
                     if not _trusted:
                         # Lampiran & Daftar Pustaka dibebaskan dari forward_count
                         _is_endpoint = bool(re.match(
@@ -623,17 +742,21 @@ class DocProcessor:
                                 continue
                 bab_p_list.append(para._p)
                 if bab_num_key:
-                    seen_bab_numbers.add(bab_num_key)
+                    seen_bab_info[bab_num_key] = {
+                        'idx':       len(bab_p_list) - 1,
+                        'has_break': _has_brk_para,
+                        'is_heading': _is_heading,
+                    }
                 last_bab_para_idx = para_idx
 
             # Fallback: Heading 1 langsung setelah section break, bukan roman-zone heading.
-            # Menangani dokumen di mana BAB I/II/III tidak punya prefix "BAB" pada teksnya.
-            # Guard: hanya aktif jika belum ada BAB bernomor ditemukan. Jika sudah ada
-            # BAB I/II/dst, fallback dimatikan agar Heading 1 sub-bab (misal "Lingkup
-            # Pekerjaan") tidak ikut terdeteksi sebagai BAB karena dokumen punya banyak
-            # section break bawaan.
+            # Menangani dokumen di mana BAB I/II/III tidak punya prefix "BAB" pada teksnya
+            # (autonumber dari Word list numbering — teks hanya "PENDAHULUAN" dll).
+            # Guard found_numbered_bab dihapus agar BAB II, III, dst. yang juga autonumber
+            # tetap terdeteksi. Pengaman utama: wajib Heading 1 + sectPr pada paragraf
+            # sebelumnya sehingga sub-bab biasa tidak ikut terdeteksi.
             elif (roman_start_p is not None and text and not is_roman_start(text) and
-                  not lampiran_found and not found_numbered_bab):
+                  not lampiran_found):
                 _style_lower = para.style.name.lower() if para.style else ""
                 if re.match(r'^heading\s*1$', _style_lower):
                     _prev_has_sect = (
@@ -644,6 +767,43 @@ class DocProcessor:
                         bab_p_list.append(para._p)
                         found_numbered_bab = True
                         last_bab_para_idx = para_idx
+
+        # Fallback: cari roman_start_p di dalam sel tabel jika belum ditemukan.
+        # Beberapa template cover universitas memakai tabel untuk layout,
+        # sehingga keyword seperti "KATA PENGANTAR" ada di w:tc bukan w:p biasa.
+        if roman_start_p is None:
+            W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+            body_ch = list(self.doc.element.body)
+            for elem in body_ch:
+                if not elem.tag.endswith('}tbl'):
+                    continue
+                found_in_tbl = False
+                for tc in elem.iter('{%s}tc' % W):
+                    for p_el in tc.findall('{%s}p' % W):
+                        cell_text = ''.join(
+                            t.text or '' for t in p_el.iter('{%s}t' % W)
+                        ).strip()
+                        if is_roman_start(cell_text):
+                            found_in_tbl = True
+                            break
+                    if found_in_tbl:
+                        break
+                if found_in_tbl:
+                    # Gunakan paragraf pertama setelah tabel ini sebagai roman_start_p
+                    tbl_idx = body_ch.index(elem)
+                    for k in range(tbl_idx + 1, len(body_ch)):
+                        if body_ch[k].tag.endswith('}p'):
+                            roman_start_p = body_ch[k]
+                            break
+                    break
+
+        # Pastikan urutan bab_p_list sesuai posisi di dokumen.
+        # Fix C (replacement) bisa membuat entry tidak berurutan.
+        _body = list(self.doc.element.body)
+        def _body_pos(p):
+            try: return _body.index(p)
+            except ValueError: return len(_body)
+        bab_p_list.sort(key=_body_pos)
 
         return roman_start_p, bab_p_list
 

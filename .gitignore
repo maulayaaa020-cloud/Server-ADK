@@ -5,14 +5,18 @@ config/harga.json
 
 # Runtime files
 maintenance.flag
-logs/
-logs/error.log
+logs/*.log
+logs/job_*
+logs/queue_*
 
 # Upload & output user (file dokumen pelanggan — privasi)
 uploads/
 upload/
 output/
 hasil/
+
+# Test output (hasil preview — tidak perlu di-commit)
+test_files/hasil/
 python/__pycache__/
 python/*.pyc
 

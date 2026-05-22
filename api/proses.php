@@ -2,6 +2,7 @@
 session_start();
 require_once __DIR__ . '/../includes/config.php';
 require_once __DIR__ . '/../includes/db.php';
+require_once __DIR__ . '/../includes/log.php';
 
 if (file_exists(__DIR__ . '/../config/maintenance.flag') && empty($_SESSION['adk_admin'])) {
     header('Location: ../maintenance.php');
@@ -113,8 +114,18 @@ if (isset($_FILES['file']) && isset($_POST['paket'])) {
             ':harga'        => $harga,
         ]);
         $dbId = $db->lastInsertId();
+        adk_log('order', 'Order dibuat', [
+            'db_id'    => $dbId,
+            'order_id' => $orderId,
+            'paket'    => $paket,
+            'phone'    => $isGuest ? 'guest' : substr($phone, 0, 6) . '***',
+            'harga'    => $harga,
+        ]);
     } catch (Exception $e) {
-        $dbId = null;
+        adk_log('error', 'ORDER INSERT FAIL', ['err' => $e->getMessage(), 'phone' => $phone]);
+        http_response_code(500);
+        echo json_encode(['ok' => false, 'error' => 'Gagal membuat order. Coba lagi.']);
+        exit;
     }
 
     $_SESSION['file']         = $namaBaru;
