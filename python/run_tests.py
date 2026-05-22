@@ -1,27 +1,45 @@
 """
 run_tests.py — Regression test suite untuk ADK page numbering.
 
+Struktur folder:
+  adk/
+    test_files/          <- file .docx input (di-commit ke git, portable)
+      Docx 1.docx
+      Docx 2.docx
+      ...
+      hasil/             <- output --preview (di-gitignore, tidak di-commit)
+    python/
+      run_tests.py
+      test_cases.json    <- expected results (di-commit ke git)
+
 Usage:
-  python run_tests.py                    Jalankan semua test, bandingkan dengan expected
-  python run_tests.py --lock             Simpan output saat ini sebagai expected
-  python run_tests.py --add <path>       Tambah file baru ke test suite (interaktif)
-  python run_tests.py --show             Tampilkan semua expected results
-  python run_tests.py --preview <folder> Simpan semua output .docx ke folder untuk dicek manual
+  python run_tests.py              Jalankan semua test, bandingkan dengan expected
+  python run_tests.py --lock       Simpan output saat ini sebagai expected (setelah konfirmasi manual)
+  python run_tests.py --add <path> Copy file baru ke test_files/ dan tambah ke test suite
+  python run_tests.py --preview    Simpan semua output ke test_files/hasil/ untuk dicek manual
+  python run_tests.py --show       Tampilkan semua expected results
 
 Cara kerja:
-  1. Setelah konfirmasi manual bahwa N file sudah benar → jalankan --lock
-  2. Saat akan upgrade/fix file baru → jalankan tanpa argumen (run all)
-  3. Jika semua PASS berarti tidak ada regresi, aman untuk push
-  4. Setelah file baru benar secara manual → jalankan --add <path>
+  1. Semua file test ada di test_files/ dan sudah di-commit → portable, tidak hilang kalau pindah PC
+  2. Saat fix bug file baru:
+       a. python run_tests.py              <- harus N PASS dulu (tidak ada regresi)
+       b. [fix utils.py]
+       c. python run_tests.py              <- pastikan masih N PASS
+       d. python run_tests.py --preview    <- buka hasil di test_files/hasil/, cek manual
+       e. python run_tests.py --add <path> <- copy file baru, simpan ke test suite
+       f. git add test_files/<file> python/test_cases.json python/utils.py
+       g. git commit + push
 """
-import sys, json, os, subprocess
+import sys, json, os, subprocess, shutil
 
-_HERE   = os.path.dirname(os.path.abspath(__file__))
-_ROOT   = os.path.normpath(os.path.join(_HERE, '..'))
-CASES_F = os.path.join(_HERE, 'test_cases.json')
-MAIN_PY = os.path.join(_HERE, 'main.py')
-PYTHON  = r'D:\Freelaces\Server\python.exe'
-TMP_OUT = os.path.join(_ROOT, 'output', '_test_tmp.docx')
+_HERE        = os.path.dirname(os.path.abspath(__file__))
+_ROOT        = os.path.normpath(os.path.join(_HERE, '..'))
+CASES_F      = os.path.join(_HERE, 'test_cases.json')
+MAIN_PY      = os.path.join(_HERE, 'main.py')
+PYTHON       = r'D:\Freelaces\Server\python.exe'
+TEST_FILES   = os.path.join(_ROOT, 'test_files')          # input .docx
+PREVIEW_DIR  = os.path.join(TEST_FILES, 'hasil')          # output --preview
+TMP_OUT      = os.path.join(PREVIEW_DIR, '_tmp.docx')     # temp untuk --run
 
 # Parameter default untuk semua test — harus sama persis dengan form website:
 #   paket3 | Times New Roman | 12pt | sembunyikan cover | Tengah Bawah
@@ -41,8 +59,19 @@ DEFAULT_ARGS = [
 
 # ── helpers ───────────────────────────────────────────────────────────────────
 
-def run_file(input_path, args=None):
-    cmd = [PYTHON, MAIN_PY, input_path, TMP_OUT] + (args or DEFAULT_ARGS)
+def resolve_path(meta):
+    """Kembalikan path absolut dari entry test_cases.json.
+    Path disimpan relatif terhadap root project agar portable lintas PC."""
+    p = meta.get('path', '')
+    if os.path.isabs(p):
+        return p
+    return os.path.normpath(os.path.join(_ROOT, p))
+
+
+def run_file(input_path, out_path=None, args=None):
+    dest = out_path or TMP_OUT
+    os.makedirs(os.path.dirname(dest), exist_ok=True)
+    cmd = [PYTHON, MAIN_PY, input_path, dest] + (args or DEFAULT_ARGS)
     res = subprocess.run(cmd, capture_output=True, text=True, encoding='utf-8')
     try:
         return json.loads(res.stdout)
@@ -137,12 +166,12 @@ def cmd_run(cases):
         return
     passed = failed = errored = skipped = 0
     for name, meta in cases.items():
-        path = meta.get('path', '')
+        path = resolve_path(meta)
         if not os.path.exists(path):
             print(f"  SKIP {name}  (file tidak ada: {path})")
             skipped += 1
             continue
-        result = run_file(path, meta.get('args'))
+        result = run_file(path, args=meta.get('args'))
         if result.get('status') != 'success':
             errored += 1
             print(f"  ERR  {name}  {result.get('message','')[:80]}")
@@ -173,11 +202,11 @@ def cmd_lock(cases):
     print("Locking expected results dari output saat ini...\n")
     locked = 0
     for name, meta in list(cases.items()):
-        path = meta.get('path', '')
+        path = resolve_path(meta)
         if not os.path.exists(path):
             print(f"  SKIP {name}  (file tidak ada)")
             continue
-        result = run_file(path, meta.get('args'))
+        result = run_file(path, args=meta.get('args'))
         if result.get('status') != 'success':
             print(f"  ERR  {name}  {result.get('message','')[:80]}")
             continue
@@ -189,19 +218,26 @@ def cmd_lock(cases):
     print(f"\n{locked} file di-lock -> {CASES_F}")
 
 
-def cmd_add(cases, path):
-    """Tambah file baru ke test suite secara interaktif."""
-    path = os.path.abspath(path)
-    if not os.path.exists(path):
-        print(f"File tidak ditemukan: {path}")
+def cmd_add(cases, src_path):
+    """Copy file baru ke test_files/, proses, dan tambah ke test suite."""
+    src_path = os.path.abspath(src_path)
+    if not os.path.exists(src_path):
+        print(f"File tidak ditemukan: {src_path}")
         sys.exit(1)
-    name = os.path.basename(path)
+    name = os.path.basename(src_path)
     if name in cases:
         print(f"{name} sudah ada di test suite. Gunakan --lock untuk update.")
         return
 
+    # Copy ke test_files/ agar ter-commit ke git
+    os.makedirs(TEST_FILES, exist_ok=True)
+    dest_path = os.path.join(TEST_FILES, name)
+    if src_path != dest_path:
+        shutil.copy2(src_path, dest_path)
+        print(f"Disalin ke: {dest_path}")
+
     print(f"Memproses {name}...")
-    result = run_file(path)
+    result = run_file(dest_path, args=None)
     if result.get('status') != 'success':
         print(f"Error: {result.get('message', '')}")
         sys.exit(1)
@@ -214,12 +250,15 @@ def cmd_add(cases, path):
     for s in snap['sections']:
         print(f"    [{s['index']}] {repr(s['first_content'])}")
 
-    print(f"\nTambahkan {name} ke test suite dengan hasil ini? [y/N] ", end='')
+    print(f"\nHasil benar? Tambah ke test suite? [y/N] ", end='')
     ans = input().strip().lower()
     if ans == 'y':
-        cases[name] = {'path': path, **snap}
+        # Simpan path relatif agar portable lintas PC
+        rel = os.path.relpath(dest_path, _ROOT).replace('\\', '/')
+        cases[name] = {'path': rel, **snap}
         save_cases(cases)
-        print(f"Ditambahkan ke test suite: {name}  (total: {len(cases)} file)")
+        print(f"Ditambahkan: {name}  (total: {len(cases)} file)")
+        print(f"Selanjutnya: git add test_files/{name} python/test_cases.json")
     else:
         print("Dibatalkan.")
 
@@ -231,7 +270,8 @@ def cmd_show(cases):
         return
     print(f"{'='*60}")
     for name, meta in cases.items():
-        exists = os.path.exists(meta.get('path', ''))
+        path   = resolve_path(meta)
+        exists = os.path.exists(path)
         status = 'OK' if exists else 'MISSING'
         print(f"[{status}] {name}")
         print(f"  bab    : {meta.get('detected_bab', [])}")
@@ -240,24 +280,21 @@ def cmd_show(cases):
     print(f"Total: {len(cases)} file")
 
 
-def cmd_preview(cases, out_folder):
+def cmd_preview(cases, out_folder=None):
     """Jalankan semua file dan simpan output ke folder — bisa dibuka manual."""
+    out_folder = out_folder or PREVIEW_DIR
     os.makedirs(out_folder, exist_ok=True)
+    print(f"Output disimpan di: {out_folder}\n")
     passed = failed = errored = skipped = 0
     for name, meta in cases.items():
-        path = meta.get('path', '')
+        path = resolve_path(meta)
         if not os.path.exists(path):
             print(f"  SKIP {name}  (file tidak ada)")
             skipped += 1
             continue
-        stem    = os.path.splitext(name)[0]
+        stem     = os.path.splitext(name)[0]
         out_path = os.path.join(out_folder, f"{stem}_p3.docx")
-        cmd = [PYTHON, MAIN_PY, path, out_path] + (meta.get('args') or DEFAULT_ARGS)
-        res = subprocess.run(cmd, capture_output=True, text=True, encoding='utf-8')
-        try:
-            result = json.loads(res.stdout)
-        except Exception:
-            result = {'status': 'error', 'message': (res.stderr or res.stdout or '').strip()[:200]}
+        result   = run_file(path, out_path=out_path, args=meta.get('args'))
 
         if result.get('status') != 'success':
             errored += 1
@@ -299,10 +336,9 @@ if __name__ == '__main__':
     elif cmd == '--show':
         cmd_show(cases)
     elif cmd == '--preview':
-        if len(sys.argv) < 3:
-            print("Usage: run_tests.py --preview <output_folder>")
-            sys.exit(1)
-        cmd_preview(cases, sys.argv[2])
+        # Folder opsional — default ke test_files/hasil/
+        folder = sys.argv[2] if len(sys.argv) > 2 else None
+        cmd_preview(cases, folder)
     elif cmd in ('', '--run'):
         cmd_run(cases)
     else:

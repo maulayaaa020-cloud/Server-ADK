@@ -13,6 +13,9 @@ uploads/
 upload/
 output/
 hasil/
+
+# Test output (hasil preview — tidak perlu di-commit)
+test_files/hasil/
 python/__pycache__/
 python/*.pyc
 
