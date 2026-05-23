@@ -246,8 +246,10 @@ class DocProcessor:
 
         breaks_before = sum(1 for el in body_els[:rsp_idx] if _has_break(el))
 
-        # Advance: jika cukup break eksplisit, hitung halaman dari awal
-        if breaks_before >= num_cover - 1:
+        # Advance: hanya jika cukup section break eksplisit (satu per halaman cover).
+        # Jika breaks_before < num_cover, sebagian cover ada di section yang sama
+        # (content-overflow, bukan explicit break) → roman_start_p sudah di posisi benar.
+        if breaks_before >= num_cover:
             target_pg  = num_cover + 1
             current_pg = 1
             candidate  = None
@@ -259,8 +261,7 @@ class DocProcessor:
                     current_pg += 1
 
             if candidate is not None:
-                # Sebelum memakai candidate, cek apakah ada is_roman_start
-                # di antara roman_start_p dan candidate (mis. KATA PENGANTAR sebelum BAB I)
+                # Cek apakah ada is_roman_start di antara roman_start_p dan candidate
                 cand_idx = next((i for i, e in enumerate(body_els) if e is candidate), len(body_els))
                 for el in body_els[rsp_idx + 1:cand_idx]:
                     _t = el.tag.split('}')[-1] if '}' in el.tag else el.tag
@@ -270,15 +271,7 @@ class DocProcessor:
                             return el
                 return candidate
 
-        # Fallback: tidak cukup page break eksplisit → cari is_roman_start keyword berikutnya
-        for el in body_els[rsp_idx + 1:]:
-            tag = el.tag.split('}')[-1] if '}' in el.tag else el.tag
-            if tag == 'p':
-                txt = ''.join(t.text or '' for t in el.iter('{%s}t' % W)).strip()
-                if txt and is_roman_start(txt):
-                    return el
-
-        return roman_start_p  # last resort
+        return roman_start_p  # tidak cukup explicit break → sudah di posisi benar
 
     # ── Header / Footer helpers ───────────────────────────
 
@@ -913,8 +906,10 @@ class DocProcessor:
                 else:
                     self._place_num_in_part(section.footer, align)
             else:
-                # hidden_cov='Ya': sembunyikan cover 1 via first-page footer,
-                # cover 2+ tampilkan via regular header/footer sesuai visible_pos
+                # hidden_cov='Ya': sembunyikan cover 1 via first-page footer.
+                # Regular footer hanya diisi jika visible_pos eksplisit diberikan.
+                # Jika visible_pos=None, regular footer kosong → semua halaman di
+                # section ini (termasuk cover 2 yang overflow konten) tersembunyi.
                 section.different_first_page_header_footer = True
                 fph = section.first_page_header
                 fph.is_linked_to_previous = False
@@ -924,10 +919,12 @@ class DocProcessor:
                 fpf.is_linked_to_previous = False
                 for p in fpf.paragraphs:
                     self.clear_paragraph(p)
-                if _vis_top:
-                    self._place_num_in_part(section.header, _vis_align)
-                else:
-                    self._place_num_in_part(section.footer, _vis_align)
+                if visible_pos:
+                    if _vis_top:
+                        self._place_num_in_part(section.header, _vis_align)
+                    else:
+                        self._place_num_in_part(section.footer, _vis_align)
+                # else: regular footer kosong → cover 2+ tersembunyi
         else:
             section.different_first_page_header_footer = False
             self.set_page_number_format(section, 'lowerRoman')
