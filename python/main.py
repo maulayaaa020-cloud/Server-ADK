@@ -155,6 +155,12 @@ def main():
     except Exception as e:
         _fail("PROCESSING_ERROR", f"Gagal memproses dokumen: {e}")
 
+    # ── Strip \* MERGEFORMAT dari PAGE field (cegah cached romawi dari dokumen asli) ──
+    try:
+        proc.strip_page_field_mergeformat()
+    except Exception:
+        pass
+
     # â”€â”€ Perbaiki margin rusak sebelum simpan â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     try:
         proc.sanitize_margins()

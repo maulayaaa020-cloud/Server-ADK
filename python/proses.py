@@ -106,6 +106,21 @@ def _place_num_in_part(part, align):
     _set_pn_spacing(p)
 
 
+def strip_page_field_mergeformat():
+    """Hapus switch \\* MERGEFORMAT dari semua instrText PAGE di header/footer.
+    Mencegah Word mempertahankan cached roman numeral dari dokumen asli."""
+    import re as _re
+    for section in doc.sections:
+        parts = [section.header, section.footer,
+                 section.first_page_header, section.first_page_footer]
+        for part in parts:
+            for el in part._element.iter(qn('w:instrText')):
+                if el.text and 'PAGE' in el.text.upper():
+                    el.text = _re.sub(r'\\\*\s*MERGEFORMAT', '', el.text).strip()
+                    if not el.text:
+                        el.text = ' PAGE '
+
+
 def purge_all_headers_footers():
     """Remove all content from every header/footer in the document.
     Called once before reformatting so original PAGE field codes can't double up.

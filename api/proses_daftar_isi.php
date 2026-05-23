@@ -2,6 +2,7 @@
 session_start();
 require_once __DIR__ . '/../includes/config.php';
 require_once __DIR__ . '/../includes/db.php';
+require_once __DIR__ . '/../includes/log.php';
 
 if (file_exists(__DIR__ . '/../config/maintenance.flag') && empty($_SESSION['adk_admin'])) {
     header('Location: ../maintenance.php');
@@ -14,11 +15,20 @@ if (!isset($_FILES['file']) || !isset($_POST['kedalaman']) || !isset($_POST['for
 
 $kedalaman    = $_POST['kedalaman'];
 $format_titik = $_POST['format_titik'];
+$font         = $_POST['font']  ?? 'Times New Roman';
+$size         = $_POST['size']  ?? '12';
+$space        = $_POST['space'] ?? '1.0';
 $phone        = trim($_POST['phone'] ?? '');
 
 $valid_kedalaman = ['H1', 'H1+H2', 'H1+H2+H3'];
-$valid_format    = ['titik', 'tab'];
-if (!in_array($kedalaman, $valid_kedalaman) || !in_array($format_titik, $valid_format)) {
+$valid_format    = ['titik', 'tab', 'kecualikan_bab'];
+$valid_font      = ['Times New Roman', 'Arial', 'Calibri'];
+$valid_size      = ['11', '12', '14'];
+$valid_space     = ['1.0', '1.15', '1.5', '2.0'];
+
+if (!in_array($kedalaman, $valid_kedalaman) || !in_array($format_titik, $valid_format)
+    || !in_array($font, $valid_font) || !in_array($size, $valid_size)
+    || !in_array($space, $valid_space)) {
     die("Pilihan tidak valid.");
 }
 
@@ -90,13 +100,19 @@ try {
         ':harga'        => $harga,
     ]);
     $dbId = $db->lastInsertId();
+    adk_log('daftar_isi', 'Order dibuat', ['db_id' => $dbId, 'order_id' => $orderId, 'phone' => $phone ?: 'guest']);
 } catch (Exception $e) {
-    $dbId = null;
+    adk_log('error', 'DAFTAR ISI INSERT FAIL', ['err' => $e->getMessage(), 'phone' => $phone]);
+    http_response_code(500);
+    die("Gagal membuat order. Coba lagi.");
 }
 
 $_SESSION['di_file']         = $namaBaru;
 $_SESSION['di_kedalaman']    = $kedalaman;
 $_SESSION['di_format_titik'] = $format_titik;
+$_SESSION['di_font']         = $font;
+$_SESSION['di_size']         = $size;
+$_SESSION['di_space']        = $space;
 $_SESSION['di_phone']        = $isGuest ? null : $phone;
 $_SESSION['di_guest_token']  = $guestToken;
 $_SESSION['di_is_guest']     = $isGuest;

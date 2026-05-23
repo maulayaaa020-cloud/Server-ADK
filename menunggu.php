@@ -4,8 +4,9 @@ session_start();
 require_once __DIR__ . '/includes/config.php';
 
 // Validasi parameter
-$jobId = preg_replace('/[^a-zA-Z0-9_\-]/', '', $_GET['job']   ?? '');
-$dbId  = (int)($_GET['db_id'] ?? $_SESSION['order_db_id'] ?? 0);
+$jobId   = preg_replace('/[^a-zA-Z0-9_\-]/', '', $_GET['job']  ?? '');
+$dbId    = (int)($_GET['db_id'] ?? $_SESSION['order_db_id'] ?? 0);
+$jobType = ($_GET['type'] ?? '') === 'daftar_isi' ? 'daftar_isi' : 'penomoran';
 
 if (!$jobId) {
     header("Location: jasa.html");
@@ -107,6 +108,7 @@ if (!$jobId) {
 <script>
 const JOB      = <?= json_encode($jobId) ?>;
 const DB_ID    = <?= (int)$dbId ?>;
+const JOB_TYPE = <?= json_encode($jobType) ?>;
 const BASE     = <?= json_encode(rtrim(defined('BASE_PATH') ? BASE_PATH : '', '/')) ?>;
 // Timer penghitung waktu (tampilan saja)
 const startTime = Date.now();
@@ -124,8 +126,8 @@ function showError(msg) {
         '<a href="' + BASE + '/jasa.html" class="btn-back">&larr; Upload ulang</a>';
 }
 
-// Satu AJAX call ke run_job.php — PHP jalankan Python, browser tunggu hasilnya.
-fetch(BASE + '/api/run_job.php?job=' + encodeURIComponent(JOB) + '&db_id=' + DB_ID, {
+const endpoint = JOB_TYPE === 'daftar_isi' ? '/api/run_job_daftar_isi.php' : '/api/run_job.php';
+fetch(BASE + endpoint + '?job=' + encodeURIComponent(JOB) + '&db_id=' + DB_ID, {
     method: 'GET',
     signal: AbortSignal.timeout ? AbortSignal.timeout(300000) : undefined
 })

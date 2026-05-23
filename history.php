@@ -906,6 +906,10 @@ if (!empty($penomoran)) {
                         <div class="dropdown-item-icon">📄</div>
                         <div class="dropdown-item-title">Penomoran Halaman</div>
                     </a>
+                    <a href="daftar-isi.html">
+                        <div class="dropdown-item-icon">📋</div>
+                        <div class="dropdown-item-title">Daftar Isi Otomatis</div>
+                    </a>
                 </div>
             </div>
 
@@ -926,6 +930,7 @@ if (!empty($penomoran)) {
             <button class="mobile-jasa-link" onclick="toggleJasaDrop()">Jasa ADK <span class="mobile-jasa-arrow">▾</span></button>
             <div class="mobile-jasa-menu">
                 <a href="jasa.html">📄 Penomoran Halaman</a>
+                <a href="daftar-isi.html">📋 Daftar Isi Otomatis</a>
             </div>
         </div>
         <button class="hamburger" onclick="openMobileMenu()">
@@ -1677,6 +1682,7 @@ if (!empty($penomoran)) {
             <div class="footer-col">
                 <h4>Jasa</h4>
                 <a href="jasa.html">Penomoran Halaman</a>
+                <a href="daftar-isi.html">Daftar Isi Otomatis</a>
             </div>
             <div class="footer-col">
                 <h4>Bantuan</h4>
