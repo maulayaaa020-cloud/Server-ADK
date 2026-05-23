@@ -8,7 +8,7 @@ paket3.py — Romawi + Angka, posisi tetap (Populer Skripsi).
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 
 
-def apply(proc, roman_sec, bab_sec_list, n_sections, hidden_cov, dimulai_dari='i'):
+def apply(proc, roman_sec, bab_sec_list, n_sections, hidden_cov, dimulai_dari='i', num_cover=1):
     """
     proc         : DocProcessor instance
     roman_sec    : index section awal zona romawi
@@ -16,10 +16,11 @@ def apply(proc, roman_sec, bab_sec_list, n_sections, hidden_cov, dimulai_dari='i
     n_sections   : total section
     hidden_cov   : 'Ya' | 'Tidak'
     dimulai_dari : 'i' | 'ii' | 'iii' | 'iv'
+    num_cover    : jumlah halaman cover (default 1)
     """
     roman_start_map = {'i': 1, 'ii': 2, 'iii': 3, 'iv': 4}
     roman_start_num = roman_start_map.get((dimulai_dari or 'i').lower().strip(), 1)
-    cover_start     = roman_start_num - 1 if hidden_cov == 'Ya' else roman_start_num
+    cover_start     = max(1, roman_start_num - num_cover) if hidden_cov == 'Ya' else roman_start_num
 
     cov_show      = None if hidden_cov == 'Ya' else (WD_ALIGN_PARAGRAPH.CENTER, False)
     first_bab_sec = bab_sec_list[0] if bab_sec_list else None
@@ -38,7 +39,9 @@ def apply(proc, roman_sec, bab_sec_list, n_sections, hidden_cov, dimulai_dari='i
 
             # ── Romawi zone ──
             if first_bab_sec is None or i < first_bab_sec:
-                proc.fmt_roman(section)
+                # Multi-cover + hidden: reset eksplisit agar roman zone tampil di roman_start_num
+                _rs = roman_start_num if (i == roman_sec and num_cover > 1 and hidden_cov == 'Ya') else None
+                proc.fmt_roman(section, start=_rs)
                 continue
 
             # ── BAB zone ──

@@ -129,11 +129,14 @@ def main():
                 DocProcessor._p_text(p)[:60] for p in bab_p_list
             ]
             # Geser roman_start_p jika user memiliki lebih dari 1 cover
+            _advanced = False
             if num_cover > 1 and hidden_cov == 'Ya':
-                roman_start_p = DocProcessor.advance_roman_start(
-                    doc, roman_start_p, num_cover
-                )
-            roman_start_p             = proc.insert_breaks(roman_start_p, bab_p_list)
+                new_rsp = DocProcessor.advance_roman_start(doc, roman_start_p, num_cover)
+                if new_rsp is not roman_start_p:
+                    roman_start_p = new_rsp
+                    _advanced = True
+            roman_start_p             = proc.insert_breaks(roman_start_p, bab_p_list,
+                                                           exact_roman_start=_advanced)
             roman_sec, bab_sec_list, n_sections = proc.build_section_map(
                 roman_start_p, bab_p_list
             )
@@ -150,7 +153,7 @@ def main():
                 )
             else:
                 paket3.apply(proc, roman_sec, bab_sec_list, n_sections, hidden_cov,
-                             dimulai_dari=dimulai)
+                             dimulai_dari=dimulai, num_cover=num_cover)
 
     except Exception as e:
         _fail("PROCESSING_ERROR", f"Gagal memproses dokumen: {e}")

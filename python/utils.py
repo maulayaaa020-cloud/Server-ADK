@@ -246,21 +246,39 @@ class DocProcessor:
 
         breaks_before = sum(1 for el in body_els[:rsp_idx] if _has_break(el))
 
-        # Jika roman_start_p belum melewati num_cover-1 page break,
-        # dokumen tidak punya num_cover halaman cover → jangan advance
-        if breaks_before < num_cover - 1:
-            return roman_start_p
+        # Advance: jika cukup break eksplisit, hitung halaman dari awal
+        if breaks_before >= num_cover - 1:
+            target_pg  = num_cover + 1
+            current_pg = 1
+            candidate  = None
+            for el in body_els:
+                if current_pg >= target_pg:
+                    candidate = el
+                    break
+                if _has_break(el):
+                    current_pg += 1
 
-        # Advance ke halaman (num_cover + 1) dihitung dari awal dokumen
-        target_pg  = num_cover + 1
-        current_pg = 1
-        for el in body_els:
-            if current_pg >= target_pg:
-                return el
-            if _has_break(el):
-                current_pg += 1
+            if candidate is not None:
+                # Sebelum memakai candidate, cek apakah ada is_roman_start
+                # di antara roman_start_p dan candidate (mis. KATA PENGANTAR sebelum BAB I)
+                cand_idx = next((i for i, e in enumerate(body_els) if e is candidate), len(body_els))
+                for el in body_els[rsp_idx + 1:cand_idx]:
+                    _t = el.tag.split('}')[-1] if '}' in el.tag else el.tag
+                    if _t == 'p':
+                        _txt = ''.join(t.text or '' for t in el.iter('{%s}t' % W)).strip()
+                        if _txt and is_roman_start(_txt):
+                            return el
+                return candidate
 
-        return roman_start_p  # fallback jika tidak cukup halaman
+        # Fallback: tidak cukup page break eksplisit → cari is_roman_start keyword berikutnya
+        for el in body_els[rsp_idx + 1:]:
+            tag = el.tag.split('}')[-1] if '}' in el.tag else el.tag
+            if tag == 'p':
+                txt = ''.join(t.text or '' for t in el.iter('{%s}t' % W)).strip()
+                if txt and is_roman_start(txt):
+                    return el
+
+        return roman_start_p  # last resort
 
     # ── Header / Footer helpers ───────────────────────────
 
@@ -807,14 +825,16 @@ class DocProcessor:
 
         return roman_start_p, bab_p_list
 
-    def insert_breaks(self, roman_start_p, bab_p_list):
+    def insert_breaks(self, roman_start_p, bab_p_list, exact_roman_start=False):
         """Phase 1.5 + 2: Purge continuous sectPr, insert zone breaks.
-        Returns updated roman_start_p (may differ after _find_section_start)."""
+        Returns updated roman_start_p (may differ after _find_section_start).
+        exact_roman_start=True: skip _find_section_start (untuk multi-cover advance)."""
         if bab_p_list:
             self._purge_continuous_sectPr_in_bab_zone(bab_p_list[0])
 
         if roman_start_p is not None:
-            roman_start_p = self._find_section_start(roman_start_p)
+            if not exact_roman_start:
+                roman_start_p = self._find_section_start(roman_start_p)
             # Jika section boundary sudah ada tepat sebelum roman_start_p,
             # tidak perlu insert break (agar page break di roman zone tidak dihapus).
             body_ch = list(self.doc.element.body)
@@ -911,20 +931,23 @@ class DocProcessor:
         else:
             section.different_first_page_header_footer = False
             self.set_page_number_format(section, 'lowerRoman')
-            # Sampul ke-2 dst (section terpisah) tampilkan nomor sesuai visible_pos
+            # Sampul ke-2 dst
             if show_pos:
+                # hidden_cov='Tidak': tampilkan nomor di semua halaman cover
                 align, top = show_pos
                 if top:
                     self._place_num_in_part(section.header, align)
                 else:
                     self._place_num_in_part(section.footer, align)
-            else:
+            elif visible_pos:
+                # hidden_cov='Ya' dengan posisi eksplisit: tampilkan nomor
                 if _vis_top:
                     self._place_num_in_part(section.header, _vis_align)
                 else:
                     self._place_num_in_part(section.footer, _vis_align)
+            # else: hidden_cov='Ya', visible_pos=None → footer kosong = nomor tersembunyi
 
-    def fmt_roman(self, section):
+    def fmt_roman(self, section, start=None):
         section.different_first_page_header_footer = False
         self.clear_header(section)
         f = section.footer
@@ -934,7 +957,7 @@ class DocProcessor:
         p.alignment = WD_ALIGN_PARAGRAPH.CENTER
         self.add_page_number(p)
         self._set_pn_spacing(p)
-        self.set_page_number_format(section, 'lowerRoman')
+        self.set_page_number_format(section, 'lowerRoman', start)
 
     def fmt_bab_first(self, section, reset_to_1=False):
         section.different_first_page_header_footer = True
