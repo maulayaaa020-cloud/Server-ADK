@@ -131,10 +131,10 @@ def main():
             # Geser roman_start_p jika user memiliki lebih dari 1 cover
             _advanced = False
             if num_cover > 1 and hidden_cov == 'Ya':
-                new_rsp = DocProcessor.advance_roman_start(doc, roman_start_p, num_cover)
+                new_rsp, _use_exact = DocProcessor.advance_roman_start(doc, roman_start_p, num_cover)
                 if new_rsp is not roman_start_p:
                     roman_start_p = new_rsp
-                    _advanced = True
+                _advanced = _use_exact
             roman_start_p             = proc.insert_breaks(roman_start_p, bab_p_list,
                                                            exact_roman_start=_advanced)
             roman_sec, bab_sec_list, n_sections = proc.build_section_map(

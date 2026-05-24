@@ -220,14 +220,21 @@ class DocProcessor:
     def advance_roman_start(doc, roman_start_p, num_cover):
         """
         Geser roman_start_p ke paragraf pada halaman (num_cover + 1).
-        Digunakan saat user memiliki lebih dari 1 halaman cover.
-        Menghitung page break (manual w:br type=page atau sectPr) dari awal dokumen.
+        Returns (new_roman_start_p, use_exact):
+          use_exact=True  → caller harus set exact_roman_start=True di insert_breaks,
+                            agar _find_section_start tidak memindahkan roman_start_p
+                            ke awal section (yang akan mengacaukan multi-cover).
+          use_exact=False → biarkan insert_breaks berjalan normal.
 
-        Guard: jika roman_start_p belum melewati (num_cover - 1) page break dari awal,
-        dokumen tidak punya cukup halaman cover → kembalikan roman_start_p apa adanya.
+        Kasus:
+          breaks_before >= num_cover        : advance ke halaman num_cover+1.
+          breaks_before == num_cover - 1    : dokumen sudah punya jumlah section cover
+                                              yang tepat → gunakan roman_start_p apa adanya
+                                              tapi set use_exact=True.
+          breaks_before < num_cover - 1 / 0: tidak bisa diperbaiki tanpa rendering.
         """
         if num_cover <= 1:
-            return roman_start_p
+            return roman_start_p, False
 
         W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
         body_els = list(doc.element.body)
@@ -242,13 +249,11 @@ class DocProcessor:
         try:
             rsp_idx = body_els.index(roman_start_p)
         except ValueError:
-            return roman_start_p
+            return roman_start_p, False
 
         breaks_before = sum(1 for el in body_els[:rsp_idx] if _has_break(el))
 
-        # Advance: hanya jika cukup section break eksplisit (satu per halaman cover).
-        # Jika breaks_before < num_cover, sebagian cover ada di section yang sama
-        # (content-overflow, bukan explicit break) → roman_start_p sudah di posisi benar.
+        # Advance: hanya jika ada cukup break eksplisit (satu per halaman cover).
         if breaks_before >= num_cover:
             target_pg  = num_cover + 1
             current_pg = 1
@@ -268,10 +273,91 @@ class DocProcessor:
                     if _t == 'p':
                         _txt = ''.join(t.text or '' for t in el.iter('{%s}t' % W)).strip()
                         if _txt and is_roman_start(_txt):
-                            return el
-                return candidate
+                            return el, True
+                return candidate, True
 
-        return roman_start_p  # tidak cukup explicit break → sudah di posisi benar
+        # breaks_before == num_cover - 1: dokumen sudah punya struktur section yang tepat.
+        # _find_section_start akan memindahkan roman_start_p ke awal section (salah) →
+        # gunakan exact_roman_start=True agar posisi tepat di roman_start_p.
+        # Upgrade: deteksi otomatis "page header" yang diulang.
+        if breaks_before == num_cover - 1:
+            roman_start_p = DocProcessor._find_roman_page_start(body_els, rsp_idx, W)
+            return roman_start_p, True
+
+        # breaks_before < num_cover - 1 atau 0: tidak bisa diperbaiki tanpa rendering.
+        return roman_start_p, False
+
+    @staticmethod
+    def _find_roman_page_start(body_els, rsp_idx, W):
+        """
+        Cari awal halaman yang berisi roman_start_p (body_els[rsp_idx]).
+
+        Pola umum skripsi Indonesia: setiap halaman front matter diawali blok judul
+        dokumen yang DIULANG dari halaman sebelumnya (cover repeat, author repeat, dsb.).
+        Fungsi ini mendeteksi blok yang diulang dan menyertakannya ke roman zone agar
+        tidak terbentuk halaman ekstra dalam cover section.
+
+        Algoritma:
+          1. Cari boundary terakhir (sectPr/page-break) sebelum roman_start_p.
+          2. Kumpulkan teks yang sudah muncul SEBELUM boundary itu (= texts_before).
+          3. Mundur dari roman_start_p: selama paragraf non-kosong teksnya ada di
+             texts_before, sertakan dalam roman zone (kandidat page start).
+          4. Berhenti saat teks tidak dikenal atau ketemu boundary baru.
+        """
+        def _get_txt(el):
+            return ''.join(t.text or '' for t in el.iter('{%s}t' % W)).strip()
+
+        def _has_boundary(el):
+            pPr = el.find("{%s}pPr" % W)
+            if pPr is not None and pPr.find("{%s}sectPr" % W) is not None:
+                return True
+            return any(br.get("{%s}type" % W) == 'page' for br in el.iter("{%s}br" % W))
+
+        roman_start_p = body_els[rsp_idx]
+
+        # Langkah 1: cari boundary terakhir sebelum rsp_idx
+        boundary_idx = -1
+        for j in range(rsp_idx - 1, -1, -1):
+            el = body_els[j]
+            if (el.tag.split('}')[-1] if '}' in el.tag else el.tag) != 'p':
+                continue
+            if _has_boundary(el):
+                boundary_idx = j
+                break
+
+        if boundary_idx < 0:
+            return roman_start_p  # tidak ada boundary → tidak bisa deteksi
+
+        # Langkah 2: kumpulkan teks yang pernah muncul sebelum boundary
+        texts_before = set()
+        for j in range(boundary_idx + 1):
+            el = body_els[j]
+            if (el.tag.split('}')[-1] if '}' in el.tag else el.tag) != 'p':
+                continue
+            txt = _get_txt(el)
+            if txt:
+                texts_before.add(txt[:50])
+
+        if not texts_before:
+            return roman_start_p
+
+        # Langkah 3: mundur dari rsp_idx mencari blok "page header" yang diulang
+        candidate = roman_start_p
+        for j in range(rsp_idx - 1, max(rsp_idx - 30, -1), -1):
+            el  = body_els[j]
+            tag = el.tag.split('}')[-1] if '}' in el.tag else el.tag
+            if tag != 'p':
+                continue
+            if _has_boundary(el):
+                break  # batas section/page — stop
+            txt = _get_txt(el)
+            if not txt:
+                continue  # lewati kosong
+            if txt[:50] in texts_before:
+                candidate = el  # teks ini diulang → bagian page header, sertakan
+            else:
+                break  # teks baru/unik → bukan bagian page header, stop
+        return candidate
 
     # ── Header / Footer helpers ───────────────────────────
 
