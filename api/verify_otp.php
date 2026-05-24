@@ -5,20 +5,15 @@ require_once __DIR__ . '/../includes/db.php';
 
 header('Content-Type: application/json');
 $data  = json_decode(file_get_contents('php://input'), true);
-$phone = trim($data['phone'] ?? '');
+$email = trim($data['email'] ?? '');
 $code  = trim($data['code']  ?? '');
 
-if (!$phone || !$code) {
+if (!$email || !$code) {
     echo json_encode(['ok' => false, 'error' => 'Data tidak lengkap.']);
     exit;
 }
 
-if (strpos($phone, '@') !== false && $phone !== ADMIN_EMAIL) {
-    echo json_encode(['ok' => false, 'error' => 'Kode salah atau sudah kedaluwarsa.']);
-    exit;
-}
-
-if ($phone === ADMIN_EMAIL) {
+if ($email === ADMIN_EMAIL) {
     $lockFile = sys_get_temp_dir() . '/adk_admin_lock.json';
 
     $lock = file_exists($lockFile)
@@ -28,7 +23,6 @@ if ($phone === ADMIN_EMAIL) {
     $attempts     = (int)($lock['attempts']     ?? 0);
     $lockoutUntil = (int)($lock['lockout_until'] ?? 0);
 
-    // Masih dalam masa lockout
     if ($lockoutUntil > time()) {
         $remaining = $lockoutUntil - time();
         $m = floor($remaining / 60);
@@ -77,7 +71,7 @@ try {
          WHERE phone = :p AND code = :c AND expires_at > NOW() AND used = 0
          ORDER BY created_at DESC LIMIT 1"
     );
-    $stmt->execute([':p' => $phone, ':c' => $code]);
+    $stmt->execute([':p' => $email, ':c' => $code]);
     $row = $stmt->fetch();
 
     if (!$row) {
@@ -90,7 +84,7 @@ try {
     $token = bin2hex(random_bytes(32));
 
     $db->prepare("INSERT INTO trusted_devices (phone, token, expires_at) VALUES (:p, :t, NOW() + INTERVAL 30 DAY)")
-       ->execute([':p' => $phone, ':t' => $token]);
+       ->execute([':p' => $email, ':t' => $token]);
 
     echo json_encode(['ok' => true, 'token' => $token]);
 

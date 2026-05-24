@@ -6,19 +6,19 @@ require_once __DIR__ . '/includes/db.php';
 
 $isAdmin = !empty($_SESSION['adk_admin']);
 
-$phone = $_SESSION['phone'] ?? $_SESSION['cek_phone'] ?? null;
-if (empty($phone)) $phone = null;
-// Jika session menandai mode tamu, abaikan nomor telepon lama
-if (!empty($_SESSION['is_guest'])) $phone = null;
+$email = $_SESSION['email'] ?? $_SESSION['cek_email'] ?? null;
+if (empty($email)) $email = null;
+// Jika session menandai mode tamu, abaikan email lama
+if (!empty($_SESSION['is_guest'])) $email = null;
 
 // Pulihkan guest_token dari cookie jika session habis (browser ditutup/dibuka lagi)
 if (empty($_SESSION['guest_token']) && !empty($_COOKIE['adk_guest'])) {
     $_SESSION['guest_token'] = $_COOKIE['adk_guest'];
 }
 $guestToken = $_SESSION['guest_token'] ?? null;
-$isGuest    = empty($phone) && !empty($guestToken);
+$isGuest    = empty($email) && !empty($guestToken);
 
-if (!$isAdmin && !$phone && !$guestToken) { header("Location: cek_pembelian.php"); exit; }
+if (!$isAdmin && !$email && !$guestToken) { header("Location: cek_pembelian.php"); exit; }
 
 try {
     $db = getDB();
@@ -29,7 +29,7 @@ try {
         $stmt->execute([':gt' => $guestToken]);
     } else {
         $stmt = $db->prepare("SELECT * FROM orders WHERE phone = :phone ORDER BY created_at DESC");
-        $stmt->execute([':phone' => $phone]);
+        $stmt->execute([':phone' => $email]);
     }
     $orders = $stmt->fetchAll();
 } catch (Exception $e) { $orders = []; }
@@ -74,10 +74,13 @@ function keteranganList($row) {
     return $items;
 }
 
-function maskPhone($p) {
-    $len = strlen($p);
-    if ($len <= 8) return $p;
-    return substr($p, 0, 4) . str_repeat('*', $len - 8) . substr($p, -4);
+function maskEmail($e) {
+    $parts = explode('@', $e, 2);
+    if (count($parts) !== 2) return $e;
+    $local  = $parts[0];
+    $domain = $parts[1];
+    $show   = min(3, strlen($local));
+    return substr($local, 0, $show) . str_repeat('*', max(strlen($local) - $show, 2)) . '@' . $domain;
 }
 
 function tglIndo($dt) {
@@ -937,13 +940,13 @@ if (!empty($orders)) {
             <div class="guest-section" id="guestSection">
                 <div class="guest-badge">👤 Mode Tamu</div>
                 <button class="btn-guest-login" onclick="toggleGuestLogin()">
-                    📱 Login Nomor Telepon
+                    📧 Login Email
                 </button>
                 <div class="guest-hint">Silahkan login untuk menyimpan history</div>
                 <div class="guest-form-wrap" id="guestFormWrap" style="display:none">
                     <div class="guest-form-inner">
-                        <input type="tel" id="guestPhoneInput" class="guest-phone-input"
-                               placeholder="Contoh: 08123456789" autocomplete="tel">
+                        <input type="email" id="guestEmailInput" class="guest-phone-input"
+                               placeholder="Contoh: email@kamu.com" autocomplete="email">
                         <button class="btn-guest-submit" id="guestSubmitBtn" onclick="doGuestLogin()">
                             Verifikasi
                         </button>
@@ -955,16 +958,16 @@ if (!empty($orders)) {
             <!-- Mode Login -->
             <div class="history-phone-chip">
                 <span>📱</span>
-                <span class="phone-masked"><?= htmlspecialchars(maskPhone($phone)) ?></span>
+                <span class="phone-masked"><?= htmlspecialchars(maskEmail($email)) ?></span>
                 <span class="phone-divider"></span>
-                <a href="cek_pembelian.php?change=1">Ganti Nomor</a>
+                <a href="cek_pembelian.php?change=1">Ganti Email</a>
             </div>
             <?php endif; ?>
         </div>
 
         <div class="order-list">
         <?php if (empty($orders)): ?>
-            <div class="empty-state">Belum ada order untuk nomor ini.</div>
+            <div class="empty-state">Belum ada order untuk email ini.</div>
         <?php else: ?>
             <?php foreach ($orders as $o): ?>
             <?php
@@ -1560,7 +1563,7 @@ if (!empty($orders)) {
             const wrap = document.getElementById('guestFormWrap');
             const isHidden = wrap.style.display === 'none';
             wrap.style.display = isHidden ? 'block' : 'none';
-            if (isHidden) document.getElementById('guestPhoneInput').focus();
+            if (isHidden) document.getElementById('guestEmailInput').focus();
         }
 
         function setGuestError(msg) {
@@ -1568,20 +1571,20 @@ if (!empty($orders)) {
         }
 
         function doGuestLogin() {
-            const phone = document.getElementById('guestPhoneInput').value.trim();
-            if (!phone) { setGuestError('Masukkan nomor telepon.'); return; }
+            const email = document.getElementById('guestEmailInput').value.trim();
+            if (!email) { setGuestError('Masukkan email.'); return; }
 
             const btn = document.getElementById('guestSubmitBtn');
             btn.disabled    = true;
             btn.textContent = 'Memproses...';
             setGuestError('');
 
-            requireOTP(phone, function () {
-                // OTP terverifikasi, klaim order tamu ke nomor ini
+            requireOTP(email, function () {
+                // OTP terverifikasi, klaim order tamu ke email ini
                 fetch('api/claim_guest.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ phone: phone, guest_token: _guestToken })
+                    body: JSON.stringify({ email: email, guest_token: _guestToken })
                 })
                 .then(function(r) { return r.json(); })
                 .then(function(data) {

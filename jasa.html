@@ -597,14 +597,14 @@
 
                     <div class="validation-msg" id="validMsg"></div>
 
-                    <!-- No. Telepon (Opsional) -->
+                    <!-- Email (Opsional) -->
                     <div class="phone-field">
                         <label class="phone-label">
-                            No. Telepon
+                            Email
                             <span class="phone-optional-badge">Opsional</span>
                         </label>
-                        <input type="text" name="phone" id="phoneInput"
-                               class="phone-input" placeholder="Opsional — Contoh: 08123456789"
+                        <input type="email" name="email" id="emailInput"
+                               class="phone-input" placeholder="Opsional — Contoh: email@kamu.com"
                                autocomplete="off">
                     </div>
 
@@ -1053,28 +1053,9 @@
             e.preventDefault();
             const p     = paketInfo[currentPaket];
             const msgs  = [];
-            const phone = document.getElementById('phoneInput').value.trim();
+            const email = document.getElementById('emailInput').value.trim();
 
-            // Jika email dimasukkan → cek server dulu, baru buka modal jika valid
-            if (phone && phone.includes('@')) {
-                fetch('api/send_otp.php', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ phone: phone })
-                })
-                .then(function (r) { return r.json(); })
-                .then(function (d) {
-                    if (d.admin_mode) {
-                        requireOTP(phone, function () {});
-                    } else {
-                        showValidation(['Nomor tidak valid']);
-                    }
-                })
-                .catch(function () { showValidation(['Nomor tidak valid']); });
-                return false;
-            }
-
-            // phone opsional — tidak divalidasi wajib isi
+            // email opsional — tidak divalidasi wajib isi
 
             if (!document.getElementById('fileInput').files[0])
                 msgs.push('Anda belum upload file (.docx)');
@@ -1141,9 +1122,9 @@
                 document.getElementById('hidLamprn').value    = sel.lp4  || 'Tidak';
             }
 
-            if (phone) {
+            if (email) {
                 // Mode login: verifikasi OTP terlebih dahulu
-                requireOTP(phone, function () {
+                requireOTP(email, function () {
                     const btn = document.getElementById('btnUpload');
                     btn.querySelector('.btn-label').textContent = 'Mengerjakan';
                     btn.classList.add('loading');

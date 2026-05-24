@@ -6,19 +6,19 @@ require_once __DIR__ . '/../includes/db.php';
 header('Content-Type: application/json');
 
 $data       = json_decode(file_get_contents('php://input'), true);
-$phone      = trim($data['phone']       ?? '');
+$email      = trim($data['email']       ?? '');
 $guestToken = trim($data['guest_token'] ?? '');
 
-if (!$phone || !$guestToken) {
+if (!$email || !$guestToken) {
     echo json_encode(['ok' => false, 'error' => 'Data tidak valid']);
     exit;
 }
 
 // Verifikasi OTP sudah dilakukan client-side via device token cookie
 $dtoken = $_COOKIE['adk_dtoken'] ?? '';
-$dphone = $_COOKIE['adk_dphone'] ?? '';
+$demail = $_COOKIE['adk_demail'] ?? '';
 
-if ($dphone !== $phone || !$dtoken) {
+if ($demail !== $email || !$dtoken) {
     echo json_encode(['ok' => false, 'error' => 'Verifikasi OTP diperlukan']);
     exit;
 }
@@ -30,21 +30,21 @@ try {
     $chk = $db->prepare(
         "SELECT id FROM trusted_devices WHERE phone = :p AND token = :t AND expires_at > NOW() LIMIT 1"
     );
-    $chk->execute([':p' => $phone, ':t' => $dtoken]);
+    $chk->execute([':p' => $email, ':t' => $dtoken]);
     if (!$chk->fetch()) {
         echo json_encode(['ok' => false, 'error' => 'Sesi OTP tidak valid, silahkan verifikasi ulang']);
         exit;
     }
 
-    // Pindahkan semua order tamu ke nomor telepon
+    // Pindahkan semua order tamu ke email
     $upd = $db->prepare(
         "UPDATE orders SET phone = :phone WHERE guest_token = :gt AND (phone IS NULL OR phone = '')"
     );
-    $upd->execute([':phone' => $phone, ':gt' => $guestToken]);
+    $upd->execute([':phone' => $email, ':gt' => $guestToken]);
 
     // Update session
-    $_SESSION['phone']     = $phone;
-    $_SESSION['cek_phone'] = $phone;
+    $_SESSION['email']     = $email;
+    $_SESSION['cek_email'] = $email;
     unset($_SESSION['guest_token']);
     unset($_SESSION['is_guest']);
 

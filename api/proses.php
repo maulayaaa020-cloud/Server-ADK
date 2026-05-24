@@ -16,7 +16,7 @@ if (isset($_FILES['file']) && isset($_POST['paket'])) {
     $size       = $_POST['size']              ?? '';
     $hidden     = $_POST['hidden_cover']      ?? 'Ya';
     $posisi     = $_POST['posisi']            ?? '';
-    $phone      = trim($_POST['phone']        ?? '');
+    $email      = trim($_POST['email']        ?? '');
     // Paket 4 — custom per-zona
     $pos_bab    = $_POST['pos_bab']           ?? '';
     $pos_isi    = $_POST['pos_isi_bab']       ?? '';
@@ -27,7 +27,7 @@ if (isset($_FILES['file']) && isset($_POST['paket'])) {
     $semb_dafus = $_POST['sembunyi_dafus']    ?? 'Tidak';
     $semb_lamprn= $_POST['sembunyi_lamprn']   ?? 'Tidak';
 
-    $isGuest = empty($phone);
+    $isGuest = empty($email);
 
     // Mode tamu: gunakan/buat guest_token untuk identifikasi perangkat
     if ($isGuest) {
@@ -101,7 +101,7 @@ if (isset($_FILES['file']) && isset($_POST['paket'])) {
                 (:phone, :guest_token, :order_id, :file_input, :paket, :font, :size, :hidden_cover, :posisi, :harga, :extra_data)
         ");
         $stmt->execute([
-            ':phone'        => $isGuest ? null : $phone,
+            ':phone'        => $isGuest ? null : $email,
             ':guest_token'  => $guestToken,
             ':order_id'     => $orderId,
             ':file_input'   => $namaBaru,
@@ -118,11 +118,11 @@ if (isset($_FILES['file']) && isset($_POST['paket'])) {
             'db_id'    => $dbId,
             'order_id' => $orderId,
             'paket'    => $paket,
-            'phone'    => $isGuest ? 'guest' : substr($phone, 0, 6) . '***',
+            'email'    => $isGuest ? 'guest' : substr($email, 0, 6) . '***',
             'harga'    => $harga,
         ]);
     } catch (Exception $e) {
-        adk_log('error', 'ORDER INSERT FAIL', ['err' => $e->getMessage(), 'phone' => $phone]);
+        adk_log('error', 'ORDER INSERT FAIL', ['err' => $e->getMessage(), 'email' => $email]);
         http_response_code(500);
         echo json_encode(['ok' => false, 'error' => 'Gagal membuat order. Coba lagi.']);
         exit;
@@ -140,12 +140,12 @@ if (isset($_FILES['file']) && isset($_POST['paket'])) {
     $_SESSION['num_cover']    = $num_cover;
     $_SESSION['semb_dafus']   = $semb_dafus;
     $_SESSION['semb_lamprn']  = $semb_lamprn;
-    $_SESSION['phone']        = $isGuest ? null : $phone;
+    $_SESSION['email']        = $isGuest ? null : $email;
     $_SESSION['guest_token']  = $guestToken;
     $_SESSION['is_guest']     = $isGuest;
-    // Hapus sisa session nomor lama agar history tidak tumpang tindih dengan mode tamu
+    // Hapus sisa session email lama agar history tidak tumpang tindih dengan mode tamu
     if ($isGuest) {
-        unset($_SESSION['cek_phone']);
+        unset($_SESSION['cek_email']);
     }
     $_SESSION['order_id']     = $orderId;
     $_SESSION['order_db_id']  = $dbId;

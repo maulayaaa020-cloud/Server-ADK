@@ -5,20 +5,20 @@ require_once __DIR__ . '/includes/db.php';
 
 // Jika sudah login atau tamu, langsung ke history (kecuali mode ganti nomor)
 if (empty($_GET['change'])) {
-    if (!empty($_SESSION['phone'])) { header("Location: history.php"); exit; }
+    if (!empty($_SESSION['email'])) { header("Location: history.php"); exit; }
     if (!empty($_SESSION['guest_token']) || !empty($_COOKIE['adk_guest'])) { header("Location: history.php"); exit; }
 }
 
 $error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $phone = trim($_POST['phone'] ?? '');
-    if (!$phone) {
-        $error = 'Nomor telepon tidak boleh kosong.';
+    $email = trim($_POST['email'] ?? '');
+    if (!$email) {
+        $error = 'Email tidak boleh kosong.';
     } else {
-        // Timpa semua session phone agar nomor baru langsung aktif
-        $_SESSION['phone']     = $phone;
-        $_SESSION['cek_phone'] = $phone;
+        // Timpa semua session email agar email baru langsung aktif
+        $_SESSION['email']     = $email;
+        $_SESSION['cek_email'] = $email;
         // Bersihkan sisa sesi tamu agar tidak tumpang tindih
         unset($_SESSION['is_guest'], $_SESSION['guest_token']);
         header("Location: history.php");
@@ -215,12 +215,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="login-wrapper">
         <div class="login-card">
             <div class="login-title">Cek Pembelian</div>
-            <div class="login-sub">Masukkan nomor telepon yang digunakan saat order</div>
+            <div class="login-sub">Masukkan email yang digunakan saat order</div>
 
             <form method="POST">
-                <label class="login-label">Nomor Telepon</label>
-                <input type="tel" name="phone" class="login-input"
-                       placeholder="Contoh: 08123456789" autofocus>
+                <label class="login-label">Email</label>
+                <input type="email" name="email" class="login-input"
+                       placeholder="Contoh: email@kamu.com" autofocus>
                 <?php if ($error): ?>
                 <div class="login-error"><?= htmlspecialchars($error) ?></div>
                 <?php endif; ?>
@@ -233,20 +233,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <script>
         document.addEventListener('contextmenu', e => e.preventDefault());
 
-        var _currentPhone = <?= json_encode($_SESSION['phone'] ?? '') ?>;
+        var _currentEmail = <?= json_encode($_SESSION['email'] ?? '') ?>;
 
         document.querySelector('form').addEventListener('submit', function (e) {
             e.preventDefault();
-            var phone = document.querySelector('input[name="phone"]').value.trim();
-            if (!phone) return;
+            var email = document.querySelector('input[name="email"]').value.trim();
+            if (!email) return;
 
-            // Nomor sama dengan yang sudah login → skip OTP langsung masuk
-            if (_currentPhone && phone === _currentPhone) {
+            // Email sama dengan yang sudah login → skip OTP langsung masuk
+            if (_currentEmail && email === _currentEmail) {
                 HTMLFormElement.prototype.submit.call(document.querySelector('form'));
                 return;
             }
 
-            requireOTP(phone, function () {
+            requireOTP(email, function () {
                 // OTP verified — submit form secara programatik (bypass listener)
                 HTMLFormElement.prototype.submit.call(document.querySelector('form'));
             });
