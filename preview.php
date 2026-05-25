@@ -4,8 +4,8 @@ session_start();
 require_once __DIR__ . '/includes/config.php';
 require_once __DIR__ . '/includes/db.php';
 
-$phone = $_SESSION['phone'] ?? $_SESSION['cek_phone'] ?? null;
-if (!$phone) { header("Location: cek_pembelian.php"); exit; }
+$email = $_SESSION['email'] ?? $_SESSION['cek_email'] ?? null;
+if (!$email) { header("Location: cek_pembelian.php"); exit; }
 
 $id = (int)($_GET['id'] ?? 0);
 if (!$id) { header("Location: history.php"); exit; }
@@ -13,7 +13,7 @@ if (!$id) { header("Location: history.php"); exit; }
 try {
     $db   = getDB();
     $stmt = $db->prepare("SELECT * FROM orders WHERE id = :id AND phone = :phone");
-    $stmt->execute([':id' => $id, ':phone' => $phone]);
+    $stmt->execute([':id' => $id, ':phone' => $email]);
     $order = $stmt->fetch();
 } catch (Exception $e) { $order = null; }
 
