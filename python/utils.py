@@ -253,6 +253,27 @@ class DocProcessor:
 
         breaks_before = sum(1 for el in body_els[:rsp_idx] if _has_break(el))
 
+        def _txt(el):
+            return ''.join(t.text or '' for t in el.iter('{%s}t' % W)).strip()
+
+        def _el_tag(el):
+            return el.tag.split('}')[-1] if '}' in el.tag else el.tag
+
+        def _is_empty_sectPr(el):
+            if _el_tag(el) != 'p':
+                return False
+            if _txt(el):
+                return False
+            pPr = el.find('{%s}pPr' % W)
+            return pPr is not None and pPr.find('{%s}sectPr' % W) is not None
+
+        def _remove_pgbr(el):
+            for br in list(el.findall('.//{%s}br' % W)):
+                if br.get('{%s}type' % W) == 'page':
+                    p = br.getparent()
+                    if p is not None:
+                        p.remove(br)
+
         # Advance: hanya jika ada cukup break eksplisit (satu per halaman cover).
         if breaks_before >= num_cover:
             target_pg  = num_cover + 1
@@ -266,13 +287,22 @@ class DocProcessor:
                     current_pg += 1
 
             if candidate is not None:
-                # Cek apakah ada is_roman_start di antara roman_start_p dan candidate
+                # Lewati paragraf kosong ber-sectPr (cegah blank page extra).
+                # Juga hapus pgBr dari paragraf tepat sebelum paragraf kosong itu.
                 cand_idx = next((i for i, e in enumerate(body_els) if e is candidate), len(body_els))
-                for el in body_els[rsp_idx + 1:cand_idx]:
-                    _t = el.tag.split('}')[-1] if '}' in el.tag else el.tag
+                while cand_idx < len(body_els) and _is_empty_sectPr(body_els[cand_idx]):
+                    if cand_idx > 0:
+                        _remove_pgbr(body_els[cand_idx - 1])
+                    cand_idx += 1
+                candidate = body_els[cand_idx] if cand_idx < len(body_els) else candidate
+
+                # Cek apakah ada is_roman_start di antara roman_start_p dan candidate
+                cand_idx2 = next((i for i, e in enumerate(body_els) if e is candidate), len(body_els))
+                for el in body_els[rsp_idx + 1:cand_idx2]:
+                    _t = _el_tag(el)
                     if _t == 'p':
-                        _txt = ''.join(t.text or '' for t in el.iter('{%s}t' % W)).strip()
-                        if _txt and is_roman_start(_txt):
+                        _t2 = _txt(el)
+                        if _t2 and is_roman_start(_t2):
                             return el, True
                 return candidate, True
 
@@ -285,45 +315,73 @@ class DocProcessor:
             moved_back = new_rsp is not body_els[rsp_idx]
 
             if not moved_back:
-                # _find_roman_page_start tidak menggeser posisi (tidak ada page-header yang
-                # diulang). Cari page break maju dari rsp — kalau ketemu, roman zone dimulai
-                # SETELAH page break itu (halaman num_cover masih termasuk cover).
+                # Hapus pgBr dari paragraf kosong tepat sebelum rsp (cegah blank page
+                # dalam cover section ketika cover penuh mengisi halaman).
+                if rsp_idx > 0:
+                    prev_el = body_els[rsp_idx - 1]
+                    if (_el_tag(prev_el) == 'p' and not _txt(prev_el) and
+                            any(br.get('{%s}type' % W) == 'page'
+                                for br in prev_el.iter('{%s}br' % W))):
+                        _remove_pgbr(prev_el)
+
+                # Scan maju untuk page break eksplisit.
+                pgbr_found = False
                 for j in range(rsp_idx, min(rsp_idx + 150, len(body_els))):
                     el  = body_els[j]
-                    tag = el.tag.split('}')[-1] if '}' in el.tag else el.tag
+                    tag = _el_tag(el)
                     if tag != 'p':
                         continue
-                    pPr = el.find("{%s}pPr" % W)
-                    if pPr is not None and pPr.find("{%s}sectPr" % W) is not None:
+                    pPr = el.find('{%s}pPr' % W)
+                    if pPr is not None and pPr.find('{%s}sectPr' % W) is not None:
                         break  # section boundary — stop
-                    if any(br.get("{%s}type" % W) == 'page' for br in el.iter("{%s}br" % W)):
+                    if any(br.get('{%s}type' % W) == 'page' for br in el.iter('{%s}br' % W)):
                         for k in range(j + 1, len(body_els)):
                             nxt  = body_els[k]
-                            ntag = nxt.tag.split('}')[-1] if '}' in nxt.tag else nxt.tag
+                            ntag = _el_tag(nxt)
                             if ntag == 'p':
                                 new_rsp = nxt
+                                pgbr_found = True
                                 break
                         break
 
+                # Fallback: jika tidak ada pgBr, cari roman keyword berikutnya
+                # (menangani kasus sectPr asli di-dokumen yang sudah membatasi cover1).
+                if not pgbr_found:
+                    rsp_txt = _txt(body_els[rsp_idx]).lower()
+                    for j in range(rsp_idx + 1, min(rsp_idx + 50, len(body_els))):
+                        nxt = body_els[j]
+                        if _el_tag(nxt) != 'p':
+                            continue
+                        pPr = nxt.find('{%s}pPr' % W)
+                        if pPr is not None and pPr.find('{%s}sectPr' % W) is not None:
+                            break
+                        ntxt = _txt(nxt).strip()
+                        if ntxt and is_roman_start(ntxt) and ntxt.lower() != rsp_txt:
+                            new_rsp = nxt
+                            break
+
             return new_rsp, True
 
-        # breaks_before < num_cover - 1 atau 0: coba forward scan jarak dekat.
-        # Kalau ada page break dalam ≤10 paragraf setelah rsp, itu menandakan halaman
-        # pertama front matter sangat pendek dan cocok dijadikan cover ke-N.
-        # Batas ketat agar tidak masuk konten panjang seperti DAFTAR ISI.
-        for j in range(rsp_idx, min(rsp_idx + 11, len(body_els))):
+        # breaks_before < num_cover - 1 atau 0: coba forward scan sampai ≤50 elemen.
+        # Jika elemen setelah pgBr juga roman keyword → pgBr ada di dalam roman zone,
+        # jangan advance (tetap di rsp).
+        for j in range(rsp_idx, min(rsp_idx + 50, len(body_els))):
             el  = body_els[j]
-            tag = el.tag.split('}')[-1] if '}' in el.tag else el.tag
+            tag = _el_tag(el)
             if tag != 'p':
                 continue
-            pPr = el.find("{%s}pPr" % W)
-            if pPr is not None and pPr.find("{%s}sectPr" % W) is not None:
+            pPr = el.find('{%s}pPr' % W)
+            if pPr is not None and pPr.find('{%s}sectPr' % W) is not None:
                 break  # section boundary — stop
-            if any(br.get("{%s}type" % W) == 'page' for br in el.iter("{%s}br" % W)):
+            if any(br.get('{%s}type' % W) == 'page' for br in el.iter('{%s}br' % W)):
                 for k in range(j + 1, len(body_els)):
                     nxt  = body_els[k]
-                    ntag = nxt.tag.split('}')[-1] if '}' in nxt.tag else nxt.tag
+                    ntag = _el_tag(nxt)
                     if ntag == 'p':
+                        _nxt_txt = _txt(nxt)
+                        if _nxt_txt and is_roman_start(_nxt_txt):
+                            # pgBr dalam roman zone → jangan advance
+                            return roman_start_p, True
                         return nxt, True
                 break
         return roman_start_p, False
@@ -394,7 +452,7 @@ class DocProcessor:
             txt = _get_txt(el)
             if not txt:
                 continue  # lewati kosong
-            if txt[:50] in texts_before:
+            if txt[:50] in texts_before and len(txt.strip()) > 5:
                 candidate = el  # teks ini diulang → bagian page header, sertakan
             else:
                 break  # teks baru/unik → bukan bagian page header, stop
@@ -626,7 +684,7 @@ class DocProcessor:
                     if parent is not None:
                         parent.remove(br)
 
-    def insert_break_before_xml(self, target_p):
+    def insert_break_before_xml(self, target_p, allow_empty_boundary=False):
         self._remove_page_breaks_before(target_p)
         body     = self.doc.element.body
         children = list(body)
@@ -641,6 +699,18 @@ class DocProcessor:
                     sectPr = pPr.find(qn('w:sectPr'))
                     if sectPr is not None:
                         if sectPr.find(qn('w:pgSz')) is not None:
+                            # Kalau sectPr ini pada paragraf berisi konten (artinya
+                            # kita sendiri yang pasang untuk batas roman zone) dan ada
+                            # paragraf kosong antara sini dan target, pakai paragraf
+                            # kosong itu sebagai batas BAB section baru.
+                            if allow_empty_boundary and self._p_has_content(elem):
+                                for k in range(j + 1, tgt_idx):
+                                    nxt = children[k]
+                                    if (nxt.tag.endswith('}p') and
+                                            not self._p_has_content(nxt) and
+                                            not self._has_sectPr(nxt)):
+                                        self._attach_sectPr(nxt)
+                                        return
                             return
                         else:
                             pPr.remove(sectPr)
@@ -969,7 +1039,7 @@ class DocProcessor:
                 self._strip_empty_paras_before_bab(roman_start_p)
 
         for bab_p in bab_p_list:
-            self.insert_break_before_xml(bab_p)
+            self.insert_break_before_xml(bab_p, allow_empty_boundary=exact_roman_start)
             self._strip_empty_paras_before_bab(bab_p)
 
         return roman_start_p  # dikembalikan karena bisa berubah
