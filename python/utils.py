@@ -276,15 +276,56 @@ class DocProcessor:
                             return el, True
                 return candidate, True
 
-        # breaks_before == num_cover - 1: dokumen sudah punya struktur section yang tepat.
-        # _find_section_start akan memindahkan roman_start_p ke awal section (salah) →
-        # gunakan exact_roman_start=True agar posisi tepat di roman_start_p.
-        # Upgrade: deteksi otomatis "page header" yang diulang.
+        # breaks_before == num_cover - 1: sudah ada (num_cover-1) break sebelum roman_start_p.
+        # Step 1: cek page-header yang diulang (kasus Docx 2 — mundurkan rsp ke judul).
+        # Step 2: scan maju dari rsp untuk page break eksplisit — kalau ketemu, roman zone
+        #         sebenarnya dimulai SETELAH page break itu (halaman num_cover masih cover).
         if breaks_before == num_cover - 1:
-            roman_start_p = DocProcessor._find_roman_page_start(body_els, rsp_idx, W)
-            return roman_start_p, True
+            new_rsp   = DocProcessor._find_roman_page_start(body_els, rsp_idx, W)
+            moved_back = new_rsp is not body_els[rsp_idx]
 
-        # breaks_before < num_cover - 1 atau 0: tidak bisa diperbaiki tanpa rendering.
+            if not moved_back:
+                # _find_roman_page_start tidak menggeser posisi (tidak ada page-header yang
+                # diulang). Cari page break maju dari rsp — kalau ketemu, roman zone dimulai
+                # SETELAH page break itu (halaman num_cover masih termasuk cover).
+                for j in range(rsp_idx, min(rsp_idx + 150, len(body_els))):
+                    el  = body_els[j]
+                    tag = el.tag.split('}')[-1] if '}' in el.tag else el.tag
+                    if tag != 'p':
+                        continue
+                    pPr = el.find("{%s}pPr" % W)
+                    if pPr is not None and pPr.find("{%s}sectPr" % W) is not None:
+                        break  # section boundary — stop
+                    if any(br.get("{%s}type" % W) == 'page' for br in el.iter("{%s}br" % W)):
+                        for k in range(j + 1, len(body_els)):
+                            nxt  = body_els[k]
+                            ntag = nxt.tag.split('}')[-1] if '}' in nxt.tag else nxt.tag
+                            if ntag == 'p':
+                                new_rsp = nxt
+                                break
+                        break
+
+            return new_rsp, True
+
+        # breaks_before < num_cover - 1 atau 0: coba forward scan jarak dekat.
+        # Kalau ada page break dalam ≤10 paragraf setelah rsp, itu menandakan halaman
+        # pertama front matter sangat pendek dan cocok dijadikan cover ke-N.
+        # Batas ketat agar tidak masuk konten panjang seperti DAFTAR ISI.
+        for j in range(rsp_idx, min(rsp_idx + 11, len(body_els))):
+            el  = body_els[j]
+            tag = el.tag.split('}')[-1] if '}' in el.tag else el.tag
+            if tag != 'p':
+                continue
+            pPr = el.find("{%s}pPr" % W)
+            if pPr is not None and pPr.find("{%s}sectPr" % W) is not None:
+                break  # section boundary — stop
+            if any(br.get("{%s}type" % W) == 'page' for br in el.iter("{%s}br" % W)):
+                for k in range(j + 1, len(body_els)):
+                    nxt  = body_els[k]
+                    ntag = nxt.tag.split('}')[-1] if '}' in nxt.tag else nxt.tag
+                    if ntag == 'p':
+                        return nxt, True
+                break
         return roman_start_p, False
 
     @staticmethod
