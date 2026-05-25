@@ -42,8 +42,8 @@ try {
         'merchant_ref'   => $orderId,
         'amount'         => $harga,
         'customer_name'  => 'Pelanggan ADK',
-        'customer_email' => 'pelanggan@adkphotocopy.com',
-        'customer_phone' => !empty($order['phone']) ? preg_replace('/^0/', '62', $order['phone']) : '6281228790091',
+        'customer_email' => !empty($order['phone']) ? $order['phone'] : 'pelanggan@adkphotocopy.com',
+        'customer_phone' => '6281228790091',
         'order_items'    => [[
             'sku'      => 'ADK-PENOMORAN',
             'name'     => 'Layanan Penomoran Halaman ADK',
