@@ -128,9 +128,10 @@ def main():
             detected_bab_texts = [
                 DocProcessor._p_text(p)[:60] for p in bab_p_list
             ]
-            # Geser roman_start_p jika user memiliki lebih dari 1 cover
+            # Geser roman_start_p: untuk num_cover > 1 (multi-cover), atau num_cover=1
+            # dengan dokumen yang punya duplikat cover (advance_roman_start mendeteksi bb > 1).
             _advanced = False
-            if num_cover > 1 and hidden_cov == 'Ya':
+            if hidden_cov == 'Ya':
                 new_rsp, _use_exact = DocProcessor.advance_roman_start(doc, roman_start_p, num_cover)
                 if new_rsp is not roman_start_p:
                     roman_start_p = new_rsp

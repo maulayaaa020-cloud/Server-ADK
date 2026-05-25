@@ -233,11 +233,26 @@ class DocProcessor:
                                               tapi set use_exact=True.
           breaks_before < num_cover - 1 / 0: tidak bisa diperbaiki tanpa rendering.
         """
-        if num_cover <= 1:
-            return roman_start_p, False
-
         W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
         body_els = list(doc.element.body)
+
+        if num_cover <= 1:
+            # Untuk num_cover=1: exit early hanya jika bb ≤ 1 (tidak ada extra cover pages).
+            # Jika bb > 1, ada duplikat cover — lanjutkan ke advance logic agar cover
+            # section hanya mencakup 1 halaman saja.
+            def _hb_early(el):
+                if any(br.get("{%s}type" % W) == 'page' for br in el.iter("{%s}br" % W)):
+                    return True
+                pPr = el.find("{%s}pPr" % W)
+                return pPr is not None and pPr.find("{%s}sectPr" % W) is not None
+            try:
+                _rsp_i = body_els.index(roman_start_p)
+            except ValueError:
+                return roman_start_p, False
+            _bb = sum(1 for el in body_els[:_rsp_i] if _hb_early(el))
+            if _bb <= num_cover:
+                return roman_start_p, False
+            # _bb > num_cover: lanjut ke advance logic di bawah
 
         def _has_break(el):
             if any(br.get("{%s}type" % W) == 'page' for br in el.iter("{%s}br" % W)):
@@ -304,7 +319,9 @@ class DocProcessor:
                         _t2 = _txt(el)
                         if _t2 and is_roman_start(_t2):
                             return el, True
-                return candidate, True
+                # num_cover=1: gunakan use_exact=False agar allow_empty_boundary tidak aktif
+                # saat insert_breaks memproses BAB boundaries (mencegah sectPr kosong ekstra).
+                return candidate, (num_cover > 1)
 
         # breaks_before == num_cover - 1: sudah ada (num_cover-1) break sebelum roman_start_p.
         # Step 1: cek page-header yang diulang (kasus Docx 2 — mundurkan rsp ke judul).
@@ -315,6 +332,28 @@ class DocProcessor:
             moved_back = new_rsp is not body_els[rsp_idx]
 
             if not moved_back:
+                # Fix A: jika break terakhir sebelum rsp adalah sectPr di paragraf KOSONG,
+                # boundary sudah ada dengan benar → tidak perlu advance.
+                # (sectPr di paragraf ber-konten = batas cover1/cover2, bukan batas covers/roman)
+                for _j in range(rsp_idx - 1, -1, -1):
+                    if _has_break(body_els[_j]):
+                        _pPr = body_els[_j].find('{%s}pPr' % W)
+                        if (_pPr is not None and _pPr.find('{%s}sectPr' % W) is not None
+                                and not _txt(body_els[_j])):
+                            return roman_start_p, True
+                        # Fix C (Docx 9): pgBr kosong sebelum rsp dengan banyak konten sebelumnya
+                        # → cover sudah memenuhi ≥ num_cover halaman → pgBr adalah batas covers/roman.
+                        if (any(br.get('{%s}type' % W) == 'page'
+                                for br in body_els[_j].iter('{%s}br' % W))
+                                and not _txt(body_els[_j])):
+                            _nonempty = sum(
+                                1 for _k in range(_j)
+                                if _el_tag(body_els[_k]) == 'p' and _txt(body_els[_k])
+                            )
+                            if _nonempty >= 20:
+                                return roman_start_p, True
+                        break  # last break adalah pgBr atau sectPr ber-konten → lanjut
+
                 # Hapus pgBr dari paragraf kosong tepat sebelum rsp (cegah blank page
                 # dalam cover section ketika cover penuh mengisi halaman).
                 if rsp_idx > 0:
@@ -363,8 +402,9 @@ class DocProcessor:
             return new_rsp, True
 
         # breaks_before < num_cover - 1 atau 0: coba forward scan sampai ≤50 elemen.
-        # Jika elemen setelah pgBr juga roman keyword → pgBr ada di dalam roman zone,
-        # jangan advance (tetap di rsp).
+        # pgBr dalam roman zone → jangan advance (tetap di rsp). Dua kondisi:
+        #   (B1) element setelah pgBr adalah roman keyword (Docx 3, 18).
+        #   (B2) ada roman keyword ANTARA rsp dan pgBr (Docx 6 — DAFTAR ISI manual).
         for j in range(rsp_idx, min(rsp_idx + 50, len(body_els))):
             el  = body_els[j]
             tag = _el_tag(el)
@@ -374,13 +414,25 @@ class DocProcessor:
             if pPr is not None and pPr.find('{%s}sectPr' % W) is not None:
                 break  # section boundary — stop
             if any(br.get('{%s}type' % W) == 'page' for br in el.iter('{%s}br' % W)):
+                # Fix B2: cek apakah ada roman keyword antara rsp dan pgBr ini.
+                # Pengecualian: jika rsp sendiri adalah 'daftar isi', konten antara
+                # rsp dan pgBr adalah entry TOC, bukan heading section — tidak trigger.
+                _rsp_lower = _txt(body_els[rsp_idx]).lower()
+                if not _rsp_lower.startswith('daftar isi'):
+                    for _bi in range(rsp_idx + 1, j):
+                        _bt = body_els[_bi]
+                        if _el_tag(_bt) != 'p':
+                            continue
+                        _bt_txt = _txt(_bt)
+                        if _bt_txt and is_roman_start(_bt_txt):
+                            return roman_start_p, True  # pgBr di dalam roman zone
                 for k in range(j + 1, len(body_els)):
                     nxt  = body_els[k]
                     ntag = _el_tag(nxt)
                     if ntag == 'p':
                         _nxt_txt = _txt(nxt)
                         if _nxt_txt and is_roman_start(_nxt_txt):
-                            # pgBr dalam roman zone → jangan advance
+                            # Fix B1: pgBr dalam roman zone → jangan advance
                             return roman_start_p, True
                         return nxt, True
                 break
