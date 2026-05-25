@@ -35,13 +35,13 @@ if ($order['status'] !== 'paid') {
     exit('File hanya tersedia setelah pembayaran selesai.');
 }
 
-// Validasi kepemilikan: admin, pemilik nomor HP, atau pemilik guest_token
+// Validasi kepemilikan: admin, pemilik email, atau pemilik guest_token
 $isAdmin    = !empty($_SESSION['adk_admin']);
-$sessPhone  = $_SESSION['phone'] ?? $_SESSION['cek_phone'] ?? null;
+$sessEmail  = $_SESSION['email'] ?? $_SESSION['cek_email'] ?? null;
 $guestToken = $_SESSION['guest_token'] ?? $_COOKIE['adk_guest'] ?? null;
 
 $isOwner = $isAdmin
-    || ($sessPhone  && $order['phone']       === $sessPhone)
+    || ($sessEmail  && $order['phone']       === $sessEmail)
     || ($guestToken && $order['guest_token'] === $guestToken);
 
 if (!$isOwner) {
