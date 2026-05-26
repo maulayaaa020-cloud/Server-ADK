@@ -643,6 +643,15 @@ class DocProcessor:
                 if ref.get(f'{{{_W}}}type') == 'even':
                     sectPr.remove(ref)
 
+            # Section dengan continuous sectPr adalah batas internal dalam roman zone
+            # (misal DAFTAR ISI di Docx 15). Jangan akses header/footer-nya via
+            # python-docx karena itu akan membuat headerReference baru di sectPr yang
+            # menyebabkan Word merender continuous break sebagai "Section Break (Next Page)"
+            # sehingga judul DAFTAR ISI terpisah dari isinya.
+            _type_el = sectPr.find(f'{{{_W}}}type')
+            if _type_el is not None and _type_el.get(f'{{{_W}}}val') == 'continuous':
+                continue
+
             # Hanya akses first_page_header/footer jika memang dipakai di section ini.
             # Mengakses part yang tidak dipakai membuat python-docx membuat relationship
             # w:headerReference type="first" yang kemudian jadi yatim piatu saat
@@ -1324,15 +1333,43 @@ class DocProcessor:
             # else: hidden_cov='Ya', visible_pos=None → footer kosong = nomor tersembunyi
 
     def fmt_roman(self, section, start=None):
+        sectPr = section._sectPr
+        _type_el = sectPr.find(qn('w:type'))
+        _is_continuous = (_type_el is not None and
+                          _type_el.get(qn('w:val')) == 'continuous')
+        if _is_continuous:
+            # Continuous sectPr: hanya set format, jangan sentuh footer/header/titlePg.
+            # Tidak boleh set start= — Word memaksa next-page break jika continuous
+            # section punya pgNumType start=X.
+            self.set_page_number_format(section, 'lowerRoman', None)
+            return
         section.different_first_page_header_footer = False
         self.clear_header(section)
-        f = section.footer
-        f.is_linked_to_previous = False
-        p = self._first_para(f)
-        self.clear_paragraph(p)
-        p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        self.add_page_number(p)
-        self._set_pn_spacing(p)
+
+        # Jika section sebelumnya continuous (misal DAFTAR ISI), link footer ke previous
+        # agar kedua section berbagi footer yang sama (rId identik). Footer berbeda di
+        # batas continuous memaksa Word menampilkan "Section Break (Next Page)" meskipun
+        # XML-nya type=continuous.
+        _sections = list(self.doc.sections)
+        _sec_idx = next((i for i, s in enumerate(_sections) if s._sectPr is sectPr), -1)
+        _prev_continuous = False
+        if _sec_idx > 0:
+            _p_type = _sections[_sec_idx - 1]._sectPr.find(qn('w:type'))
+            _prev_continuous = (_p_type is not None and
+                                _p_type.get(qn('w:val')) == 'continuous')
+
+        if _prev_continuous:
+            # Inherit footer dari continuous section sebelumnya — tidak ada footerReference
+            # baru, sehingga Word memakai footer yang sama dan menghormati type=continuous.
+            section.footer.is_linked_to_previous = True
+        else:
+            f = section.footer
+            f.is_linked_to_previous = False
+            p = self._first_para(f)
+            self.clear_paragraph(p)
+            p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            self.add_page_number(p)
+            self._set_pn_spacing(p)
         self.set_page_number_format(section, 'lowerRoman', start)
 
     def fmt_bab_first(self, section, reset_to_1=False):
