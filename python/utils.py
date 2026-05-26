@@ -310,6 +310,11 @@ class DocProcessor:
                 return False
             if _txt(el):
                 return False
+            # Paragraf dengan gambar/drawing tidak dianggap kosong
+            _WP = "http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"
+            if (el.find('.//{%s}inline' % _WP) is not None or
+                    el.find('.//{%s}anchor' % _WP) is not None):
+                return False
             pPr = el.find('{%s}pPr' % W)
             return pPr is not None and pPr.find('{%s}sectPr' % W) is not None
 
@@ -345,25 +350,68 @@ class DocProcessor:
                 # num_cover=1: tangani cover duplikat/bilingual dan separator kosong
                 if num_cover <= 1 and candidate is not None:
                     if candidate is roman_start_p:
-                        # Break tepat sebelum roman_start_p (Docx 9): cek cover berulang.
+                        # Break tepat sebelum roman_start_p: cek cover berulang.
                         _b_idx  = cand_idx - 1   # index element break (pgBr/sectPr)
                         _ce_idx = _b_idx - 1      # index elemen terakhir cover content
                         if _ce_idx >= 0:
                             _fv = _cover_repeat_idx(_ce_idx)
                             if 0 <= _fv < _ce_idx:
-                                _remove_pgbr(body_els[_b_idx])
+                                # Majukan roman_start ke awal salinan ke-2 cover.
+                                # Jangan hapus PGBR di _b_idx — ia adalah pemisah di dalam
+                                # zona romawi (misal antara cover 2 dan HALAMAN PERNYATAAN),
+                                # bukan pemisah antar dua salinan cover.
                                 return body_els[_fv + 1], False
                     else:
                         # candidate != roman_start_p: separator internal antar-cover (Docx 14).
-                        # Hapus seluruh paragraf separator (empty+sectPr) dari body agar
-                        # insert_break_before_xml tidak salah menempatkan sectPr di sini.
-                        # (Paragraf mungkin mengandung hidden content — fldChar/drawing —
-                        # yang membuat _p_has_content=True meski teks kosong.)
                         if cand_idx > 0 and _is_empty_sectPr(body_els[cand_idx - 1]):
+                            # Paragraf kosong dengan sectPr → hapus, biarkan insert_breaks
+                            # menyisipkan sectPr baru yang bersih.
                             try:
                                 doc.element.body.remove(body_els[cand_idx - 1])
                             except ValueError:
                                 pass
+                        elif cand_idx > 0:
+                            # Paragraf berisi gambar (anchor) dengan sectPr.
+                            # Jika sectPr dimodifikasi apply_page_numbers (titlePg/refs),
+                            # posisi floating image bergeser → blank page (Docx 14).
+                            # Solusi: pindahkan sectPr ke paragraf kosong terakhir SEBELUM
+                            # paragraf gambar, lalu kembalikan paragraf gambar sebagai
+                            # roman_start_p agar gambar masuk ke section romawi (pg2).
+                            # Gambar ber-posisi page-relative sehingga tetap di posisi benar.
+                            _prev = body_els[cand_idx - 1]
+                            _pPr_prev = _prev.find('{%s}pPr' % W)
+                            if _pPr_prev is not None:
+                                _sectPr_mv = _pPr_prev.find('{%s}sectPr' % W)
+                                if _sectPr_mv is not None:
+                                    _pPr_prev.remove(_sectPr_mv)
+                                    _body_now = list(doc.element.body)
+                                    _prev_bi  = next(
+                                        (i for i, e in enumerate(_body_now) if e is _prev), -1
+                                    )
+                                    _empty_tgt = None
+                                    for _k in range(_prev_bi - 1, -1, -1):
+                                        _ek = _body_now[_k]
+                                        if (_el_tag(_ek) == 'p' and
+                                                not _txt(_ek) and
+                                                not DocProcessor._p_has_content(_ek) and
+                                                not DocProcessor._has_sectPr(_ek)):
+                                            _empty_tgt = _ek
+                                            break
+                                    if _empty_tgt is not None:
+                                        _etPr = _empty_tgt.find('{%s}pPr' % W)
+                                        if _etPr is None:
+                                            from lxml import etree as _et2
+                                            _etPr = _et2.SubElement(
+                                                _empty_tgt, '{%s}pPr' % W)
+                                        _etPr.append(_sectPr_mv)
+                                        return _prev, False
+                                    else:
+                                        from lxml import etree as _et
+                                        _np   = _et.Element('{%s}p' % W)
+                                        _npPr = _et.SubElement(_np, '{%s}pPr' % W)
+                                        _npPr.append(_sectPr_mv)
+                                        _prev.addprevious(_np)
+                                        return _prev, False
 
                 # Cek apakah ada is_roman_start di antara roman_start_p dan candidate
                 cand_idx2 = next((i for i, e in enumerate(body_els) if e is candidate), len(body_els))
@@ -1150,6 +1198,19 @@ class DocProcessor:
             if not _roman_already_bounded:
                 self.insert_break_before_xml(roman_start_p)
                 self._strip_empty_paras_before_bab(roman_start_p)
+            # Hapus paragraf kosong di awal zona romawi (mencegah blank page ekstra).
+            # Berlaku untuk kedua kasus: boundary baru (insert) maupun boundary lama
+            # yang sudah ada (misal sectPr pada paragraf gambar — Docx 14).
+            while not self._p_has_content(roman_start_p) and not self._has_sectPr(roman_start_p):
+                _ch = list(self.doc.element.body)
+                _ri = next((i for i, e in enumerate(_ch) if e is roman_start_p), -1)
+                if _ri < 0:
+                    break
+                _nxt = next((c for c in _ch[_ri + 1:] if c.tag.endswith('}p')), None)
+                if _nxt is None:
+                    break
+                self.doc.element.body.remove(roman_start_p)
+                roman_start_p = _nxt
 
         for bab_p in bab_p_list:
             self.insert_break_before_xml(bab_p, allow_empty_boundary=exact_roman_start)
