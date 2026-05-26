@@ -375,45 +375,43 @@ class DocProcessor:
                             _WP2 = "http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"
                             if _prev.find('.//{%s}anchor' % _WP2) is not None:
                                 # Paragraf berisi gambar (anchor) dengan sectPr.
-                                # Jika sectPr dimodifikasi apply_page_numbers (titlePg/refs),
-                                # posisi floating image bergeser → blank page (Docx 14).
-                                # Solusi: pindahkan sectPr ke paragraf kosong terakhir SEBELUM
-                                # paragraf gambar, lalu kembalikan paragraf gambar sebagai
-                                # roman_start_p agar gambar masuk ke section romawi (pg2).
-                                # Gambar ber-posisi page-relative sehingga tetap di posisi benar.
+                                # Pindahkan sectPr ke paragraf TERAKHIR BERISI TEKS sebelum gambar
+                                # (bukan ke candidate/empty setelah gambar). Ini agar:
+                                # 1. Section 0 berakhir tepat setelah teks terakhir cover 1.
+                                # 2. Gambar + paragraf kosong antara teks & gambar masuk section 1.
+                                # 3. Loop while di insert_breaks otomatis menghapus para kosong
+                                #    tersebut, sehingga gambar langsung di posisi pertama section 1.
+                                # 4. Tidak ada blank page antara cover 1 dan roman zone.
                                 _pPr_prev = _prev.find('{%s}pPr' % W)
                                 if _pPr_prev is not None:
                                     _sectPr_mv = _pPr_prev.find('{%s}sectPr' % W)
                                     if _sectPr_mv is not None:
-                                        _pPr_prev.remove(_sectPr_mv)
-                                        _body_now = list(doc.element.body)
-                                        _prev_bi  = next(
-                                            (i for i, e in enumerate(_body_now) if e is _prev), -1
-                                        )
-                                        _empty_tgt = None
-                                        for _k in range(_prev_bi - 1, -1, -1):
-                                            _ek = _body_now[_k]
-                                            if (_el_tag(_ek) == 'p' and
-                                                    not _txt(_ek) and
-                                                    not DocProcessor._p_has_content(_ek) and
-                                                    not DocProcessor._has_sectPr(_ek)):
-                                                _empty_tgt = _ek
+                                        # Cari paragraf terakhir berisi teks sebelum gambar
+                                        _last_txt_p   = None
+                                        _last_txt_idx = -1
+                                        for _k in range(cand_idx - 2, -1, -1):
+                                            _ek = body_els[_k]
+                                            if _el_tag(_ek) == 'p' and _txt(_ek):
+                                                _last_txt_p   = _ek
+                                                _last_txt_idx = _k
                                                 break
-                                        if _empty_tgt is not None:
-                                            _etPr = _empty_tgt.find('{%s}pPr' % W)
-                                            if _etPr is None:
+                                        if _last_txt_p is not None:
+                                            _pPr_prev.remove(_sectPr_mv)
+                                            _ltPr = _last_txt_p.find('{%s}pPr' % W)
+                                            if _ltPr is None:
                                                 from lxml import etree as _et2
-                                                _etPr = _et2.SubElement(
-                                                    _empty_tgt, '{%s}pPr' % W)
-                                            _etPr.append(_sectPr_mv)
-                                            return _prev, False
-                                        else:
-                                            from lxml import etree as _et
-                                            _np   = _et.Element('{%s}p' % W)
-                                            _npPr = _et.SubElement(_np, '{%s}pPr' % W)
-                                            _npPr.append(_sectPr_mv)
-                                            _prev.addprevious(_np)
-                                            return _prev, False
+                                                _ltPr = _et2.SubElement(
+                                                    _last_txt_p, '{%s}pPr' % W)
+                                            _ltPr.append(_sectPr_mv)
+                                            # Kembalikan paragraf tepat setelah last_txt_p
+                                            # sebagai roman_start_p.
+                                            # _roman_already_bounded=True → insert_break_before_xml
+                                            # dilewati. Loop while di insert_breaks menghapus
+                                            # para kosong sampai bertemu gambar (has_content).
+                                            _new_rsp = (body_els[_last_txt_idx + 1]
+                                                        if _last_txt_idx + 1 < len(body_els)
+                                                        else roman_start_p)
+                                            return _new_rsp, True
 
                 # Cek apakah ada is_roman_start di antara roman_start_p dan candidate
                 cand_idx2 = next((i for i, e in enumerate(body_els) if e is candidate), len(body_els))
