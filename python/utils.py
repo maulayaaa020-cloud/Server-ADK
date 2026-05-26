@@ -371,47 +371,49 @@ class DocProcessor:
                             except ValueError:
                                 pass
                         elif cand_idx > 0:
-                            # Paragraf berisi gambar (anchor) dengan sectPr.
-                            # Jika sectPr dimodifikasi apply_page_numbers (titlePg/refs),
-                            # posisi floating image bergeser → blank page (Docx 14).
-                            # Solusi: pindahkan sectPr ke paragraf kosong terakhir SEBELUM
-                            # paragraf gambar, lalu kembalikan paragraf gambar sebagai
-                            # roman_start_p agar gambar masuk ke section romawi (pg2).
-                            # Gambar ber-posisi page-relative sehingga tetap di posisi benar.
                             _prev = body_els[cand_idx - 1]
-                            _pPr_prev = _prev.find('{%s}pPr' % W)
-                            if _pPr_prev is not None:
-                                _sectPr_mv = _pPr_prev.find('{%s}sectPr' % W)
-                                if _sectPr_mv is not None:
-                                    _pPr_prev.remove(_sectPr_mv)
-                                    _body_now = list(doc.element.body)
-                                    _prev_bi  = next(
-                                        (i for i, e in enumerate(_body_now) if e is _prev), -1
-                                    )
-                                    _empty_tgt = None
-                                    for _k in range(_prev_bi - 1, -1, -1):
-                                        _ek = _body_now[_k]
-                                        if (_el_tag(_ek) == 'p' and
-                                                not _txt(_ek) and
-                                                not DocProcessor._p_has_content(_ek) and
-                                                not DocProcessor._has_sectPr(_ek)):
-                                            _empty_tgt = _ek
-                                            break
-                                    if _empty_tgt is not None:
-                                        _etPr = _empty_tgt.find('{%s}pPr' % W)
-                                        if _etPr is None:
-                                            from lxml import etree as _et2
-                                            _etPr = _et2.SubElement(
-                                                _empty_tgt, '{%s}pPr' % W)
-                                        _etPr.append(_sectPr_mv)
-                                        return _prev, False
-                                    else:
-                                        from lxml import etree as _et
-                                        _np   = _et.Element('{%s}p' % W)
-                                        _npPr = _et.SubElement(_np, '{%s}pPr' % W)
-                                        _npPr.append(_sectPr_mv)
-                                        _prev.addprevious(_np)
-                                        return _prev, False
+                            _WP2 = "http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"
+                            if _prev.find('.//{%s}anchor' % _WP2) is not None:
+                                # Paragraf berisi gambar (anchor) dengan sectPr.
+                                # Jika sectPr dimodifikasi apply_page_numbers (titlePg/refs),
+                                # posisi floating image bergeser → blank page (Docx 14).
+                                # Solusi: pindahkan sectPr ke paragraf kosong terakhir SEBELUM
+                                # paragraf gambar, lalu kembalikan paragraf gambar sebagai
+                                # roman_start_p agar gambar masuk ke section romawi (pg2).
+                                # Gambar ber-posisi page-relative sehingga tetap di posisi benar.
+                                _pPr_prev = _prev.find('{%s}pPr' % W)
+                                if _pPr_prev is not None:
+                                    _sectPr_mv = _pPr_prev.find('{%s}sectPr' % W)
+                                    if _sectPr_mv is not None:
+                                        _pPr_prev.remove(_sectPr_mv)
+                                        _body_now = list(doc.element.body)
+                                        _prev_bi  = next(
+                                            (i for i, e in enumerate(_body_now) if e is _prev), -1
+                                        )
+                                        _empty_tgt = None
+                                        for _k in range(_prev_bi - 1, -1, -1):
+                                            _ek = _body_now[_k]
+                                            if (_el_tag(_ek) == 'p' and
+                                                    not _txt(_ek) and
+                                                    not DocProcessor._p_has_content(_ek) and
+                                                    not DocProcessor._has_sectPr(_ek)):
+                                                _empty_tgt = _ek
+                                                break
+                                        if _empty_tgt is not None:
+                                            _etPr = _empty_tgt.find('{%s}pPr' % W)
+                                            if _etPr is None:
+                                                from lxml import etree as _et2
+                                                _etPr = _et2.SubElement(
+                                                    _empty_tgt, '{%s}pPr' % W)
+                                            _etPr.append(_sectPr_mv)
+                                            return _prev, False
+                                        else:
+                                            from lxml import etree as _et
+                                            _np   = _et.Element('{%s}p' % W)
+                                            _npPr = _et.SubElement(_np, '{%s}pPr' % W)
+                                            _npPr.append(_sectPr_mv)
+                                            _prev.addprevious(_np)
+                                            return _prev, False
 
                 # Cek apakah ada is_roman_start di antara roman_start_p dan candidate
                 cand_idx2 = next((i for i, e in enumerate(body_els) if e is candidate), len(body_els))
