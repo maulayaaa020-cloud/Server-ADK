@@ -403,6 +403,14 @@ class DocProcessor:
                                                 _ltPr = _et2.SubElement(
                                                     _last_txt_p, '{%s}pPr' % W)
                                             _ltPr.append(_sectPr_mv)
+                                            # Tambahkan PGBR ke paragraf gambar agar
+                                            # teks cover 2 dimulai di halaman baru
+                                            # (menggantikan efek page-break dari sectPr
+                                            # yang dipindah ke last_txt_p).
+                                            from lxml import etree as _et3
+                                            _br_r  = _et3.SubElement(_prev, '{%s}r' % W)
+                                            _br_el = _et3.SubElement(_br_r, '{%s}br' % W)
+                                            _br_el.set('{%s}type' % W, 'page')
                                             # Kembalikan paragraf tepat setelah last_txt_p
                                             # sebagai roman_start_p.
                                             # _roman_already_bounded=True → insert_break_before_xml
