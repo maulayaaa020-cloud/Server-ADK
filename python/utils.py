@@ -237,22 +237,53 @@ class DocProcessor:
         body_els = list(doc.element.body)
 
         if num_cover <= 1:
-            # Untuk num_cover=1: exit early hanya jika bb ≤ 1 (tidak ada extra cover pages).
-            # Jika bb > 1, ada duplikat cover — lanjutkan ke advance logic agar cover
-            # section hanya mencakup 1 halaman saja.
+            # Untuk num_cover=1: exit early hanya jika bb=0 (tidak ada page break sama sekali).
+            # Jika bb >= 1, ada page break sebelum roman_start_p — lanjutkan ke advance logic:
+            #   - bb=1 dan candidate == roman_start_p (break tepat sebelum roman): tidak berubah
+            #   - bb=1 dan candidate != roman_start_p (ada konten cover ke-2 setelah break): advance
+            #   - bb > 1: duplikat cover eksplisit → advance melewati salinan ke-1
             def _hb_early(el):
                 if any(br.get("{%s}type" % W) == 'page' for br in el.iter("{%s}br" % W)):
                     return True
                 pPr = el.find("{%s}pPr" % W)
                 return pPr is not None and pPr.find("{%s}sectPr" % W) is not None
+
+            def _cover_repeat_idx(end_idx):
+                """Temukan indeks paragraf terakhir cover versi ke-1 dengan mendeteksi
+                teks penutup cover (tahun, institusi) yang muncul dua kali.
+                Trigger jika: teks >= 4 karakter, posisi ulang berjarak >= 5 elemen."""
+                last_txt, last_j = None, -1
+                for j in range(end_idx, -1, -1):
+                    el = body_els[j]
+                    if not el.tag.endswith('}p'):
+                        continue
+                    t = ''.join(tx.text or '' for tx in el.iter('{%s}t' % W)).strip()
+                    if t:
+                        last_txt, last_j = t, j
+                        break
+                if not last_txt or len(last_txt) < 4 or last_j < 0:
+                    return -1
+                for j in range(last_j - 1, -1, -1):
+                    el = body_els[j]
+                    if not el.tag.endswith('}p'):
+                        continue
+                    t = ''.join(tx.text or '' for tx in el.iter('{%s}t' % W)).strip()
+                    if t == last_txt and last_j - j >= 5:
+                        return j
+                return -1
+
             try:
                 _rsp_i = body_els.index(roman_start_p)
             except ValueError:
                 return roman_start_p, False
             _bb = sum(1 for el in body_els[:_rsp_i] if _hb_early(el))
-            if _bb <= num_cover:
+            if _bb < num_cover:
+                # bb=0: cek cover berulang tanpa break eksplisit (bilingual/duplikat — Docx 3)
+                _fv = _cover_repeat_idx(_rsp_i - 1)
+                if 0 <= _fv < _rsp_i - 1:
+                    return body_els[_fv + 1], False
                 return roman_start_p, False
-            # _bb > num_cover: lanjut ke advance logic di bawah
+            # _bb >= num_cover: lanjut ke advance logic di bawah
 
         def _has_break(el):
             if any(br.get("{%s}type" % W) == 'page' for br in el.iter("{%s}br" % W)):
@@ -310,6 +341,29 @@ class DocProcessor:
                         _remove_pgbr(body_els[cand_idx - 1])
                     cand_idx += 1
                 candidate = body_els[cand_idx] if cand_idx < len(body_els) else candidate
+
+                # num_cover=1: tangani cover duplikat/bilingual dan separator kosong
+                if num_cover <= 1 and candidate is not None:
+                    if candidate is roman_start_p:
+                        # Break tepat sebelum roman_start_p (Docx 9): cek cover berulang.
+                        _b_idx  = cand_idx - 1   # index element break (pgBr/sectPr)
+                        _ce_idx = _b_idx - 1      # index elemen terakhir cover content
+                        if _ce_idx >= 0:
+                            _fv = _cover_repeat_idx(_ce_idx)
+                            if 0 <= _fv < _ce_idx:
+                                _remove_pgbr(body_els[_b_idx])
+                                return body_els[_fv + 1], False
+                    else:
+                        # candidate != roman_start_p: separator internal antar-cover (Docx 14).
+                        # Hapus seluruh paragraf separator (empty+sectPr) dari body agar
+                        # insert_break_before_xml tidak salah menempatkan sectPr di sini.
+                        # (Paragraf mungkin mengandung hidden content — fldChar/drawing —
+                        # yang membuat _p_has_content=True meski teks kosong.)
+                        if cand_idx > 0 and _is_empty_sectPr(body_els[cand_idx - 1]):
+                            try:
+                                doc.element.body.remove(body_els[cand_idx - 1])
+                            except ValueError:
+                                pass
 
                 # Cek apakah ada is_roman_start di antara roman_start_p dan candidate
                 cand_idx2 = next((i for i, e in enumerate(body_els) if e is candidate), len(body_els))
@@ -751,11 +805,18 @@ class DocProcessor:
                     sectPr = pPr.find(qn('w:sectPr'))
                     if sectPr is not None:
                         if sectPr.find(qn('w:pgSz')) is not None:
-                            # Kalau sectPr ini pada paragraf berisi konten (artinya
-                            # kita sendiri yang pasang untuk batas roman zone) dan ada
-                            # paragraf kosong antara sini dan target, pakai paragraf
-                            # kosong itu sebagai batas BAB section baru.
-                            if allow_empty_boundary and self._p_has_content(elem):
+                            if not self._p_has_content(elem):
+                                # sectPr asli dokumen pada paragraf KOSONG —
+                                # pindahkan ke paragraf konten terakhir agar trailing
+                                # empty paragraphs tidak masuk cover section
+                                # (mencegah overflow cover ke halaman ke-2).
+                                pPr.remove(sectPr)
+                                j -= 1
+                                continue
+                            # sectPr pada paragraf BERISI KONTEN (kita sendiri yang pasang).
+                            # Untuk BAB: kalau ada paragraf kosong lebih dekat ke target,
+                            # pakai itu sebagai batas section baru.
+                            if allow_empty_boundary:
                                 for k in range(j + 1, tgt_idx):
                                     nxt = children[k]
                                     if (nxt.tag.endswith('}p') and
