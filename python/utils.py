@@ -19,7 +19,7 @@ ROMAN_START_KEYWORDS = [
     "abstrak",
     "lembar pengesahan", "lembar persetujuan", "halaman pengesahan",
     "pengesahan", "persetujuan",
-    "lembar pernyataan", "pernyataan keaslian",
+    "lembar pernyataan", "surat pernyataan", "pernyataan keaslian",
     "halaman pernyataan",
     "rekomendasi",
     "halaman persembahan", "persembahan", "motto",
@@ -1338,18 +1338,30 @@ class DocProcessor:
         _is_continuous = (_type_el is not None and
                           _type_el.get(qn('w:val')) == 'continuous')
         if _is_continuous:
-            # Continuous sectPr: hanya set format, jangan sentuh footer/header/titlePg.
-            # Tidak boleh set start= — Word memaksa next-page break jika continuous
-            # section punya pgNumType start=X.
+            # Continuous sectPr: hapus titlePg, set format, pasang footer nomor halaman.
+            # - titlePg dihapus agar kompatibel dengan section berikutnya (keduanya False).
+            # - start TIDAK di-set → Word memaksa next-page break jika continuous section
+            #   punya pgNumType start=X.
+            # - Footer nomor halaman dipasang agar halaman romawi menampilkan nomor.
+            #   Jika diikuti roman section lain (_prev_continuous), footer ini akan
+            #   di-sinkronkan oleh branch _prev_continuous di iterasi berikutnya.
             self.set_page_number_format(section, 'lowerRoman', None)
+            _tpg = sectPr.find(qn('w:titlePg'))
+            if _tpg is not None:
+                sectPr.remove(_tpg)
+            section.different_first_page_header_footer = False
+            self.clear_header(section)
+            f = section.footer
+            f.is_linked_to_previous = False
+            p = self._first_para(f)
+            self.clear_paragraph(p)
+            p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            self.add_page_number(p)
+            self._set_pn_spacing(p)
             return
-        section.different_first_page_header_footer = False
-        self.clear_header(section)
 
-        # Jika section sebelumnya continuous (misal DAFTAR ISI), link footer ke previous
-        # agar kedua section berbagi footer yang sama (rId identik). Footer berbeda di
-        # batas continuous memaksa Word menampilkan "Section Break (Next Page)" meskipun
-        # XML-nya type=continuous.
+        # Cek apakah section sebelumnya continuous SEBELUM menyentuh header/footer.
+        # Harus dilakukan lebih awal agar clear_header tidak dipanggil saat tidak perlu.
         _sections = list(self.doc.sections)
         _sec_idx = next((i for i, s in enumerate(_sections) if s._sectPr is sectPr), -1)
         _prev_continuous = False
@@ -1359,10 +1371,30 @@ class DocProcessor:
                                 _p_type.get(qn('w:val')) == 'continuous')
 
         if _prev_continuous:
-            # Inherit footer dari continuous section sebelumnya — tidak ada footerReference
-            # baru, sehingga Word memakai footer yang sama dan menghormati type=continuous.
-            section.footer.is_linked_to_previous = True
+            # Section ini langsung mengikuti continuous section (misal DAFTAR ISI di Docx 15).
+            # Word memaksa page break di batas continuous jika dua section punya footer/header
+            # reference yang BERBEDA. Solusi: pasang footer nomor halaman di section ini,
+            # lalu salin ref yang sama ke continuous section sebelumnya — keduanya identik
+            # → Word render batas itu benar-benar continuous (tidak ada forced page break).
+            section.different_first_page_header_footer = False
+            self.clear_header(section)
+            f = section.footer
+            f.is_linked_to_previous = False
+            p = self._first_para(f)
+            self.clear_paragraph(p)
+            p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            self.add_page_number(p)
+            self._set_pn_spacing(p)
+            _prev_sectPr = _sections[_sec_idx - 1]._sectPr
+            for _ref_tag in (qn('w:headerReference'), qn('w:footerReference')):
+                for _ref in list(_prev_sectPr.findall(_ref_tag)):
+                    _prev_sectPr.remove(_ref)
+            for _ref_tag in (qn('w:headerReference'), qn('w:footerReference')):
+                for _ref in list(sectPr.findall(_ref_tag)):
+                    _prev_sectPr.append(deepcopy(_ref))
         else:
+            section.different_first_page_header_footer = False
+            self.clear_header(section)
             f = section.footer
             f.is_linked_to_previous = False
             p = self._first_para(f)

@@ -63,7 +63,7 @@
       },
       {
         "fmt": "lowerRoman",
-        "start": null
+        "start": "2"
       },
       {
         "fmt": "lowerRoman",
@@ -212,7 +212,7 @@
       },
       {
         "fmt": "lowerRoman",
-        "start": null
+        "start": "2"
       },
       {
         "fmt": "lowerRoman",
@@ -352,7 +352,7 @@
       },
       {
         "fmt": "lowerRoman",
-        "start": null
+        "start": "2"
       },
       {
         "fmt": "decimal",
@@ -477,7 +477,7 @@
       },
       {
         "fmt": "lowerRoman",
-        "start": null
+        "start": "2"
       },
       {
         "fmt": "lowerRoman",
@@ -587,7 +587,7 @@
       },
       {
         "fmt": "lowerRoman",
-        "start": null
+        "start": "2"
       },
       {
         "fmt": "decimal",
@@ -626,7 +626,7 @@
       },
       {
         "index": 1,
-        "first_content": "HALAMAN PENGESAHAN SKRIPSI HALAMAN PERSETUJUAN SKR"
+        "first_content": "NATIONAL UNIVERSITY"
       },
       {
         "index": 2,
@@ -676,7 +676,7 @@
       },
       {
         "fmt": "lowerRoman",
-        "start": null
+        "start": "2"
       },
       {
         "fmt": "lowerRoman",
@@ -757,7 +757,7 @@
       },
       {
         "fmt": "lowerRoman",
-        "start": null
+        "start": "2"
       },
       {
         "fmt": "decimal",
@@ -834,7 +834,7 @@
       },
       {
         "fmt": "lowerRoman",
-        "start": null
+        "start": "2"
       },
       {
         "fmt": "lowerRoman",
@@ -916,7 +916,7 @@
       },
       {
         "fmt": "lowerRoman",
-        "start": null
+        "start": "2"
       },
       {
         "fmt": "decimal",
@@ -992,7 +992,7 @@
       },
       {
         "fmt": "lowerRoman",
-        "start": null
+        "start": "2"
       },
       {
         "fmt": "decimal",
@@ -1039,7 +1039,7 @@
       },
       {
         "index": 1,
-        "first_content": "LEMBAR PERSETUJUAN"
+        "first_content": "SKRIPSI"
       },
       {
         "index": 2,
@@ -1081,7 +1081,7 @@
       },
       {
         "fmt": "lowerRoman",
-        "start": null
+        "start": "2"
       },
       {
         "fmt": "decimal",
@@ -1186,7 +1186,7 @@
       },
       {
         "fmt": "lowerRoman",
-        "start": null
+        "start": "2"
       },
       {
         "fmt": "decimal",
@@ -1271,7 +1271,7 @@
       },
       {
         "fmt": "lowerRoman",
-        "start": null
+        "start": "2"
       },
       {
         "fmt": "decimal",
@@ -1332,7 +1332,7 @@
       },
       {
         "fmt": "lowerRoman",
-        "start": null
+        "start": "2"
       },
       {
         "fmt": "decimal",
@@ -1503,7 +1503,7 @@
       },
       {
         "index": 1,
-        "first_content": "HALAMAN PERNYATAAN PERSETUJUAN PENYERAHAN\nTUGAS AH"
+        "first_content": "TUGAS AKHIR"
       },
       {
         "index": 2,
@@ -1549,7 +1549,7 @@
       },
       {
         "fmt": "lowerRoman",
-        "start": null
+        "start": "2"
       },
       {
         "fmt": "decimal",
@@ -1632,7 +1632,7 @@
       },
       {
         "fmt": "lowerRoman",
-        "start": null
+        "start": "2"
       },
       {
         "fmt": "decimal",
