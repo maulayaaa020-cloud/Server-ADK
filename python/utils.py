@@ -86,6 +86,9 @@ def is_roman_start(text):
     first_line = lower.split('\n')[0].strip()
     if len(first_line) < 4:
         return False
+    # Guard: bentuk verba Indonesia (-kan, -lah) tidak dianggap heading roman zone
+    if re.search(r'(kan|lah)\s*$', first_line):
+        return False
     for kw in ROMAN_START_KEYWORDS:
         if len(kw) >= 6 and _fuzzy_match(first_line, kw, threshold=0.82):
             return True
@@ -116,8 +119,9 @@ def is_bab_heading(text):
         return True
     # Toleransi typo untuk endpoint terms (DAFTAR PUSTAKA, LAMPIRAN, dll.)
     # Hanya berlaku untuk teks pendek (≤ 25 karakter) agar tidak salah cocok konten.
+    # Guard: bentuk verba (-kan, -lah) dan kata benda turunan panjang dilewati.
     lower = text.lower()
-    if 5 <= len(lower) <= 25:
+    if 5 <= len(lower) <= 25 and not re.search(r'(kan|lah)\s*$', lower):
         for kw in _BAB_ENDPOINT_FUZZY:
             if len(kw) >= 6 and _fuzzy_match(lower, kw, threshold=0.82):
                 return True
