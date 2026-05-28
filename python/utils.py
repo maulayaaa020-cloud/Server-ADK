@@ -817,8 +817,60 @@ class DocProcessor:
         pPr = p_elem.find(qn('w:pPr'))
         return pPr is not None and pPr.find(qn('w:sectPr')) is not None
 
-    def _make_sectPr(self):
+    def _get_covering_page_layout(self, ref_p):
+        """Dapatkan (pgSz, pgMar) dari section yang saat ini menutupi ref_p.
+        Scan maju dari ref_p mencari sectPr pertama (inline atau body-level).
+        Digunakan agar ukuran kertas halaman 'di bawah break' dipertahankan."""
+        body = self.doc.element.body
+        children = list(body)
+        try:
+            start_idx = children.index(ref_p)
+        except ValueError:
+            start_idx = 0
+        for elem in children[start_idx:]:
+            if not elem.tag.endswith('}p'):
+                continue
+            pPr = elem.find(qn('w:pPr'))
+            if pPr is not None:
+                sectPr = pPr.find(qn('w:sectPr'))
+                if sectPr is not None and sectPr.find(qn('w:pgSz')) is not None:
+                    return (
+                        deepcopy(sectPr.find(qn('w:pgSz'))),
+                        deepcopy(sectPr.find(qn('w:pgMar'))),
+                    )
+        # Fallback: body-level sectPr (section terakhir)
+        body_sectPr = body.find(qn('w:sectPr'))
+        if body_sectPr is not None:
+            pgSz = body_sectPr.find(qn('w:pgSz'))
+            if pgSz is not None:
+                return (deepcopy(pgSz), deepcopy(body_sectPr.find(qn('w:pgMar'))))
+        return None
+
+    def strip_column_breaks_in_tables(self):
+        """Hapus column break dari seluruh dokumen.
+        Column break adalah artifact dari multi-column layout atau copy-paste.
+        Setelah script mengkonversi continuous break → nextPage, column break
+        menjadi tidak valid dan menyebabkan tampilan tabel berantakan."""
+        for p in self.doc.paragraphs:
+            for br in p._p.findall('.//' + qn('w:br')):
+                if br.get(qn('w:type')) == 'column':
+                    br.getparent().remove(br)
+
+    def _make_sectPr(self, page_layout=None):
         new_sectPr = deepcopy(self.doc.sections[-1]._sectPr)
+        # Terapkan pgSz dan pgMar dari section asli jika tersedia (mencegah perubahan ukuran kertas).
+        if page_layout is not None:
+            saved_pgSz, saved_pgMar = page_layout
+            if saved_pgSz is not None:
+                old = new_sectPr.find(qn('w:pgSz'))
+                if old is not None:
+                    new_sectPr.remove(old)
+                new_sectPr.append(deepcopy(saved_pgSz))
+            if saved_pgMar is not None:
+                old = new_sectPr.find(qn('w:pgMar'))
+                if old is not None:
+                    new_sectPr.remove(old)
+                new_sectPr.append(deepcopy(saved_pgMar))
         for child in list(new_sectPr):
             tag = child.tag
             if tag.endswith('headerReference') or tag.endswith('footerReference'):
@@ -839,12 +891,12 @@ class DocProcessor:
             del pgSz.attrib[qn('w:orient')]
         return new_sectPr
 
-    def _attach_sectPr(self, p_elem):
+    def _attach_sectPr(self, p_elem, page_layout=None):
         pPr = p_elem.find(qn('w:pPr'))
         if pPr is None:
             pPr = OxmlElement('w:pPr')
             p_elem.insert(0, pPr)
-        pPr.append(self._make_sectPr())
+        pPr.append(self._make_sectPr(page_layout=page_layout))
 
     def _purge_continuous_sectPr_in_bab_zone(self, first_bab_p):
         body     = self.doc.element.body
@@ -912,12 +964,15 @@ class DocProcessor:
                     if parent is not None:
                         parent.remove(br)
 
-    def insert_break_before_xml(self, target_p, allow_empty_boundary=False):
+    def insert_break_before_xml(self, target_p, allow_empty_boundary=False, precomputed_layout=None):
         self._remove_page_breaks_before(target_p)
         body     = self.doc.element.body
         children = list(body)
         tgt_idx  = children.index(target_p)
         j = tgt_idx - 1
+        # Gunakan precomputed_layout (dihitung sebelum purge) sebagai baseline.
+        # Bisa di-override oleh sectPr yang lebih dekat ditemukan saat scan mundur.
+        saved_page_layout = precomputed_layout
         while j >= 0:
             elem = children[j]
             tag  = elem.tag
@@ -932,6 +987,11 @@ class DocProcessor:
                                 # pindahkan ke paragraf konten terakhir agar trailing
                                 # empty paragraphs tidak masuk cover section
                                 # (mencegah overflow cover ke halaman ke-2).
+                                # Override saved_page_layout: sectPr yang lebih dekat lebih spesifik.
+                                saved_page_layout = (
+                                    deepcopy(sectPr.find(qn('w:pgSz'))),
+                                    deepcopy(sectPr.find(qn('w:pgMar'))),
+                                )
                                 pPr.remove(sectPr)
                                 j -= 1
                                 continue
@@ -944,24 +1004,24 @@ class DocProcessor:
                                     if (nxt.tag.endswith('}p') and
                                             not self._p_has_content(nxt) and
                                             not self._has_sectPr(nxt)):
-                                        self._attach_sectPr(nxt)
+                                        self._attach_sectPr(nxt, page_layout=saved_page_layout)
                                         return
                             return
                         else:
                             pPr.remove(sectPr)
                             if self._p_has_content(elem):
-                                self._attach_sectPr(elem)
+                                self._attach_sectPr(elem, page_layout=saved_page_layout)
                                 return
                             j -= 1
                             continue
                 if self._p_has_content(elem):
-                    self._attach_sectPr(elem)
+                    self._attach_sectPr(elem, page_layout=saved_page_layout)
                     return
             elif tag.endswith('}tbl') or tag.endswith('}sdt'):
                 new_p   = OxmlElement('w:p')
                 new_pPr = OxmlElement('w:pPr')
                 new_p.append(new_pPr)
-                new_pPr.append(self._make_sectPr())
+                new_pPr.append(self._make_sectPr(page_layout=saved_page_layout))
                 body.insert(tgt_idx, new_p)
                 return
             j -= 1
@@ -1056,42 +1116,69 @@ class DocProcessor:
                     # [Fix D] Paragraf ini sendiri adalah BAB heading tanpa
                     # page break / Heading style → kemungkinan entri TOC tanpa
                     # nomor halaman → tetap dalam TOC.
+                    # [Fix D+] Lookahead: jika ada >=2 paragraf panjang (konten nyata)
+                    # setelah heading ini, ini adalah BAB asli bukan entri TOC.
+                    # _toc_exit_confirmed mencegah still_in_toc check di bawah
+                    # membatalkan keputusan exit yang sudah dibuat.
+                    _toc_exit_confirmed = False
                     _cur_style = (para.style.name.lower() if para.style else "")
                     if (is_bab_heading(text)
                             and not re.search(r'heading', _cur_style)
                             and not self._para_has_page_break_before(para)):
-                        continue
+                        _real_after = 0
+                        for _lk in range(para_idx + 1, min(para_idx + 10, len(all_paras))):
+                            _lt = all_paras[_lk].text.strip()
+                            _ls = (all_paras[_lk].style.name.lower()
+                                   if all_paras[_lk].style else "")
+                            if not _lt:
+                                continue
+                            if is_toc_entry(_lt) or 'toc' in _ls:
+                                break
+                            if is_bab_heading(_lt):
+                                break
+                            # Konten nyata: panjang > 30 karakter dan bukan sub-heading bernomor
+                            if (len(_lt) > 30
+                                    and not re.match(r'^\d+[\.\d]*\s', _lt)):
+                                _real_after += 1
+                                if _real_after >= 2:
+                                    break
+                        if _real_after < 2:
+                            continue  # masih entri TOC
+                        inside_toc = False
+                        _toc_exit_confirmed = True  # skip still_in_toc check
 
                     # Cek lookahead: kalau dalam 8 paragraf ke depan masih ada
                     # entri TOC (punya toc style atau nomor halaman), tetap di TOC.
-                    still_in_toc = False
-                    for _lk in range(para_idx + 1, min(para_idx + 9, len(all_paras))):
-                        _lp = all_paras[_lk]
-                        _ls = (_lp.style.name.lower() if _lp.style else "")
-                        _lt = _lp.text.strip()
-                        if 'toc' in _ls:
-                            still_in_toc = True
-                            break
-                        if _lt and is_toc_entry(_lt):
-                            still_in_toc = True
-                            break
-                        # [Fix E] Sub-bab bernomor (e.g. "2.1", "4.2.1") = sinyal masih di TOC
-                        # Hanya jika bukan Heading style — Heading 2 "1.2 Judul" adalah konten nyata
-                        if _lt and re.match(r'^\d+\.\d', _lt) and not re.search(r'heading', _ls):
-                            still_in_toc = True
-                            break
-                        if _lt and is_bab_heading(_lt):
-                            # [Fix B] Hanya keluar TOC jika BAB heading ini punya
-                            # indikator nyata (Heading style atau page break).
-                            _lp_heading = bool(re.search(r'heading', _ls))
-                            _lp_has_brk = self._para_has_page_break_before(_lp)
-                            if _lp_heading or _lp_has_brk:
-                                break  # BAB heading nyata → keluar TOC
-                            still_in_toc = True
-                            break
-                    if still_in_toc:
-                        continue
-                    inside_toc = False
+                    # Dilewati jika [Fix D+] sudah memastikan exit.
+                    if not _toc_exit_confirmed:
+                        still_in_toc = False
+                        for _lk in range(para_idx + 1, min(para_idx + 9, len(all_paras))):
+                            _lp = all_paras[_lk]
+                            _ls = (_lp.style.name.lower() if _lp.style else "")
+                            _lt = _lp.text.strip()
+                            if 'toc' in _ls:
+                                still_in_toc = True
+                                break
+                            if _lt and is_toc_entry(_lt):
+                                still_in_toc = True
+                                break
+                            # [Fix E] Sub-bab bernomor (e.g. "2.1", "4.2.1") = sinyal masih di TOC
+                            # Hanya jika bukan Heading style — Heading 2 "1.2 Judul" adalah konten nyata
+                            if _lt and re.match(r'^\d+\.\d', _lt) and not re.search(r'heading', _ls):
+                                still_in_toc = True
+                                break
+                            if _lt and is_bab_heading(_lt):
+                                # [Fix B] Hanya keluar TOC jika BAB heading ini punya
+                                # indikator nyata (Heading style atau page break).
+                                _lp_heading = bool(re.search(r'heading', _ls))
+                                _lp_has_brk = self._para_has_page_break_before(_lp)
+                                if _lp_heading or _lp_has_brk:
+                                    break  # BAB heading nyata → keluar TOC
+                                still_in_toc = True
+                                break
+                        if still_in_toc:
+                            continue
+                        inside_toc = False
 
             if not text:
                 continue
@@ -1174,15 +1261,29 @@ class DocProcessor:
                         ))
                         if not _is_endpoint:
                             forward_count = 0
+                            _next_is_endpoint = False
                             for _k in range(para_idx + 1, len(all_paras)):
                                 _nt = all_paras[_k].text.strip()
                                 if is_bab_heading(_nt) and not is_false_bab(all_paras[_k]):
+                                    # Cek apakah BAB berikutnya adalah endpoint
+                                    _next_is_endpoint = bool(re.match(
+                                        r'^\s*(lampiran|appendix|appendices|attachment|'
+                                        r'daftar\s*pust?aka|references?|bibliography)',
+                                        _nt, re.IGNORECASE
+                                    ))
                                     break
                                 if _nt:
                                     forward_count += 1
                             # Threshold lebih rendah (2) jika ada page break, karena
                             # Sistematika entries hanya punya 1 kalimat per BAB.
-                            _threshold = 2 if has_break else 5
+                            # Threshold diturunkan ke 3 jika BAB ini adalah BAB terakhir
+                            # sebelum LAMPIRAN/DAFTAR PUSTAKA (PENUTUP cenderung pendek).
+                            if has_break:
+                                _threshold = 2
+                            elif _next_is_endpoint:
+                                _threshold = 3
+                            else:
+                                _threshold = 5
                             if forward_count < _threshold:
                                 continue
                 bab_p_list.append(para._p)
@@ -1256,6 +1357,14 @@ class DocProcessor:
         """Phase 1.5 + 2: Purge continuous sectPr, insert zone breaks.
         Returns updated roman_start_p (may differ after _find_section_start).
         exact_roman_start=True: skip _find_section_start (untuk multi-cover advance)."""
+        # Pre-compute page layout untuk setiap target SEBELUM purge berjalan.
+        # Purge akan menghapus sectPr referensi, sehingga perlu disimpan lebih dulu.
+        _page_layouts = {}
+        for tp in ([roman_start_p] if roman_start_p is not None else []) + list(bab_p_list):
+            layout = self._get_covering_page_layout(tp)
+            if layout is not None:
+                _page_layouts[id(tp)] = layout
+
         if bab_p_list:
             self._purge_continuous_sectPr_in_bab_zone(bab_p_list[0])
 
@@ -1272,7 +1381,8 @@ class DocProcessor:
                 self._has_sectPr(body_ch[_rsp_idx - 1])
             )
             if not _roman_already_bounded:
-                self.insert_break_before_xml(roman_start_p)
+                self.insert_break_before_xml(roman_start_p,
+                                             precomputed_layout=_page_layouts.get(id(roman_start_p)))
                 self._strip_empty_paras_before_bab(roman_start_p)
             # Hapus paragraf kosong di awal zona romawi (mencegah blank page ekstra).
             # Berlaku untuk kedua kasus: boundary baru (insert) maupun boundary lama
@@ -1289,7 +1399,8 @@ class DocProcessor:
                 roman_start_p = _nxt
 
         for bab_p in bab_p_list:
-            self.insert_break_before_xml(bab_p, allow_empty_boundary=exact_roman_start)
+            self.insert_break_before_xml(bab_p, allow_empty_boundary=exact_roman_start,
+                                         precomputed_layout=_page_layouts.get(id(bab_p)))
             self._strip_empty_paras_before_bab(bab_p)
 
         return roman_start_p  # dikembalikan karena bisa berubah

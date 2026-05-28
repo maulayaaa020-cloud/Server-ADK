@@ -116,6 +116,7 @@ def main():
     try:
         proc = DocProcessor(doc, font_arg, font_size_pt)
         proc.purge_all_headers_footers()
+        proc.strip_column_breaks_in_tables()
 
         detected_bab_texts = []
         if paket == 'paket1':
