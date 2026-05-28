@@ -54,14 +54,15 @@ body {
 
 .menu a:not(.btn-nav) {
     margin: 0 15px;
-    color: #ccc;
+    color: #00FFFF;
     text-decoration: none;
     font-size: 15px;
+    font-weight: 700;
 }
 
 .menu a:not(.btn-nav):hover,
 .menu a.active {
-    color: white;
+    color: #0000FF;
 }
 
 .btn-nav {
@@ -466,15 +467,16 @@ body {
     align-items: center;
     gap: 5px;
     margin: 0 15px;
-    color: #ccc;
+    color: #00FFFF;
     text-decoration: none;
     font-size: 15px;
+    font-weight: 700;
     cursor: pointer;
     transition: color 0.2s;
 }
 
 .dropdown-toggle:hover {
-    color: white;
+    color: #0000FF;
 }
 
 .dropdown-arrow {
@@ -917,8 +919,8 @@ body {
     text-align: center;
     padding: 14px;
     font-size: 18px;
-    font-weight: 600;
-    color: #a78bfa;
+    font-weight: 700;
+    color: #00FFFF;
     text-decoration: none;
     border-radius: 12px;
     transition: 0.2s;
@@ -926,7 +928,7 @@ body {
 
 .mobile-nav-links a:hover {
     background: rgba(124,58,237,0.15);
-    color: white;
+    color: #0000FF;
 }
 
 .mobile-nav-section-title {
