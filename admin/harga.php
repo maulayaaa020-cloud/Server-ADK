@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 date_default_timezone_set('Asia/Jakarta');
 require_once __DIR__ . '/_guard.php';
 
@@ -34,7 +34,7 @@ function fmt(int $n): string { return 'Rp ' . number_format($n, 0, ',', '.'); }
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Harga Paket — ADK Admin</title>
-<link rel="icon" type="image/jpeg" href="../favicon.jpg">
+<link rel="icon" type="image/png" href="../favicon.png">
 <style>
   body { font-family: sans-serif; background: #0d0b1e; color: #e5e7eb; margin: 0; padding: 24px; }
   h1   { color: white; font-size: 22px; margin-bottom: 4px; }

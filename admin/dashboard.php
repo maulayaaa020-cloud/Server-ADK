@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 date_default_timezone_set('Asia/Jakarta');
 require_once __DIR__ . '/_guard.php';
 
@@ -105,7 +105,7 @@ function tglAdmin(string $dt): string {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Admin — ADK</title>
-    <link rel="icon" type="image/jpeg" href="../favicon.jpg">
+    <link rel="icon" type="image/png" href="../favicon.png">
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 

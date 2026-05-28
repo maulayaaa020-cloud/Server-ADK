@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 date_default_timezone_set('Asia/Jakarta');
 require_once __DIR__ . '/_guard.php';
 
@@ -73,7 +73,7 @@ $totalRevenue = array_sum(array_map(fn($o) => $o['status']==='paid' ? $o['harga'
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Export CSV — ADK Admin</title>
-<link rel="icon" type="image/jpeg" href="../favicon.jpg">
+<link rel="icon" type="image/png" href="../favicon.png">
 <style>
   body { font-family: sans-serif; background: #0d0b1e; color: #e5e7eb; margin: 0; padding: 24px; }
   h1   { color: white; font-size: 22px; margin-bottom: 4px; }

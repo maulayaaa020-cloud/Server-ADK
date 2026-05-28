@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 date_default_timezone_set('Asia/Jakarta');
 session_start();
 require_once __DIR__ . '/includes/config.php';
@@ -18,7 +18,7 @@ if (!$jobId) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Memproses File – ADK PHOTOCOPY</title>
-    <link rel="icon" type="image/jpeg" href="favicon.jpg">
+    <link rel="icon" type="image/png" href="favicon.png">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
