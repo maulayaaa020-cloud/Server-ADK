@@ -125,7 +125,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="navbar">
         <a href="index.html" class="logo">
             <img src="Favicon Adkivia.png" alt="ADK Logo" style="width:36px;height:26px;object-fit:contain;flex-shrink:0;">
-            <span>ADK PHOTOCOPY</span>
+            <span><span style="color:#1565C0">ADK</span><span style="color:#00E5FF">IVIA</span></span>
         </a>
         <div class="menu">
             <a href="index.html">Home</a>
@@ -168,7 +168,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="mobile-nav-header">
             <a href="index.html" class="logo">
                 <img src="Favicon Adkivia.png" alt="ADK Logo" style="width:36px;height:26px;object-fit:contain;flex-shrink:0;">
-                <span>ADK PHOTOCOPY</span>
+                <span><span style="color:#1565C0">ADK</span><span style="color:#00E5FF">IVIA</span></span>
             </a>
             <button class="mobile-nav-close" onclick="closeMobileMenu()">✕</button>
         </div>
