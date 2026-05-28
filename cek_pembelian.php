@@ -33,7 +33,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cek Pembelian - ADK</title>
     <link rel="icon" type="image/png" href="favicon.png">
-    <link rel="stylesheet" href="style.css">
+    <script>(function(){var t=localStorage.getItem('adkTheme')||'dark';document.documentElement.setAttribute('data-theme',t);})();</script>
+    <link rel="stylesheet" href="style.css?v=4">
     <style>
         .login-wrapper {
             max-width: 420px;
@@ -151,6 +152,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
         </div>
         <div class="nav-right">
+            <button class="theme-toggle" onclick="toggleTheme()" title="Mode Siang">☀️</button>
             <a href="cek_pembelian.php" class="btn-nav active">Cek Pembelian</a>
         </div>
         <div class="mobile-jasa-drop" id="jasaDrop">
@@ -170,7 +172,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <img src="Favicon Adkivia.png" alt="ADK Logo" style="width:52px;height:52px;object-fit:contain;flex-shrink:0;">
                 <span><span style="color:#1565C0">ADK</span><span style="color:#29B6F6">IVIA</span></span>
             </a>
-            <button class="mobile-nav-close" onclick="closeMobileMenu()">✕</button>
+            <div style="display:flex;align-items:center;gap:8px;">
+                <button class="theme-toggle" onclick="toggleTheme()" title="Mode Siang">☀️</button>
+                <button class="mobile-nav-close" onclick="closeMobileMenu()">✕</button>
+            </div>
         </div>
         <div class="mobile-nav-links">
             <a href="index.html">Home</a>
@@ -288,6 +293,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <p class="footer-bottom">© 2025 ADK PHOTOCOPY · All Rights Reserved.</p>
     </footer>
     <script src="nocopy.js"></script>
+    <script src="theme.js?v=1"></script>
 </body>
 </html>
 

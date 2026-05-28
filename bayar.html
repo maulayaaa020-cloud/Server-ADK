@@ -4,7 +4,8 @@
 <head>
     <title>ADK PHOTOCOPY</title>
     <link rel="icon" type="image/png" href="favicon.png">
-    <link rel="stylesheet" href="style.css">
+    <script>(function(){var t=localStorage.getItem('adkTheme')||'dark';document.documentElement.setAttribute('data-theme',t);})();</script>
+    <link rel="stylesheet" href="style.css?v=4">
 </head>
 
 <body>
@@ -24,6 +25,7 @@
         </div>
 
         <div class="nav-right">
+            <button class="theme-toggle" onclick="toggleTheme()" title="Mode Siang">☀️</button>
             <button class="btn-nav">Cek Pembelian</button>
         </div>
     </div>
@@ -170,6 +172,7 @@
     </footer>
 
     <script src="nocopy.js"></script>
+    <script src="theme.js?v=1"></script>
 </body>
 
 </html>

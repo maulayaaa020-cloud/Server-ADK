@@ -34,7 +34,8 @@ $chipText  = $isPaid ? 'Lunas' : ($order['status'] === 'failed' ? 'Gagal' : 'Men
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Preview Hasil – ADK</title>
-    <link rel="stylesheet" href="style.css">
+    <script>(function(){var t=localStorage.getItem('adkTheme')||'dark';document.documentElement.setAttribute('data-theme',t);})();</script>
+    <link rel="stylesheet" href="style.css?v=4">
     <style>
         .preview-wrap {
             max-width: 1100px;
@@ -192,6 +193,7 @@ $chipText  = $isPaid ? 'Lunas' : ($order['status'] === 'failed' ? 'Gagal' : 'Men
             </div>
         </div>
         <div class="nav-right">
+            <button class="theme-toggle" onclick="toggleTheme()" title="Mode Siang">☀️</button>
             <a href="cek_pembelian.php" class="btn-nav">Cek Pembelian</a>
         </div>
         <div class="mobile-jasa-drop" id="jasaDrop">
@@ -211,7 +213,10 @@ $chipText  = $isPaid ? 'Lunas' : ($order['status'] === 'failed' ? 'Gagal' : 'Men
                 <img src="Favicon Adkivia.png" alt="ADK Logo">
                 <span><span style="color:#1565C0">ADK</span><span style="color:#29B6F6">IVIA</span></span>
             </a>
-            <button class="mobile-nav-close" onclick="closeMobileMenu()">✕</button>
+            <div style="display:flex;align-items:center;gap:8px;">
+                <button class="theme-toggle" onclick="toggleTheme()" title="Mode Siang">☀️</button>
+                <button class="mobile-nav-close" onclick="closeMobileMenu()">✕</button>
+            </div>
         </div>
         <div class="mobile-nav-links">
             <a href="index.html">Home</a>
@@ -297,6 +302,7 @@ $chipText  = $isPaid ? 'Lunas' : ($order['status'] === 'failed' ? 'Gagal' : 'Men
     <script>
         document.addEventListener('contextmenu', e => e.preventDefault());
     </script>
+    <script src="theme.js?v=1"></script>
 </body>
 </html>
 
