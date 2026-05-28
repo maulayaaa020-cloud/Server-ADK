@@ -1212,6 +1212,16 @@ body {
     gap: 10px;
 }
 
+/* ===== THEME TOGGLE MOBILE (hanya tampil di mobile) ===== */
+.theme-toggle-mob {
+    display: none;
+}
+@media (max-width: 640px) {
+    .theme-toggle-mob {
+        display: flex;
+    }
+}
+
 /* ===== THEME TOGGLE BUTTON ===== */
 .theme-toggle {
     background: none;

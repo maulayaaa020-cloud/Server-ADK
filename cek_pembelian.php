@@ -161,6 +161,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <a href="jasa.html">📄 Penomoran Halaman</a>
             </div>
         </div>
+        <button class="theme-toggle theme-toggle-mob" onclick="toggleTheme()" title="Mode Siang">☀️</button>
         <button class="hamburger" onclick="openMobileMenu()">
             <span></span><span></span><span></span>
         </button>
