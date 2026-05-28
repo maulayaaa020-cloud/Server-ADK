@@ -42,7 +42,7 @@ try {
         'merchant_ref'   => $orderId,
         'amount'         => $harga,
         'customer_name'  => 'Pelanggan ADK',
-        'customer_email' => !empty($order['phone']) ? $order['phone'] : 'pelanggan@adkphotocopy.com',
+        'customer_email' => !empty($order['phone']) ? $order['phone'] : 'pelanggan@adkivia.com',
         'customer_phone' => '6281228790091',
         'order_items'    => [[
             'sku'      => 'ADK-PENOMORAN',
@@ -50,8 +50,8 @@ try {
             'price'    => $harga,
             'quantity' => 1,
         ]],
-        'callback_url'   => 'https://adkphotocopy.com/api/tripay_callback.php',
-        'return_url'     => 'https://adkphotocopy.com/history.php',
+        'callback_url'   => APP_URL . '/api/tripay_callback.php',
+        'return_url'     => APP_URL . '/history.php',
         'expired_time'   => $expiredTime,
         'signature'      => $signature,
     ]);

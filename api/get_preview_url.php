@@ -45,8 +45,8 @@ if (!file_exists(__DIR__ . '/../' . $order['file_output'])) {
 $expires = time() + 300;
 $sig     = hash_hmac('sha256', $db_id . ':' . $expires, DOKU_SECRET_KEY);
 
-$fileUrl = 'https://adkphotocopy.com/api/serve_preview.php'
-         . '?id=' . $db_id . '&t=' . $expires . '&sig=' . urlencode($sig);
+$fileUrl = APP_URL . '/api/serve_preview.php'
+        . '?id=' . $db_id . '&t=' . $expires . '&sig=' . urlencode($sig);
 
 $viewerUrl = 'https://view.officeapps.live.com/op/embed.aspx?src='
            . urlencode($fileUrl) . '&wdScale=PageWidth';
