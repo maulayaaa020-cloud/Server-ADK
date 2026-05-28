@@ -860,7 +860,7 @@ if (!empty($orders)) {
 
     <div class="navbar">
         <a href="index.html" class="logo">
-            <img src="LOGO ADK.png" alt="ADK Logo" style="width:36px;height:26px;object-fit:contain;flex-shrink:0;">
+            <img src="Favicon Adkivia.png" alt="ADK Logo" style="width:36px;height:26px;object-fit:contain;flex-shrink:0;">
             <span>ADK PHOTOCOPY</span>
         </a>
         <div class="menu">
@@ -903,7 +903,7 @@ if (!empty($orders)) {
     <div class="mobile-nav" id="mobileNav">
         <div class="mobile-nav-header">
             <a href="index.html" class="logo">
-                <img src="LOGO ADK.png" alt="ADK Logo" style="width:36px;height:26px;object-fit:contain;flex-shrink:0;">
+                <img src="Favicon Adkivia.png" alt="ADK Logo" style="width:36px;height:26px;object-fit:contain;flex-shrink:0;">
                 <span>ADK PHOTOCOPY</span>
             </a>
             <button class="mobile-nav-close" onclick="closeMobileMenu()">✕</button>

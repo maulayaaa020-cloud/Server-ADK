@@ -175,7 +175,7 @@ $chipText  = $isPaid ? 'Lunas' : ($order['status'] === 'failed' ? 'Gagal' : 'Men
 <body>
     <div class="navbar">
         <a href="index.html" class="logo">
-            <img src="LOGO ADK.png" alt="ADK Logo">
+            <img src="Favicon Adkivia.png" alt="ADK Logo">
             <span>ADK PHOTOCOPY</span>
         </a>
         <div class="menu">
@@ -208,7 +208,7 @@ $chipText  = $isPaid ? 'Lunas' : ($order['status'] === 'failed' ? 'Gagal' : 'Men
     <div class="mobile-nav" id="mobileNav">
         <div class="mobile-nav-header">
             <a href="index.html" class="logo">
-                <img src="LOGO ADK.png" alt="ADK Logo">
+                <img src="Favicon Adkivia.png" alt="ADK Logo">
                 <span>ADK PHOTOCOPY</span>
             </a>
             <button class="mobile-nav-close" onclick="closeMobileMenu()">✕</button>
