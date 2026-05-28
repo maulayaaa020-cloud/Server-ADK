@@ -1,4 +1,4 @@
-body {
+﻿body {
     margin: 0;
     font-family: 'Segoe UI', sans-serif;
     background: linear-gradient(135deg, rgb(14, 11, 40), #1a1443);
@@ -54,7 +54,7 @@ body {
 
 .menu a:not(.btn-nav) {
     margin: 0 15px;
-    color: #00FFFF;
+    color: #29B6F6;
     text-decoration: none;
     font-size: 15px;
     font-weight: 700;
@@ -62,7 +62,7 @@ body {
 
 .menu a:not(.btn-nav):hover,
 .menu a.active {
-    color: #0000FF;
+    color: #1565C0;
 }
 
 .btn-nav {
@@ -467,7 +467,7 @@ body {
     align-items: center;
     gap: 5px;
     margin: 0 15px;
-    color: #00FFFF;
+    color: #29B6F6;
     text-decoration: none;
     font-size: 15px;
     font-weight: 700;
@@ -476,7 +476,7 @@ body {
 }
 
 .dropdown-toggle:hover {
-    color: #0000FF;
+    color: #1565C0;
 }
 
 .dropdown-arrow {
@@ -920,7 +920,7 @@ body {
     padding: 14px;
     font-size: 18px;
     font-weight: 700;
-    color: #00FFFF;
+    color: #29B6F6;
     text-decoration: none;
     border-radius: 12px;
     transition: 0.2s;
@@ -928,7 +928,7 @@ body {
 
 .mobile-nav-links a:hover {
     background: rgba(124,58,237,0.15);
-    color: #0000FF;
+    color: #1565C0;
 }
 
 .mobile-nav-section-title {
