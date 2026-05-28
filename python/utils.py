@@ -8,6 +8,7 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_LINE_SPACING
 from docx.shared import Pt, Cm
 from copy import deepcopy
 import re
+import difflib
 
 
 # =========================================================
@@ -48,10 +49,47 @@ BAB_HEAD_RE = re.compile(
     re.IGNORECASE | re.DOTALL
 )
 
+# Endpoint terms untuk fuzzy matching di is_bab_heading
+_BAB_ENDPOINT_FUZZY = [
+    'daftar pustaka', 'daftar pustaka',
+    'referensi', 'references', 'reference list',
+    'bibliography', 'bibliographies', 'works cited', 'literature cited',
+    'lampiran', 'appendix', 'appendices', 'attachment',
+]
+
+# Keywords TOC — dipakai di is_toc_heading (module-level agar tidak di-rebuild tiap panggilan)
+_TOC_KEYWORDS = [
+    "daftar isi", "daftar tabel", "daftar gambar", "daftar lampiran",
+    "table of contents", "list of contents", "list of tables",
+    "list of figures", "list of appendices",
+    "list of abbreviations", "list of symbols", "list of notations",
+]
+
+
+def _fuzzy_match(a, b, threshold=0.82):
+    """True jika string a ≈ string b (toleransi typo kecil).
+    Guard panjang: selisih karakter tidak boleh melebihi max(3, 20% panjang keyword).
+    Gunakan quick_ratio() sebagai filter cepat sebelum ratio() penuh."""
+    diff = abs(len(a) - len(b))
+    if diff > max(3, int(len(b) * 0.20)):
+        return False
+    sm = difflib.SequenceMatcher(None, a, b, autojunk=False)
+    return sm.quick_ratio() >= threshold and sm.ratio() >= threshold
+
 
 def is_roman_start(text):
     lower = text.strip().lower()
-    return any(lower == k or lower.startswith(k) for k in ROMAN_START_KEYWORDS)
+    # Pencocokan eksak / startswith
+    if any(lower == k or lower.startswith(k) for k in ROMAN_START_KEYWORDS):
+        return True
+    # Toleransi typo: bandingkan baris pertama terhadap setiap keyword ≥6 karakter
+    first_line = lower.split('\n')[0].strip()
+    if len(first_line) < 4:
+        return False
+    for kw in ROMAN_START_KEYWORDS:
+        if len(kw) >= 6 and _fuzzy_match(first_line, kw, threshold=0.82):
+            return True
+    return False
 
 
 def _has_toc_field(p_elem):
@@ -76,6 +114,13 @@ def is_bab_heading(text):
         return True
     if re.match(r'^\s*(lampiran|appendix|appendices|attachment)(\s+.*)?$', text, re.IGNORECASE):
         return True
+    # Toleransi typo untuk endpoint terms (DAFTAR PUSTAKA, LAMPIRAN, dll.)
+    # Hanya berlaku untuk teks pendek (≤ 25 karakter) agar tidak salah cocok konten.
+    lower = text.lower()
+    if 5 <= len(lower) <= 25:
+        for kw in _BAB_ENDPOINT_FUZZY:
+            if len(kw) >= 6 and _fuzzy_match(lower, kw, threshold=0.82):
+                return True
     return False
 
 
@@ -125,12 +170,15 @@ def is_false_bab(para):
 
 def is_toc_heading(text):
     lower = text.strip().lower()
-    return any(k in lower for k in [
-        "daftar isi", "daftar tabel", "daftar gambar", "daftar lampiran",
-        "table of contents", "list of contents", "list of tables",
-        "list of figures", "list of appendices",
-        "list of abbreviations", "list of symbols", "list of notations",
-    ])
+    if any(k in lower for k in _TOC_KEYWORDS):
+        return True
+    # Toleransi typo: baris pertama dibandingkan tiap keyword TOC
+    first_line = lower.split('\n')[0].strip()
+    if len(first_line) >= 6:
+        for kw in _TOC_KEYWORDS:
+            if len(kw) >= 8 and _fuzzy_match(first_line, kw, threshold=0.84):
+                return True
+    return False
 
 
 def is_toc_entry(text):
