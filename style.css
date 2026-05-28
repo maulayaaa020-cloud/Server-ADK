@@ -1234,11 +1234,11 @@ html[data-theme="light"] .dropdown-divider { background: rgba(21,101,192,0.12); 
 
 /* ===== THEME TOGGLE MOBILE (hanya tampil di mobile) ===== */
 .theme-toggle-mob {
-    display: none;
+    display: none !important;
 }
 @media (max-width: 640px) {
     .theme-toggle-mob {
-        display: flex;
+        display: flex !important;
     }
 }
 
