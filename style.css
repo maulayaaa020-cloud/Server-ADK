@@ -336,7 +336,7 @@ body {
     opacity: 0;
     transform: translateX(30px);
     pointer-events: none;
-    outline-color: rgb(14, 11, 40);
+    outline-color: rgb(8, 11, 40);
     font-size: 16px;
 }
 
@@ -588,7 +588,7 @@ body {
 
 .stat-label {
     font-size: clamp(10px, 1.4vw, 14px);
-    color: #a78bfa;
+    color: #29B6F6;
     font-weight: 500;
 }
 
@@ -747,7 +747,7 @@ body {
     font-weight: 800;
     line-height: 1.2;
     margin: 0 0 18px;
-    color: #a78bfa;
+    color: #29B6F6;
 }
 
 .hero-left p {
@@ -956,7 +956,7 @@ body {
 }
 
 .mobile-nav-links a.mobile-nav-contact:hover {
-    color: #a78bfa;
+    color: #29B6F6;
     background: rgba(41,182,246,0.08);
 }
 
@@ -1028,7 +1028,7 @@ body {
     letter-spacing: -0.3px;
 }
 .faq-section h2 span {
-    color: #a78bfa;
+    color: #29B6F6;
 }
 .faq-subtitle {
     text-align: center;
@@ -1091,7 +1091,7 @@ body {
 .faq-icon svg {
     width: 14px;
     height: 14px;
-    stroke: #a78bfa;
+    stroke: #29B6F6;
     fill: none;
     stroke-width: 2.5;
     stroke-linecap: round;
@@ -1185,7 +1185,7 @@ body {
     margin-bottom: 9px;
     transition: color 0.2s;
 }
-.footer-col a:hover { color: #a78bfa; }
+.footer-col a:hover { color: #29B6F6; }
 .footer-divider {
     max-width: 1100px;
     margin: 28px auto 0;
