@@ -34,7 +34,7 @@ $chipText  = $isPaid ? 'Lunas' : ($order['status'] === 'failed' ? 'Gagal' : 'Men
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Preview Hasil – ADK</title>
-    <script>(function(){var t=localStorage.getItem('adkTheme')||'dark';document.documentElement.setAttribute('data-theme',t);})();</script>
+    <script>(function(){var t=localStorage.getItem('adkTheme')||'light';document.documentElement.setAttribute('data-theme',t);})();</script>
     <link rel="stylesheet" href="style.css?v=4">
     <style>
         .preview-wrap {

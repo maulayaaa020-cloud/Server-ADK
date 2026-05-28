@@ -33,7 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cek Pembelian - ADK</title>
     <link rel="icon" type="image/png" href="favicon.png">
-    <script>(function(){var t=localStorage.getItem('adkTheme')||'dark';document.documentElement.setAttribute('data-theme',t);})();</script>
+    <script>(function(){var t=localStorage.getItem('adkTheme')||'light';document.documentElement.setAttribute('data-theme',t);})();</script>
     <link rel="stylesheet" href="style.css?v=4">
     <style>
         .login-wrapper {
