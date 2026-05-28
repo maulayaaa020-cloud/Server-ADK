@@ -561,12 +561,12 @@ body {
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 1px;
-    color: #4b5563;
+    color: #94a3b8;
     padding: 6px 10px 2px;
 }
 .dropdown-divider {
     height: 1px;
-    background: rgba(41,182,246,0.12);
+    background: rgba(41,182,246,0.2);
     margin: 4px 6px;
 }
 html[data-theme="light"] .dropdown-group-label { color: #94a3b8; }
