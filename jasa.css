@@ -984,6 +984,17 @@ html[data-theme="light"] .benefits-box {
     border-color: rgba(21,101,192,0.15);
 }
 html[data-theme="light"] .benefits-title { color: #1a2332; }
+html[data-theme="light"] .benefits-list li { color: #15803d; }
+html[data-theme="light"] .warning-box {
+    background: rgba(180,83,9,0.06);
+    border-color: rgba(180,83,9,0.25);
+    color: #92400e;
+}
+html[data-theme="light"] .warning-box.warning-ok {
+    background: rgba(21,128,61,0.06);
+    border-color: rgba(21,128,61,0.25);
+    color: #15803d;
+}
 
 html[data-theme="light"] .opts-row-label { color: #64748b; }
 html[data-theme="light"] .pilih-paket-label { color: #64748b; }
