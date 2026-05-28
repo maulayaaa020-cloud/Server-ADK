@@ -66,7 +66,7 @@ $totalSize = array_sum(array_column($candidates, 'size'));
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Cleanup File — ADK Admin</title>
-<link rel="icon" type="image/png" href="../favicon.png">
+<link rel="icon" type="image/jpeg" href="../favicon.jpg">
 <style>
   body { font-family: sans-serif; background: #0d0b1e; color: #e5e7eb; margin: 0; padding: 24px; }
   h1   { color: white; font-size: 22px; margin-bottom: 4px; }
