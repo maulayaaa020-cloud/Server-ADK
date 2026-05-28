@@ -44,8 +44,8 @@ try {
         CURLOPT_POSTFIELDS => json_encode([
             'from'    => RESEND_FROM,
             'to'      => [$email],
-            'subject' => 'Kode OTP ADK Photocopy',
-            'text'    => "Kode OTP ADK Photocopy kamu: {$code}\n\nBerlaku 5 menit. Jangan berikan ke siapapun.",
+            'subject' => 'Kode OTP ADKIVIA',
+            'text'    => "Kode OTP ADKIVIA kamu: {$code}\n\nBerlaku 5 menit. Jangan berikan ke siapapun.",
         ]),
     ]);
     $res      = curl_exec($ch);
