@@ -138,6 +138,8 @@ def main():
                 _advanced = _use_exact
             roman_start_p             = proc.insert_breaks(roman_start_p, bab_p_list,
                                                            exact_roman_start=_advanced)
+            if hidden_cov == 'Ya':
+                proc.ensure_cover_pages(roman_start_p, num_cover, already_advanced=_advanced)
             roman_sec, bab_sec_list, n_sections = proc.build_section_map(
                 roman_start_p, bab_p_list
             )

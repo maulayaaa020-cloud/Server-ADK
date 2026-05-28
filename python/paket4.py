@@ -32,6 +32,73 @@ def _is_lampiran_text(text):
     ))
 
 
+_DIVIDER_WORDS = ('LAMPIRAN', 'APPENDIX', 'APPENDICES', 'ATTACHMENT')
+
+
+def _find_lampiran_letter_divider(doc, first_lsec):
+    """Temukan elemen paragraf pertama dari halaman pemisah LAMPIRAN/APPENDIX
+    yang berada tepat sebelum seksi lampiran pertama (first_lsec).
+
+    Mendukung dua pola:
+    1. Huruf-per-baris  : L / A / M / P / I / R / A / N  (atau A/P/P/E/N/D/I/X)
+    2. Satu kata penuh  : paragraf tunggal berisi "LAMPIRAN" atau "APPENDIX"
+       tanpa konten lain, yang berada tepat sebelum batas seksi.
+
+    Kembalikan elemen XML paragraf pertama dari divider, atau None.
+    """
+    W    = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main'
+    body = list(doc.element.body)
+
+    # Temukan paragraf ke-(first_lsec)-th yang punya sectPr — batas seksi.
+    sect_count   = 0
+    boundary_idx = -1
+    for j, el in enumerate(body):
+        if not el.tag.endswith('}p'):
+            continue
+        pPr = el.find('{%s}pPr' % W)
+        if pPr is not None and pPr.find('{%s}sectPr' % W) is not None:
+            sect_count += 1
+            if sect_count == first_lsec:
+                boundary_idx = j
+                break
+    if boundary_idx < 0:
+        return None
+
+    def _txt(el):
+        return ''.join(t.text or '' for t in el.iter('{%s}t' % W)).strip()
+
+    # ── Pola 1: huruf-per-baris ─────────────────────────────────────────
+    letters = []
+    for j in range(boundary_idx, max(boundary_idx - 12, -1), -1):
+        el = body[j]
+        if not el.tag.endswith('}p'):
+            break
+        t = _txt(el)
+        if len(t) == 1 and t.isalpha():
+            letters.insert(0, (j, el))
+        else:
+            break
+    if letters:
+        concat = ''.join(_txt(el) for _, el in letters).upper()
+        if any(w in concat or concat in w for w in _DIVIDER_WORDS):
+            return letters[0][1]
+
+    # ── Pola 2: satu kata penuh (misal "APPENDIX" pada halaman tersendiri) ─
+    # Periksa 3 paragraf terakhir seksi sebelum batas: jika ada yang teksnya
+    # persis salah satu kata divider (tanpa imbuhan nomor), kembalikan itu.
+    for j in range(boundary_idx, max(boundary_idx - 4, -1), -1):
+        el = body[j]
+        if not el.tag.endswith('}p'):
+            continue
+        t = _txt(el).upper()
+        if t in _DIVIDER_WORDS:
+            # Pastikan ini bukan paragraf dengan konten lain (nomor halaman dll)
+            # dan berada di akhir seksi (tidak jauh dari batas)
+            return el
+
+    return None
+
+
 def _blank_section(proc, section):
     section.different_first_page_header_footer = False
     section.header_distance = Cm(1.25)
@@ -88,6 +155,23 @@ def apply(proc, roman_sec, bab_sec_list, n_sections, hidden_cov,
             elif _is_lampiran_text(text):
                 for si in range(sec_start, sec_end):
                     lampiran_secs.add(si)
+
+    # Jika semb_lamprn='Ya': cek apakah ada halaman pemisah LAMPIRAN bergaya huruf-per-baris
+    # (L, A, M, P, I, R, A, N) tepat sebelum seksi lampiran pertama.
+    # Jika ada, sisipkan section break sebelum huruf pertama agar halaman pemisah
+    # mendapat seksinya sendiri dan bisa disembunyikan (masuk lampiran_secs).
+    if semb_lamprn == 'Ya' and lampiran_secs:
+        _first_lsec   = min(lampiran_secs)
+        _divider_elem = _find_lampiran_letter_divider(proc.doc, _first_lsec)
+        if _divider_elem is not None:
+            proc.insert_break_before_xml(_divider_elem)
+            # Geser semua referensi seksi >= _first_lsec ke atas 1
+            bab_sec_list  = [(s + 1 if s >= _first_lsec else s) for s in bab_sec_list]
+            lampiran_secs = {(s + 1 if s >= _first_lsec else s) for s in lampiran_secs}
+            lampiran_secs.add(_first_lsec)        # tambahkan seksi pemisah baru
+            dafpus_secs   = {(s + 1 if s >= _first_lsec else s) for s in dafpus_secs}
+            n_sections   += 1
+            first_bab_sec = bab_sec_list[0] if bab_sec_list else first_bab_sec
 
     # cover_start: nilai page pertama cover section.
     # hidden_cov='Ya'  → cover 1 tersembunyi, cover 2+ mulai dari roman_start_num

@@ -29,13 +29,17 @@ ROMAN_START_KEYWORDS = [
     "daftar singkatan", "daftar lambang", "daftar notasi", "daftar simbol",
     "daftar istilah", "daftar arti lambang", "daftar arti simbol",
     "abstract", "summary", "executive summary",
-    "preface", "foreword", "acknowledgment", "acknowledgements",
+    "preface", "foreword",
+    "acknowledgment", "acknowledgments", "acknowledgement", "acknowledgements",
     "approval page", "approval sheet", "declaration", "originality statement",
     "dedication",
+    "glossary",
     "table of contents", "list of contents", "contents",
     "list of tables", "list of figures", "list of appendices",
     "list of abbreviations", "list of symbols", "list of notations",
+    "list of equations", "list of plates",
     "nomenclature",
+    "curriculum vitae", "vita", "biographical sketch",
 ]
 
 _ROMAN_PAT = r'm{0,4}(cm|cd|d?c{0,3})(xc|xl|l?x{0,3})(ix|iv|v?i{0,3})'
@@ -125,6 +129,7 @@ def is_toc_heading(text):
         "daftar isi", "daftar tabel", "daftar gambar", "daftar lampiran",
         "table of contents", "list of contents", "list of tables",
         "list of figures", "list of appendices",
+        "list of abbreviations", "list of symbols", "list of notations",
     ])
 
 
@@ -1109,9 +1114,11 @@ class DocProcessor:
                     # di body text (misal Sistematika Penulisan) bisa memicu false positive.
                     _trusted = has_break and _is_heading
                     if not _trusted:
-                        # Lampiran & Daftar Pustaka dibebaskan dari forward_count
+                        # Lampiran & Daftar Pustaka / padanan Inggris dibebaskan dari forward_count
                         _is_endpoint = bool(re.match(
-                            r'^\s*(lampiran|daftar\s+pust?aka)', text, re.IGNORECASE
+                            r'^\s*(lampiran|appendix|appendices|attachment|'
+                            r'daftar\s+pust?aka|references?|bibliography)',
+                            text, re.IGNORECASE
                         ))
                         if not _is_endpoint:
                             forward_count = 0
@@ -1234,6 +1241,93 @@ class DocProcessor:
             self._strip_empty_paras_before_bab(bab_p)
 
         return roman_start_p  # dikembalikan karena bisa berubah
+
+    def ensure_cover_pages(self, roman_start_p, num_cover, already_advanced=False):
+        """Pastikan cover section span num_cover halaman fisik.
+        Jika dokumen hanya punya 1 halaman cover tapi num_cover=2, sisipkan
+        blank section break (nextPage) tepat sebelum roman_start_p untuk tiap
+        halaman cover yang kurang. Word lalu memperlakukan blank section sebagai
+        halaman cover tambahan — diformat hidden oleh fmt_cover(first_cover=False).
+        Hanya dipanggil jika hidden_cov='Ya'.
+        already_advanced=True: advance_roman_start sudah memindah posisi roman_start_p
+        (cover sudah punya halaman cukup secara alami) — skip insert."""
+        if num_cover <= 1 or roman_start_p is None:
+            return
+        if already_advanced:
+            return
+        W    = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+        body = self.doc.element.body
+        body_els = list(body)
+        try:
+            rsp_idx = body_els.index(roman_start_p)
+        except ValueError:
+            return
+
+        # Temukan terminal sectPr (paragraf terakhir sebelum roman_start_p yang punya sectPr)
+        term_idx = -1
+        for j in range(rsp_idx - 1, -1, -1):
+            el = body_els[j]
+            if el.tag.endswith('}p'):
+                pPr = el.find('{%s}pPr' % W)
+                if pPr is not None and pPr.find('{%s}sectPr' % W) is not None:
+                    term_idx = j
+                    break
+        if term_idx < 0:
+            return
+
+        # Hitung break internal di cover (pgBr + sectPr non-terminal)
+        cover_breaks = 0
+        for j in range(rsp_idx):
+            if j == term_idx:
+                continue
+            el = body_els[j]
+            if any(br.get('{%s}type' % W) == 'page' for br in el.iter('{%s}br' % W)):
+                cover_breaks += 1
+            pPr = el.find('{%s}pPr' % W)
+            if pPr is not None and pPr.find('{%s}sectPr' % W) is not None:
+                cover_breaks += 1
+
+        # Hitung berapa kali teks penutup cover muncul (deteksi duplikat cover tanpa
+        # explicit page break — misal Docx 16 yang punya cover 1 + cover 2 berurutan).
+        # Setiap pengulangan teks yang berjarak >= 5 elemen = 1 halaman cover implicit.
+        def _cover_implicit_pages(end_idx):
+            last_txt, last_j = None, -1
+            for j in range(end_idx, -1, -1):
+                el = body_els[j]
+                if not el.tag.endswith('}p'):
+                    continue
+                t = ''.join(tx.text or '' for tx in el.iter('{%s}t' % W)).strip()
+                if t:
+                    last_txt, last_j = t, j
+                    break
+            if not last_txt or len(last_txt) < 4 or last_j < 0:
+                return 1
+            count, prev_j = 1, last_j
+            for j in range(last_j - 1, -1, -1):
+                el = body_els[j]
+                if not el.tag.endswith('}p'):
+                    continue
+                t = ''.join(tx.text or '' for tx in el.iter('{%s}t' % W)).strip()
+                if t == last_txt and prev_j - j >= 5:
+                    count += 1
+                    prev_j = j
+            return count
+
+        implicit = max(0, _cover_implicit_pages(term_idx) - 1)
+        missing  = (num_cover - 1) - (cover_breaks + implicit)
+        if missing <= 0:
+            return
+
+        # Sisipkan blank paragraph ber-sectPr(nextPage) tepat sebelum roman_start_p
+        # untuk tiap halaman cover yang kurang. Setiap blank section = 1 halaman cover
+        # tambahan yang diformat hidden oleh paket3.apply → fmt_cover(first_cover=False).
+        for _ in range(missing):
+            new_p   = OxmlElement('w:p')
+            new_pPr = OxmlElement('w:pPr')
+            new_p.append(new_pPr)
+            new_pPr.append(self._make_sectPr())
+            rsp_idx = list(body).index(roman_start_p)
+            body.insert(rsp_idx, new_p)
 
     def build_section_map(self, roman_start_p, bab_p_list):
         """Phase 3: Build section boundary map.
