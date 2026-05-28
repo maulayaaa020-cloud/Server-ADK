@@ -1227,24 +1227,21 @@ body {
 /* ===== THEME TOGGLE BUTTON ===== */
 .theme-toggle {
     background: none;
-    border: 1.5px solid rgba(41,182,246,0.35);
-    color: #29B6F6;
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
+    border: none;
     cursor: pointer;
-    font-size: 17px;
+    font-size: 20px;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: background 0.2s, border-color 0.2s;
     flex-shrink: 0;
-    padding: 0;
+    padding: 4px;
     line-height: 1;
+    opacity: 0.8;
+    transition: opacity 0.2s, transform 0.2s;
 }
 .theme-toggle:hover {
-    background: rgba(41,182,246,0.12);
-    border-color: rgba(41,182,246,0.6);
+    opacity: 1;
+    transform: scale(1.15);
 }
 
 /* ===== LIGHT MODE OVERRIDES ===== */
@@ -1272,12 +1269,7 @@ html[data-theme="light"] .dropdown-menu a:hover {
     color: #1565C0;
 }
 html[data-theme="light"] .theme-toggle {
-    border-color: rgba(21,101,192,0.35);
     color: #1565C0;
-}
-html[data-theme="light"] .theme-toggle:hover {
-    background: rgba(21,101,192,0.10);
-    border-color: rgba(21,101,192,0.6);
 }
 html[data-theme="light"] .hero-left h1 { color: #1565C0; }
 html[data-theme="light"] .hero-left p { color: #475569; }
