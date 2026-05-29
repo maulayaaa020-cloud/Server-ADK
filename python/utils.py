@@ -519,7 +519,15 @@ class DocProcessor:
                                 _after = _j + 1
                                 return (body_els[_after]
                                         if _after < len(body_els) else roman_start_p), True
-                            return roman_start_p, True
+                            # Jika tidak ada konten antara sectPr ini dan roman_start_p,
+                            # sectPr adalah batas "cover-ke-roman" langsung (bukan cover2).
+                            # Return False agar ensure_cover_pages sisipkan blank cover ke-2.
+                            _has_cov2 = any(
+                                _txt(body_els[_k]).strip()
+                                for _k in range(_j + 1, rsp_idx)
+                                if _el_tag(body_els[_k]) == 'p'
+                            )
+                            return roman_start_p, _has_cov2
                         # Fix C (Docx 9): pgBr kosong sebelum rsp dengan banyak konten sebelumnya
                         # → cover sudah memenuhi ≥ num_cover halaman → pgBr adalah batas covers/roman.
                         if (any(br.get('{%s}type' % W) == 'page'
