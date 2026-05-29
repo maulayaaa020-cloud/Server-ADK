@@ -5,20 +5,20 @@ require_once __DIR__ . '/includes/db.php';
 
 // Jika sudah login atau tamu, langsung ke history (kecuali mode ganti nomor)
 if (empty($_GET['change'])) {
-    if (!empty($_SESSION['phone'])) { header("Location: history.php"); exit; }
+    if (!empty($_SESSION['email'])) { header("Location: history.php"); exit; }
     if (!empty($_SESSION['guest_token']) || !empty($_COOKIE['adk_guest'])) { header("Location: history.php"); exit; }
 }
 
 $error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $phone = trim($_POST['phone'] ?? '');
-    if (!$phone) {
-        $error = 'Nomor telepon tidak boleh kosong.';
+    $email = trim($_POST['email'] ?? '');
+    if (!$email) {
+        $error = 'Email tidak boleh kosong.';
     } else {
-        // Timpa semua session phone agar nomor baru langsung aktif
-        $_SESSION['phone']     = $phone;
-        $_SESSION['cek_phone'] = $phone;
+        // Timpa semua session email agar email baru langsung aktif
+        $_SESSION['email']     = $email;
+        $_SESSION['cek_email'] = $email;
         // Bersihkan sisa sesi tamu agar tidak tumpang tindih
         unset($_SESSION['is_guest'], $_SESSION['guest_token']);
         header("Location: history.php");
@@ -33,7 +33,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cek Pembelian - ADK</title>
     <link rel="icon" type="image/png" href="favicon.png">
-    <link rel="stylesheet" href="style.css">
+    <script>(function(){var t=localStorage.getItem('adkTheme')||'light';document.documentElement.setAttribute('data-theme',t);})();</script>
+    <link rel="stylesheet" href="style.css?v=4">
     <style>
         .login-wrapper {
             max-width: 420px;
@@ -124,8 +125,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <body>
     <div class="navbar">
         <a href="index.html" class="logo">
-            <img src="LOGO ADK.png" alt="ADK Logo" style="width:36px;height:26px;object-fit:contain;flex-shrink:0;">
-            <span>ADK PHOTOCOPY</span>
+            <img src="Favicon Adkivia.png" alt="ADK Logo" style="width:52px;height:52px;object-fit:contain;flex-shrink:0;">
+            <span><span style="color:#1565C0">ADK</span><span style="color:#29B6F6">IVIA</span></span>
         </a>
         <div class="menu">
             <a href="index.html">Home</a>
@@ -143,14 +144,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="dropdown">
                 <a href="#" class="dropdown-toggle">Contact Us <span class="dropdown-arrow">▾</span></a>
                 <div class="dropdown-menu">
-                    <a href="https://www.tiktok.com/@adk_rowosari" target="_blank" rel="noopener"><div class="dropdown-item-icon">🎵</div><div class="dropdown-item-title">TikTok</div></a>
-                    <a href="https://www.instagram.com/adk_rowosari?igsh=MXV4OXdwbnQycGp5cg==" target="_blank" rel="noopener"><div class="dropdown-item-icon">📸</div><div class="dropdown-item-title">Instagram</div></a>
-                    <a href="https://wa.me/6281228790091" target="_blank" rel="noopener"><div class="dropdown-item-icon">💬</div><div class="dropdown-item-title">WA Admin</div></a>
-                    <a href="https://wa.me/62895341996647" target="_blank" rel="noopener"><div class="dropdown-item-icon">🏪</div><div class="dropdown-item-title">WA Toko</div></a>
+                    <div class="dropdown-group-label">Hubungi Kami</div>
+                    <a href="https://wa.me/6281228790091" target="_blank" rel="noopener"><div class="dropdown-item-icon" style="background:rgba(37,211,102,0.15);">💬</div><div class="dropdown-item-title">WA Admin</div></a>
+                    <a href="https://wa.me/6287700277748" target="_blank" rel="noopener"><div class="dropdown-item-icon" style="background:rgba(37,211,102,0.15);">🏪</div><div class="dropdown-item-title">WA Toko (Cepiring)</div></a>
+                    <a href="https://wa.me/62895341996647" target="_blank" rel="noopener"><div class="dropdown-item-icon" style="background:rgba(37,211,102,0.15);">🏪</div><div class="dropdown-item-title">WA Toko (Rowosari)</div></a>
+                    <div class="dropdown-divider"></div>
+                    <div class="dropdown-group-label">Sosial Media</div>
+                    <a href="https://www.instagram.com/adk_rowosari?igsh=MXV4OXdwbnQycGp5cg==" target="_blank" rel="noopener"><div class="dropdown-item-icon" style="background:rgba(225,48,108,0.15);">📸</div><div class="dropdown-item-title">Instagram</div></a>
+                    <a href="https://www.tiktok.com/@adk_rowosari" target="_blank" rel="noopener"><div class="dropdown-item-icon" style="background:rgba(0,0,0,0.12);">🎵</div><div class="dropdown-item-title">TikTok</div></a>
                 </div>
             </div>
         </div>
         <div class="nav-right">
+            <button class="theme-toggle" onclick="toggleTheme()" title="Mode Siang">☀️</button>
             <a href="cek_pembelian.php" class="btn-nav active">Cek Pembelian</a>
         </div>
         <div class="mobile-jasa-drop" id="jasaDrop">
@@ -159,6 +165,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <a href="jasa.html">📄 Penomoran Halaman</a>
             </div>
         </div>
+        <button class="theme-toggle theme-toggle-mob" onclick="toggleTheme()" title="Mode Siang">☀️</button>
         <button class="hamburger" onclick="openMobileMenu()">
             <span></span><span></span><span></span>
         </button>
@@ -167,20 +174,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="mobile-nav" id="mobileNav">
         <div class="mobile-nav-header">
             <a href="index.html" class="logo">
-                <img src="LOGO ADK.png" alt="ADK Logo" style="width:36px;height:26px;object-fit:contain;flex-shrink:0;">
-                <span>ADK PHOTOCOPY</span>
+                <img src="Favicon Adkivia.png" alt="ADK Logo" style="width:52px;height:52px;object-fit:contain;flex-shrink:0;">
+                <span><span style="color:#1565C0">ADK</span><span style="color:#29B6F6">IVIA</span></span>
             </a>
-            <button class="mobile-nav-close" onclick="closeMobileMenu()">✕</button>
+            <div style="display:flex;align-items:center;gap:8px;">
+                <button class="theme-toggle" onclick="toggleTheme()" title="Mode Siang">☀️</button>
+                <button class="mobile-nav-close" onclick="closeMobileMenu()">✕</button>
+            </div>
         </div>
         <div class="mobile-nav-links">
             <a href="index.html">Home</a>
             <a href="tutorial.html">Tutorial</a>
             <a href="jasa.html">Jasa ADK</a>
             <div class="mobile-nav-section-title">Contact Us</div>
-            <a href="https://www.tiktok.com/@adk_rowosari" target="_blank" rel="noopener" class="mobile-nav-contact">🎵 TikTok</a>
-            <a href="https://www.instagram.com/adk_rowosari?igsh=MXV4OXdwbnQycGp5cg==" target="_blank" rel="noopener" class="mobile-nav-contact">📸 Instagram</a>
             <a href="https://wa.me/6281228790091" target="_blank" rel="noopener" class="mobile-nav-contact">💬 WA Admin</a>
-            <a href="https://wa.me/62895341996647" target="_blank" rel="noopener" class="mobile-nav-contact">🏪 WA Toko</a>
+            <a href="https://wa.me/6287700277748" target="_blank" rel="noopener" class="mobile-nav-contact">🏪 WA Toko (Cepiring)</a>
+            <a href="https://wa.me/62895341996647" target="_blank" rel="noopener" class="mobile-nav-contact">🏪 WA Toko (Rowosari)</a>
+            <a href="https://www.instagram.com/adk_rowosari?igsh=MXV4OXdwbnQycGp5cg==" target="_blank" rel="noopener" class="mobile-nav-contact">📸 Instagram</a>
+            <a href="https://www.tiktok.com/@adk_rowosari" target="_blank" rel="noopener" class="mobile-nav-contact">🎵 TikTok</a>
         </div>
         <div class="mobile-nav-footer">
             <a href="cek_pembelian.php" class="btn-nav">Cek Pembelian</a>
@@ -215,12 +226,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="login-wrapper">
         <div class="login-card">
             <div class="login-title">Cek Pembelian</div>
-            <div class="login-sub">Masukkan nomor telepon yang digunakan saat order</div>
+            <div class="login-sub">Masukkan email yang digunakan saat order</div>
 
             <form method="POST">
-                <label class="login-label">Nomor Telepon</label>
-                <input type="tel" name="phone" class="login-input"
-                       placeholder="Contoh: 08123456789" autofocus>
+                <label class="login-label">Email</label>
+                <input type="email" name="email" class="login-input"
+                       placeholder="Contoh: email@kamu.com" autofocus>
                 <?php if ($error): ?>
                 <div class="login-error"><?= htmlspecialchars($error) ?></div>
                 <?php endif; ?>
@@ -233,20 +244,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <script>
         document.addEventListener('contextmenu', e => e.preventDefault());
 
-        var _currentPhone = <?= json_encode($_SESSION['phone'] ?? '') ?>;
+        var _currentEmail = <?= json_encode($_SESSION['email'] ?? '') ?>;
 
         document.querySelector('form').addEventListener('submit', function (e) {
             e.preventDefault();
-            var phone = document.querySelector('input[name="phone"]').value.trim();
-            if (!phone) return;
+            var email = document.querySelector('input[name="email"]').value.trim();
+            if (!email) return;
 
-            // Nomor sama dengan yang sudah login → skip OTP langsung masuk
-            if (_currentPhone && phone === _currentPhone) {
+            // Email sama dengan yang sudah login → skip OTP langsung masuk
+            if (_currentEmail && email === _currentEmail) {
                 HTMLFormElement.prototype.submit.call(document.querySelector('form'));
                 return;
             }
 
-            requireOTP(phone, function () {
+            requireOTP(email, function () {
                 // OTP verified — submit form secara programatik (bypass listener)
                 HTMLFormElement.prototype.submit.call(document.querySelector('form'));
             });
@@ -288,6 +299,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <p class="footer-bottom">© 2025 ADK PHOTOCOPY · All Rights Reserved.</p>
     </footer>
     <script src="nocopy.js"></script>
+    <script src="theme.js?v=1"></script>
 </body>
 </html>
 

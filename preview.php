@@ -4,8 +4,8 @@ session_start();
 require_once __DIR__ . '/includes/config.php';
 require_once __DIR__ . '/includes/db.php';
 
-$phone = $_SESSION['phone'] ?? $_SESSION['cek_phone'] ?? null;
-if (!$phone) { header("Location: cek_pembelian.php"); exit; }
+$email = $_SESSION['email'] ?? $_SESSION['cek_email'] ?? null;
+if (!$email) { header("Location: cek_pembelian.php"); exit; }
 
 $id = (int)($_GET['id'] ?? 0);
 if (!$id) { header("Location: history.php"); exit; }
@@ -13,7 +13,7 @@ if (!$id) { header("Location: history.php"); exit; }
 try {
     $db   = getDB();
     $stmt = $db->prepare("SELECT * FROM orders WHERE id = :id AND phone = :phone");
-    $stmt->execute([':id' => $id, ':phone' => $phone]);
+    $stmt->execute([':id' => $id, ':phone' => $email]);
     $order = $stmt->fetch();
 } catch (Exception $e) { $order = null; }
 
@@ -34,7 +34,8 @@ $chipText  = $isPaid ? 'Lunas' : ($order['status'] === 'failed' ? 'Gagal' : 'Men
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Preview Hasil – ADK</title>
-    <link rel="stylesheet" href="style.css">
+    <script>(function(){var t=localStorage.getItem('adkTheme')||'light';document.documentElement.setAttribute('data-theme',t);})();</script>
+    <link rel="stylesheet" href="style.css?v=4">
     <style>
         .preview-wrap {
             max-width: 1100px;
@@ -175,8 +176,8 @@ $chipText  = $isPaid ? 'Lunas' : ($order['status'] === 'failed' ? 'Gagal' : 'Men
 <body>
     <div class="navbar">
         <a href="index.html" class="logo">
-            <img src="LOGO ADK.png" alt="ADK Logo">
-            <span>ADK PHOTOCOPY</span>
+            <img src="Favicon Adkivia.png" alt="ADK Logo">
+            <span><span style="color:#1565C0">ADK</span><span style="color:#29B6F6">IVIA</span></span>
         </a>
         <div class="menu">
             <a href="index.html">Home</a>
@@ -192,6 +193,7 @@ $chipText  = $isPaid ? 'Lunas' : ($order['status'] === 'failed' ? 'Gagal' : 'Men
             </div>
         </div>
         <div class="nav-right">
+            <button class="theme-toggle" onclick="toggleTheme()" title="Mode Siang">☀️</button>
             <a href="cek_pembelian.php" class="btn-nav">Cek Pembelian</a>
         </div>
         <div class="mobile-jasa-drop" id="jasaDrop">
@@ -200,6 +202,7 @@ $chipText  = $isPaid ? 'Lunas' : ($order['status'] === 'failed' ? 'Gagal' : 'Men
                 <a href="jasa.html">📄 Penomoran Halaman</a>
             </div>
         </div>
+        <button class="theme-toggle theme-toggle-mob" onclick="toggleTheme()" title="Mode Siang">☀️</button>
         <button class="hamburger" onclick="openMobileMenu()">
             <span></span><span></span><span></span>
         </button>
@@ -208,10 +211,13 @@ $chipText  = $isPaid ? 'Lunas' : ($order['status'] === 'failed' ? 'Gagal' : 'Men
     <div class="mobile-nav" id="mobileNav">
         <div class="mobile-nav-header">
             <a href="index.html" class="logo">
-                <img src="LOGO ADK.png" alt="ADK Logo">
-                <span>ADK PHOTOCOPY</span>
+                <img src="Favicon Adkivia.png" alt="ADK Logo">
+                <span><span style="color:#1565C0">ADK</span><span style="color:#29B6F6">IVIA</span></span>
             </a>
-            <button class="mobile-nav-close" onclick="closeMobileMenu()">✕</button>
+            <div style="display:flex;align-items:center;gap:8px;">
+                <button class="theme-toggle" onclick="toggleTheme()" title="Mode Siang">☀️</button>
+                <button class="mobile-nav-close" onclick="closeMobileMenu()">✕</button>
+            </div>
         </div>
         <div class="mobile-nav-links">
             <a href="index.html">Home</a>
@@ -297,6 +303,7 @@ $chipText  = $isPaid ? 'Lunas' : ($order['status'] === 'failed' ? 'Gagal' : 'Men
     <script>
         document.addEventListener('contextmenu', e => e.preventDefault());
     </script>
+    <script src="theme.js?v=1"></script>
 </body>
 </html>
 

@@ -4,10 +4,10 @@ require_once __DIR__ . '/../includes/db.php';
 
 header('Content-Type: application/json');
 $data  = json_decode(file_get_contents('php://input'), true);
-$phone = trim($data['phone'] ?? '');
+$email = trim($data['email'] ?? '');
 $token = trim($data['token'] ?? '');
 
-if (!$phone || !$token) { echo json_encode(['ok' => false]); exit; }
+if (!$email || !$token) { echo json_encode(['ok' => false]); exit; }
 
 try {
     $db   = getDB();
@@ -15,7 +15,7 @@ try {
         "SELECT id FROM trusted_devices
          WHERE phone = :p AND token = :t AND expires_at > NOW() LIMIT 1"
     );
-    $stmt->execute([':p' => $phone, ':t' => $token]);
+    $stmt->execute([':p' => $email, ':t' => $token]);
     $row = $stmt->fetch();
 
     if ($row) {

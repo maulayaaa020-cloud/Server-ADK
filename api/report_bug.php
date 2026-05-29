@@ -7,7 +7,7 @@ require_once __DIR__ . '/../includes/db.php';
 header('Content-Type: application/json');
 
 $data  = json_decode(file_get_contents('php://input'), true);
-$phone = $_SESSION['phone'] ?? $_SESSION['cek_phone'] ?? '-';
+$email = $_SESSION['email'] ?? $_SESSION['cek_email'] ?? '-';
 
 $orderId   = trim($data['order_id']  ?? '');
 $fileName  = trim($data['file_name'] ?? '');
@@ -77,7 +77,7 @@ try {
         'Order ID  : ' . $orderId,
         'Nama File : ' . $fileName,
         'Paket     : ' . $paket,
-        'No. HP    : ' . $phone,
+        'Email     : ' . $email,
         'Masalah   : ' . $jenis,
         'Keterangan: ' . ($deskripsi ?: '-'),
         '',
@@ -96,7 +96,7 @@ try {
            ':pk'  => $paket,
            ':jn'  => $jenis,
            ':ds'  => $deskripsi,
-           ':ph'  => $phone,
+           ':ph'  => $email,
        ]);
 
     echo json_encode(['ok' => true]);

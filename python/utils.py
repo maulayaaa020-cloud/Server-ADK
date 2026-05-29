@@ -8,6 +8,7 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_LINE_SPACING
 from docx.shared import Pt, Cm
 from copy import deepcopy
 import re
+import difflib
 
 
 # =========================================================
@@ -19,7 +20,7 @@ ROMAN_START_KEYWORDS = [
     "abstrak",
     "lembar pengesahan", "lembar persetujuan", "halaman pengesahan",
     "pengesahan", "persetujuan",
-    "lembar pernyataan", "pernyataan keaslian",
+    "lembar pernyataan", "surat pernyataan", "pernyataan keaslian",
     "halaman pernyataan",
     "rekomendasi",
     "halaman persembahan", "persembahan", "motto",
@@ -29,13 +30,17 @@ ROMAN_START_KEYWORDS = [
     "daftar singkatan", "daftar lambang", "daftar notasi", "daftar simbol",
     "daftar istilah", "daftar arti lambang", "daftar arti simbol",
     "abstract", "summary", "executive summary",
-    "preface", "foreword", "acknowledgment", "acknowledgements",
+    "preface", "foreword",
+    "acknowledgment", "acknowledgments", "acknowledgement", "acknowledgements",
     "approval page", "approval sheet", "declaration", "originality statement",
     "dedication",
+    "glossary",
     "table of contents", "list of contents", "contents",
     "list of tables", "list of figures", "list of appendices",
     "list of abbreviations", "list of symbols", "list of notations",
+    "list of equations", "list of plates",
     "nomenclature",
+    "curriculum vitae", "vita", "biographical sketch",
 ]
 
 _ROMAN_PAT = r'm{0,4}(cm|cd|d?c{0,3})(xc|xl|l?x{0,3})(ix|iv|v?i{0,3})'
@@ -44,10 +49,50 @@ BAB_HEAD_RE = re.compile(
     re.IGNORECASE | re.DOTALL
 )
 
+# Endpoint terms untuk fuzzy matching di is_bab_heading
+_BAB_ENDPOINT_FUZZY = [
+    'daftar pustaka',
+    'referensi', 'references', 'reference list',
+    'bibliography', 'bibliographies', 'works cited', 'literature cited',
+    'lampiran', 'appendix', 'appendices', 'attachment',
+]
+
+# Keywords TOC — dipakai di is_toc_heading (module-level agar tidak di-rebuild tiap panggilan)
+_TOC_KEYWORDS = [
+    "daftar isi", "daftar tabel", "daftar gambar", "daftar lampiran",
+    "table of contents", "list of contents", "list of tables",
+    "list of figures", "list of appendices",
+    "list of abbreviations", "list of symbols", "list of notations",
+]
+
+
+def _fuzzy_match(a, b, threshold=0.82):
+    """True jika string a ≈ string b (toleransi typo kecil).
+    Guard panjang: selisih karakter tidak boleh melebihi max(3, 20% panjang keyword).
+    Gunakan quick_ratio() sebagai filter cepat sebelum ratio() penuh."""
+    diff = abs(len(a) - len(b))
+    if diff > max(3, int(len(b) * 0.20)):
+        return False
+    sm = difflib.SequenceMatcher(None, a, b, autojunk=False)
+    return sm.quick_ratio() >= threshold and sm.ratio() >= threshold
+
 
 def is_roman_start(text):
     lower = text.strip().lower()
-    return any(lower == k or lower.startswith(k) for k in ROMAN_START_KEYWORDS)
+    # Pencocokan eksak / startswith
+    if any(lower == k or lower.startswith(k) for k in ROMAN_START_KEYWORDS):
+        return True
+    # Toleransi typo: bandingkan baris pertama terhadap setiap keyword ≥6 karakter
+    first_line = lower.split('\n')[0].strip()
+    if len(first_line) < 4:
+        return False
+    # Guard: bentuk verba Indonesia (-kan, -lah, -nya) tidak dianggap heading roman zone
+    if re.search(r'(kan|lah|nya)\s*$', first_line):
+        return False
+    for kw in ROMAN_START_KEYWORDS:
+        if len(kw) >= 6 and _fuzzy_match(first_line, kw, threshold=0.82):
+            return True
+    return False
 
 
 def _has_toc_field(p_elem):
@@ -72,6 +117,14 @@ def is_bab_heading(text):
         return True
     if re.match(r'^\s*(lampiran|appendix|appendices|attachment)(\s+.*)?$', text, re.IGNORECASE):
         return True
+    # Toleransi typo untuk endpoint terms (DAFTAR PUSTAKA, LAMPIRAN, dll.)
+    # Hanya berlaku untuk teks pendek (≤ 25 karakter) agar tidak salah cocok konten.
+    # Guard: bentuk verba (-kan, -lah) dan kata benda turunan panjang dilewati.
+    lower = text.lower()
+    if 5 <= len(lower) <= 25 and not re.search(r'(kan|lah|nya)\s*$', lower):
+        for kw in _BAB_ENDPOINT_FUZZY:
+            if len(kw) >= 6 and _fuzzy_match(lower, kw, threshold=0.82):
+                return True
     return False
 
 
@@ -121,11 +174,15 @@ def is_false_bab(para):
 
 def is_toc_heading(text):
     lower = text.strip().lower()
-    return any(k in lower for k in [
-        "daftar isi", "daftar tabel", "daftar gambar", "daftar lampiran",
-        "table of contents", "list of contents", "list of tables",
-        "list of figures", "list of appendices",
-    ])
+    if any(k in lower for k in _TOC_KEYWORDS):
+        return True
+    # Toleransi typo: baris pertama dibandingkan tiap keyword TOC
+    first_line = lower.split('\n')[0].strip()
+    if len(first_line) >= 6:
+        for kw in _TOC_KEYWORDS:
+            if len(kw) >= 8 and _fuzzy_match(first_line, kw, threshold=0.93):
+                return True
+    return False
 
 
 def is_toc_entry(text):
@@ -220,17 +277,70 @@ class DocProcessor:
     def advance_roman_start(doc, roman_start_p, num_cover):
         """
         Geser roman_start_p ke paragraf pada halaman (num_cover + 1).
-        Digunakan saat user memiliki lebih dari 1 halaman cover.
-        Menghitung page break (manual w:br type=page atau sectPr) dari awal dokumen.
+        Returns (new_roman_start_p, use_exact):
+          use_exact=True  → caller harus set exact_roman_start=True di insert_breaks,
+                            agar _find_section_start tidak memindahkan roman_start_p
+                            ke awal section (yang akan mengacaukan multi-cover).
+          use_exact=False → biarkan insert_breaks berjalan normal.
 
-        Guard: jika roman_start_p belum melewati (num_cover - 1) page break dari awal,
-        dokumen tidak punya cukup halaman cover → kembalikan roman_start_p apa adanya.
+        Kasus:
+          breaks_before >= num_cover        : advance ke halaman num_cover+1.
+          breaks_before == num_cover - 1    : dokumen sudah punya jumlah section cover
+                                              yang tepat → gunakan roman_start_p apa adanya
+                                              tapi set use_exact=True.
+          breaks_before < num_cover - 1 / 0: tidak bisa diperbaiki tanpa rendering.
         """
-        if num_cover <= 1:
-            return roman_start_p
-
         W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
         body_els = list(doc.element.body)
+
+        if num_cover <= 1:
+            # Untuk num_cover=1: exit early hanya jika bb=0 (tidak ada page break sama sekali).
+            # Jika bb >= 1, ada page break sebelum roman_start_p — lanjutkan ke advance logic:
+            #   - bb=1 dan candidate == roman_start_p (break tepat sebelum roman): tidak berubah
+            #   - bb=1 dan candidate != roman_start_p (ada konten cover ke-2 setelah break): advance
+            #   - bb > 1: duplikat cover eksplisit → advance melewati salinan ke-1
+            def _hb_early(el):
+                if any(br.get("{%s}type" % W) == 'page' for br in el.iter("{%s}br" % W)):
+                    return True
+                pPr = el.find("{%s}pPr" % W)
+                return pPr is not None and pPr.find("{%s}sectPr" % W) is not None
+
+            def _cover_repeat_idx(end_idx):
+                """Temukan indeks paragraf terakhir cover versi ke-1 dengan mendeteksi
+                teks penutup cover (tahun, institusi) yang muncul dua kali.
+                Trigger jika: teks >= 4 karakter, posisi ulang berjarak >= 5 elemen."""
+                last_txt, last_j = None, -1
+                for j in range(end_idx, -1, -1):
+                    el = body_els[j]
+                    if not el.tag.endswith('}p'):
+                        continue
+                    t = ''.join(tx.text or '' for tx in el.iter('{%s}t' % W)).strip()
+                    if t:
+                        last_txt, last_j = t, j
+                        break
+                if not last_txt or len(last_txt) < 4 or last_j < 0:
+                    return -1
+                for j in range(last_j - 1, -1, -1):
+                    el = body_els[j]
+                    if not el.tag.endswith('}p'):
+                        continue
+                    t = ''.join(tx.text or '' for tx in el.iter('{%s}t' % W)).strip()
+                    if t == last_txt and last_j - j >= 5:
+                        return j
+                return -1
+
+            try:
+                _rsp_i = body_els.index(roman_start_p)
+            except ValueError:
+                return roman_start_p, False
+            _bb = sum(1 for el in body_els[:_rsp_i] if _hb_early(el))
+            if _bb < num_cover:
+                # bb=0: cek cover berulang tanpa break eksplisit (bilingual/duplikat — Docx 3)
+                _fv = _cover_repeat_idx(_rsp_i - 1)
+                if 0 <= _fv < _rsp_i - 1:
+                    return body_els[_fv + 1], False
+                return roman_start_p, False
+            # _bb >= num_cover: lanjut ke advance logic di bawah
 
         def _has_break(el):
             if any(br.get("{%s}type" % W) == 'page' for br in el.iter("{%s}br" % W)):
@@ -242,25 +352,395 @@ class DocProcessor:
         try:
             rsp_idx = body_els.index(roman_start_p)
         except ValueError:
-            return roman_start_p
+            return roman_start_p, False
 
         breaks_before = sum(1 for el in body_els[:rsp_idx] if _has_break(el))
 
-        # Jika roman_start_p belum melewati num_cover-1 page break,
-        # dokumen tidak punya num_cover halaman cover → jangan advance
-        if breaks_before < num_cover - 1:
+        def _txt(el):
+            return ''.join(t.text or '' for t in el.iter('{%s}t' % W)).strip()
+
+        def _el_tag(el):
+            return el.tag.split('}')[-1] if '}' in el.tag else el.tag
+
+        def _is_empty_sectPr(el):
+            if _el_tag(el) != 'p':
+                return False
+            if _txt(el):
+                return False
+            # Paragraf dengan gambar/drawing tidak dianggap kosong
+            _WP = "http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"
+            if (el.find('.//{%s}inline' % _WP) is not None or
+                    el.find('.//{%s}anchor' % _WP) is not None):
+                return False
+            pPr = el.find('{%s}pPr' % W)
+            return pPr is not None and pPr.find('{%s}sectPr' % W) is not None
+
+        def _remove_pgbr(el):
+            for br in list(el.findall('.//{%s}br' % W)):
+                if br.get('{%s}type' % W) == 'page':
+                    p = br.getparent()
+                    if p is not None:
+                        p.remove(br)
+
+        # Advance: hanya jika ada cukup break eksplisit (satu per halaman cover).
+        if breaks_before >= num_cover:
+            target_pg  = num_cover + 1
+            current_pg = 1
+            candidate  = None
+            for el in body_els:
+                if current_pg >= target_pg:
+                    candidate = el
+                    break
+                if _has_break(el):
+                    current_pg += 1
+
+            if candidate is not None:
+                # Lewati paragraf kosong ber-sectPr (cegah blank page extra).
+                # Juga hapus pgBr dari paragraf tepat sebelum paragraf kosong itu.
+                cand_idx = next((i for i, e in enumerate(body_els) if e is candidate), len(body_els))
+                while cand_idx < len(body_els) and _is_empty_sectPr(body_els[cand_idx]):
+                    if cand_idx > 0:
+                        _remove_pgbr(body_els[cand_idx - 1])
+                    cand_idx += 1
+                candidate = body_els[cand_idx] if cand_idx < len(body_els) else candidate
+
+                # num_cover=1: tangani cover duplikat/bilingual dan separator kosong
+                if num_cover <= 1 and candidate is not None:
+                    if candidate is roman_start_p:
+                        # Break tepat sebelum roman_start_p: cek cover berulang.
+                        _b_idx  = cand_idx - 1   # index element break (pgBr/sectPr)
+                        _ce_idx = _b_idx - 1      # index elemen terakhir cover content
+                        if _ce_idx >= 0:
+                            _fv = _cover_repeat_idx(_ce_idx)
+                            if 0 <= _fv < _ce_idx:
+                                # Majukan roman_start ke awal salinan ke-2 cover.
+                                # Jangan hapus PGBR di _b_idx — ia adalah pemisah di dalam
+                                # zona romawi (misal antara cover 2 dan HALAMAN PERNYATAAN),
+                                # bukan pemisah antar dua salinan cover.
+                                return body_els[_fv + 1], False
+                    else:
+                        # candidate != roman_start_p: separator internal antar-cover (Docx 14).
+                        if cand_idx > 0 and _is_empty_sectPr(body_els[cand_idx - 1]):
+                            # Paragraf kosong dengan sectPr → hapus, biarkan insert_breaks
+                            # menyisipkan sectPr baru yang bersih.
+                            try:
+                                doc.element.body.remove(body_els[cand_idx - 1])
+                            except ValueError:
+                                pass
+                        elif cand_idx > 0:
+                            _prev = body_els[cand_idx - 1]
+                            _WP2 = "http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"
+                            if _prev.find('.//{%s}anchor' % _WP2) is not None:
+                                # Paragraf berisi gambar (anchor) dengan sectPr.
+                                # Pindahkan sectPr ke paragraf TERAKHIR BERISI TEKS sebelum gambar
+                                # (bukan ke candidate/empty setelah gambar). Ini agar:
+                                # 1. Section 0 berakhir tepat setelah teks terakhir cover 1.
+                                # 2. Gambar + paragraf kosong antara teks & gambar masuk section 1.
+                                # 3. Loop while di insert_breaks otomatis menghapus para kosong
+                                #    tersebut, sehingga gambar langsung di posisi pertama section 1.
+                                # 4. Tidak ada blank page antara cover 1 dan roman zone.
+                                _pPr_prev = _prev.find('{%s}pPr' % W)
+                                if _pPr_prev is not None:
+                                    _sectPr_mv = _pPr_prev.find('{%s}sectPr' % W)
+                                    if _sectPr_mv is not None:
+                                        # Cari paragraf terakhir berisi teks sebelum gambar
+                                        _last_txt_p   = None
+                                        _last_txt_idx = -1
+                                        for _k in range(cand_idx - 2, -1, -1):
+                                            _ek = body_els[_k]
+                                            if _el_tag(_ek) == 'p' and _txt(_ek):
+                                                _last_txt_p   = _ek
+                                                _last_txt_idx = _k
+                                                break
+                                        if _last_txt_p is not None:
+                                            _pPr_prev.remove(_sectPr_mv)
+                                            _ltPr = _last_txt_p.find('{%s}pPr' % W)
+                                            if _ltPr is None:
+                                                from lxml import etree as _et2
+                                                _ltPr = _et2.SubElement(
+                                                    _last_txt_p, '{%s}pPr' % W)
+                                            _ltPr.append(_sectPr_mv)
+                                            # Tambahkan PGBR ke paragraf gambar agar
+                                            # teks cover 2 dimulai di halaman baru
+                                            # (menggantikan efek page-break dari sectPr
+                                            # yang dipindah ke last_txt_p).
+                                            from lxml import etree as _et3
+                                            _br_r  = _et3.SubElement(_prev, '{%s}r' % W)
+                                            _br_el = _et3.SubElement(_br_r, '{%s}br' % W)
+                                            _br_el.set('{%s}type' % W, 'page')
+                                            # Kembalikan paragraf tepat setelah last_txt_p
+                                            # sebagai roman_start_p.
+                                            # _roman_already_bounded=True → insert_break_before_xml
+                                            # dilewati. Loop while di insert_breaks menghapus
+                                            # para kosong sampai bertemu gambar (has_content).
+                                            _new_rsp = (body_els[_last_txt_idx + 1]
+                                                        if _last_txt_idx + 1 < len(body_els)
+                                                        else roman_start_p)
+                                            return _new_rsp, True
+
+                # Cek apakah ada is_roman_start di antara roman_start_p dan candidate
+                cand_idx2 = next((i for i, e in enumerate(body_els) if e is candidate), len(body_els))
+                for el in body_els[rsp_idx + 1:cand_idx2]:
+                    _t = _el_tag(el)
+                    if _t == 'p':
+                        _t2 = _txt(el)
+                        if _t2 and is_roman_start(_t2):
+                            return el, True
+                # num_cover=1: gunakan use_exact=False agar allow_empty_boundary tidak aktif
+                # saat insert_breaks memproses BAB boundaries (mencegah sectPr kosong ekstra).
+                return candidate, (num_cover > 1)
+
+        # breaks_before == num_cover - 1: sudah ada (num_cover-1) break sebelum roman_start_p.
+        # Step 1: cek page-header yang diulang (kasus Docx 2 — mundurkan rsp ke judul).
+        # Step 2: scan maju dari rsp untuk page break eksplisit — kalau ketemu, roman zone
+        #         sebenarnya dimulai SETELAH page break itu (halaman num_cover masih cover).
+        if breaks_before == num_cover - 1:
+            new_rsp   = DocProcessor._find_roman_page_start(body_els, rsp_idx, W)
+            moved_back = new_rsp is not body_els[rsp_idx]
+
+            if not moved_back:
+                # Fix A: jika break terakhir sebelum rsp adalah sectPr di paragraf KOSONG,
+                # boundary sudah ada dengan benar → tidak perlu advance.
+                # (sectPr di paragraf ber-konten = batas cover1/cover2, bukan batas covers/roman)
+                _WP_NS = "http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"
+                for _j in range(rsp_idx - 1, -1, -1):
+                    if _has_break(body_els[_j]):
+                        _pPr = body_els[_j].find('{%s}pPr' % W)
+                        if (_pPr is not None and _pPr.find('{%s}sectPr' % W) is not None
+                                and not _txt(body_els[_j])):
+                            # Jika sectPr mengandung gambar, Section 0 meluas ke halaman fisik
+                            # tambahan karena gambar itu. Roman zone harus mulai dari elemen
+                            # PERTAMA setelah sectPr, bukan dari roman_start_p yang jauh.
+                            _sect_has_img = (
+                                body_els[_j].find('.//{%s}inline' % _WP_NS) is not None or
+                                body_els[_j].find('.//{%s}anchor' % _WP_NS) is not None
+                            )
+                            if _sect_has_img:
+                                _after = _j + 1
+                                return (body_els[_after]
+                                        if _after < len(body_els) else roman_start_p), True
+                            # Jika tidak ada konten antara sectPr ini dan roman_start_p,
+                            # sectPr adalah batas "cover-ke-roman" langsung (bukan cover2).
+                            # Return False agar ensure_cover_pages sisipkan blank cover ke-2.
+                            _has_cov2 = any(
+                                _txt(body_els[_k]).strip()
+                                for _k in range(_j + 1, rsp_idx)
+                                if _el_tag(body_els[_k]) == 'p'
+                            )
+                            return roman_start_p, _has_cov2
+                        # Fix C (Docx 9): pgBr kosong sebelum rsp dengan banyak konten sebelumnya
+                        # → cover sudah memenuhi ≥ num_cover halaman → pgBr adalah batas covers/roman.
+                        if (any(br.get('{%s}type' % W) == 'page'
+                                for br in body_els[_j].iter('{%s}br' % W))
+                                and not _txt(body_els[_j])):
+                            _nonempty = sum(
+                                1 for _k in range(_j)
+                                if _el_tag(body_els[_k]) == 'p' and _txt(body_els[_k])
+                            )
+                            if _nonempty >= 20:
+                                return roman_start_p, True
+                        break  # last break adalah pgBr atau sectPr ber-konten → lanjut
+
+                # Hapus pgBr dari paragraf kosong tepat sebelum rsp (cegah blank page
+                # dalam cover section ketika cover penuh mengisi halaman).
+                if rsp_idx > 0:
+                    prev_el = body_els[rsp_idx - 1]
+                    if (_el_tag(prev_el) == 'p' and not _txt(prev_el) and
+                            any(br.get('{%s}type' % W) == 'page'
+                                for br in prev_el.iter('{%s}br' % W))):
+                        _remove_pgbr(prev_el)
+
+                # Scan maju untuk page break eksplisit.
+                pgbr_found = False
+                for j in range(rsp_idx, min(rsp_idx + 150, len(body_els))):
+                    el  = body_els[j]
+                    tag = _el_tag(el)
+                    if tag != 'p':
+                        continue
+                    pPr = el.find('{%s}pPr' % W)
+                    if pPr is not None and pPr.find('{%s}sectPr' % W) is not None:
+                        break  # section boundary — stop
+                    if any(br.get('{%s}type' % W) == 'page' for br in el.iter('{%s}br' % W)):
+                        for k in range(j + 1, len(body_els)):
+                            nxt  = body_els[k]
+                            ntag = _el_tag(nxt)
+                            if ntag == 'p':
+                                new_rsp = nxt
+                                pgbr_found = True
+                                break
+                        break
+
+                # Fallback: jika tidak ada pgBr, cari roman keyword berikutnya
+                # (menangani kasus sectPr asli di-dokumen yang sudah membatasi cover1).
+                if not pgbr_found:
+                    rsp_txt = _txt(body_els[rsp_idx]).lower()
+                    for j in range(rsp_idx + 1, min(rsp_idx + 50, len(body_els))):
+                        nxt = body_els[j]
+                        if _el_tag(nxt) != 'p':
+                            continue
+                        pPr = nxt.find('{%s}pPr' % W)
+                        if pPr is not None and pPr.find('{%s}sectPr' % W) is not None:
+                            break
+                        ntxt = _txt(nxt).strip()
+                        if ntxt and is_roman_start(ntxt) and ntxt.lower() != rsp_txt:
+                            new_rsp = nxt
+                            break
+
+            return new_rsp, True
+
+        # breaks_before < num_cover - 1 atau 0: coba forward scan sampai ≤50 elemen.
+        # pgBr dalam roman zone → jangan advance (tetap di rsp). Dua kondisi:
+        #   (B1) element setelah pgBr adalah roman keyword (Docx 3, 18).
+        #   (B2) ada roman keyword ANTARA rsp dan pgBr (Docx 6 — DAFTAR ISI manual).
+        for j in range(rsp_idx, min(rsp_idx + 50, len(body_els))):
+            el  = body_els[j]
+            tag = _el_tag(el)
+            if tag != 'p':
+                continue
+            pPr = el.find('{%s}pPr' % W)
+            if pPr is not None and pPr.find('{%s}sectPr' % W) is not None:
+                break  # section boundary — stop
+            if any(br.get('{%s}type' % W) == 'page' for br in el.iter('{%s}br' % W)):
+                # Fix B2: cek apakah ada roman keyword antara rsp dan pgBr ini.
+                # Pengecualian: jika rsp sendiri adalah 'daftar isi', konten antara
+                # rsp dan pgBr adalah entry TOC, bukan heading section — tidak trigger.
+                _rsp_lower = _txt(body_els[rsp_idx]).lower()
+                if not _rsp_lower.startswith('daftar isi'):
+                    for _bi in range(rsp_idx + 1, j):
+                        _bt = body_els[_bi]
+                        if _el_tag(_bt) != 'p':
+                            continue
+                        _bt_txt = _txt(_bt)
+                        if _bt_txt and is_roman_start(_bt_txt):
+                            # Fix B2: Roman keyword antara rsp dan pgBr → pgBr di dalam roman zone.
+                            # num_cover=1: batas benar, return sekarang.
+                            # num_cover>1: biarkan Change 2 berjalan untuk advance rsp.
+                            if num_cover <= 1:
+                                return roman_start_p, True  # pgBr di dalam roman zone
+                            break  # → Change 2 akan advance rsp ke keyword berikutnya
+                for k in range(j + 1, len(body_els)):
+                    nxt  = body_els[k]
+                    ntag = _el_tag(nxt)
+                    if ntag == 'p':
+                        _nxt_txt = _txt(nxt)
+                        if _nxt_txt and is_roman_start(_nxt_txt):
+                            # Fix B1: pgBr dalam roman zone → jangan advance ke nxt.
+                            # num_cover=1: batas sudah benar, return sekarang.
+                            # num_cover>1: biarkan Change 2 berjalan untuk advance dari
+                            # roman_start_p ke keyword berikutnya (mis. Lembar Pengesahan
+                            # → KATA PENGANTAR) sehingga roman_start_p bisa jadi cover ke-2.
+                            if num_cover <= 1:
+                                return roman_start_p, True
+                            break  # → keluar for k, lalu for j → Change 2 akan berjalan
+                        return nxt, True
+                break
+
+        # Kasus num_cover > 1 dengan breaks_before=0: roman_start_p sendiri (mis. KATA
+        # PENGANTAR) seharusnya menjadi cover ke-2 (unnumbered). Advance ke heading Roman
+        # berikutnya agar seluruh konten antara cover dan heading itu masuk section cover.
+        # Guard: hanya advance jika cover tampak hanya 1 halaman fisik. Deteksi multi-cover
+        # implisit dengan cek apakah teks akhir cover muncul >=2x (pola "cover repeat").
+        if num_cover > 1:
+            _last_cov_txt = None
+            _last_cov_j   = -1
+            for _k in range(rsp_idx - 1, -1, -1):
+                _t = _txt(body_els[_k]).strip()
+                if _t:
+                    _last_cov_txt = _t
+                    _last_cov_j   = _k
+                    break
+            _implicit_pages = 1
+            if _last_cov_txt and len(_last_cov_txt) >= 4 and _last_cov_j >= 5:
+                for _k in range(_last_cov_j - 1, -1, -1):
+                    _t = _txt(body_els[_k]).strip()
+                    if _t == _last_cov_txt and _last_cov_j - _k >= 5:
+                        _implicit_pages += 1
+                        break
+            if _implicit_pages < num_cover:
+                rsp_txt = _txt(body_els[rsp_idx]).lower()
+                for j in range(rsp_idx + 1, min(rsp_idx + 300, len(body_els))):
+                    nxt = body_els[j]
+                    if _el_tag(nxt) != 'p':
+                        continue
+                    pPr = nxt.find('{%s}pPr' % W)
+                    if pPr is not None and pPr.find('{%s}sectPr' % W) is not None:
+                        break
+                    ntxt = _txt(nxt).strip()
+                    if ntxt and is_roman_start(ntxt) and ntxt.lower() != rsp_txt:
+                        return nxt, True
+        return roman_start_p, False
+
+    @staticmethod
+    def _find_roman_page_start(body_els, rsp_idx, W):
+        """
+        Cari awal halaman yang berisi roman_start_p (body_els[rsp_idx]).
+
+        Pola umum skripsi Indonesia: setiap halaman front matter diawali blok judul
+        dokumen yang DIULANG dari halaman sebelumnya (cover repeat, author repeat, dsb.).
+        Fungsi ini mendeteksi blok yang diulang dan menyertakannya ke roman zone agar
+        tidak terbentuk halaman ekstra dalam cover section.
+
+        Algoritma:
+          1. Cari boundary terakhir (sectPr/page-break) sebelum roman_start_p.
+          2. Kumpulkan teks yang sudah muncul SEBELUM boundary itu (= texts_before).
+          3. Mundur dari roman_start_p: selama paragraf non-kosong teksnya ada di
+             texts_before, sertakan dalam roman zone (kandidat page start).
+          4. Berhenti saat teks tidak dikenal atau ketemu boundary baru.
+        """
+        def _get_txt(el):
+            return ''.join(t.text or '' for t in el.iter('{%s}t' % W)).strip()
+
+        def _has_boundary(el):
+            pPr = el.find("{%s}pPr" % W)
+            if pPr is not None and pPr.find("{%s}sectPr" % W) is not None:
+                return True
+            return any(br.get("{%s}type" % W) == 'page' for br in el.iter("{%s}br" % W))
+
+        roman_start_p = body_els[rsp_idx]
+
+        # Langkah 1: cari boundary terakhir sebelum rsp_idx
+        boundary_idx = -1
+        for j in range(rsp_idx - 1, -1, -1):
+            el = body_els[j]
+            if (el.tag.split('}')[-1] if '}' in el.tag else el.tag) != 'p':
+                continue
+            if _has_boundary(el):
+                boundary_idx = j
+                break
+
+        if boundary_idx < 0:
+            return roman_start_p  # tidak ada boundary → tidak bisa deteksi
+
+        # Langkah 2: kumpulkan teks yang pernah muncul sebelum boundary
+        texts_before = set()
+        for j in range(boundary_idx + 1):
+            el = body_els[j]
+            if (el.tag.split('}')[-1] if '}' in el.tag else el.tag) != 'p':
+                continue
+            txt = _get_txt(el)
+            if txt:
+                texts_before.add(txt[:50])
+
+        if not texts_before:
             return roman_start_p
 
-        # Advance ke halaman (num_cover + 1) dihitung dari awal dokumen
-        target_pg  = num_cover + 1
-        current_pg = 1
-        for el in body_els:
-            if current_pg >= target_pg:
-                return el
-            if _has_break(el):
-                current_pg += 1
-
-        return roman_start_p  # fallback jika tidak cukup halaman
+        # Langkah 3: mundur dari rsp_idx mencari blok "page header" yang diulang
+        candidate = roman_start_p
+        for j in range(rsp_idx - 1, max(rsp_idx - 30, -1), -1):
+            el  = body_els[j]
+            tag = el.tag.split('}')[-1] if '}' in el.tag else el.tag
+            if tag != 'p':
+                continue
+            if _has_boundary(el):
+                break  # batas section/page — stop
+            txt = _get_txt(el)
+            if not txt:
+                continue  # lewati kosong
+            if txt[:50] in texts_before and len(txt.strip()) > 5:
+                candidate = el  # teks ini diulang → bagian page header, sertakan
+            else:
+                break  # teks baru/unik → bukan bagian page header, stop
+        return candidate
 
     # ── Header / Footer helpers ───────────────────────────
 
@@ -284,6 +764,15 @@ class DocProcessor:
             for ref in list(sectPr.findall(f'{{{_W}}}headerReference')):
                 if ref.get(f'{{{_W}}}type') == 'even':
                     sectPr.remove(ref)
+
+            # Section dengan continuous sectPr adalah batas internal dalam roman zone
+            # (misal DAFTAR ISI di Docx 15). Jangan akses header/footer-nya via
+            # python-docx karena itu akan membuat headerReference baru di sectPr yang
+            # menyebabkan Word merender continuous break sebagai "Section Break (Next Page)"
+            # sehingga judul DAFTAR ISI terpisah dari isinya.
+            _type_el = sectPr.find(f'{{{_W}}}type')
+            if _type_el is not None and _type_el.get(f'{{{_W}}}val') == 'continuous':
+                continue
 
             # Hanya akses first_page_header/footer jika memang dipakai di section ini.
             # Mengakses part yang tidak dipakai membuat python-docx membuat relationship
@@ -393,8 +882,60 @@ class DocProcessor:
         pPr = p_elem.find(qn('w:pPr'))
         return pPr is not None and pPr.find(qn('w:sectPr')) is not None
 
-    def _make_sectPr(self):
+    def _get_covering_page_layout(self, ref_p):
+        """Dapatkan (pgSz, pgMar) dari section yang saat ini menutupi ref_p.
+        Scan maju dari ref_p mencari sectPr pertama (inline atau body-level).
+        Digunakan agar ukuran kertas halaman 'di bawah break' dipertahankan."""
+        body = self.doc.element.body
+        children = list(body)
+        try:
+            start_idx = children.index(ref_p)
+        except ValueError:
+            start_idx = 0
+        for elem in children[start_idx:]:
+            if not elem.tag.endswith('}p'):
+                continue
+            pPr = elem.find(qn('w:pPr'))
+            if pPr is not None:
+                sectPr = pPr.find(qn('w:sectPr'))
+                if sectPr is not None and sectPr.find(qn('w:pgSz')) is not None:
+                    return (
+                        deepcopy(sectPr.find(qn('w:pgSz'))),
+                        deepcopy(sectPr.find(qn('w:pgMar'))),
+                    )
+        # Fallback: body-level sectPr (section terakhir)
+        body_sectPr = body.find(qn('w:sectPr'))
+        if body_sectPr is not None:
+            pgSz = body_sectPr.find(qn('w:pgSz'))
+            if pgSz is not None:
+                return (deepcopy(pgSz), deepcopy(body_sectPr.find(qn('w:pgMar'))))
+        return None
+
+    def strip_column_breaks_in_tables(self):
+        """Hapus column break dari seluruh dokumen.
+        Column break adalah artifact dari multi-column layout atau copy-paste.
+        Setelah script mengkonversi continuous break → nextPage, column break
+        menjadi tidak valid dan menyebabkan tampilan tabel berantakan."""
+        for p in self.doc.paragraphs:
+            for br in p._p.findall('.//' + qn('w:br')):
+                if br.get(qn('w:type')) == 'column':
+                    br.getparent().remove(br)
+
+    def _make_sectPr(self, page_layout=None):
         new_sectPr = deepcopy(self.doc.sections[-1]._sectPr)
+        # Terapkan pgSz dan pgMar dari section asli jika tersedia (mencegah perubahan ukuran kertas).
+        if page_layout is not None:
+            saved_pgSz, saved_pgMar = page_layout
+            if saved_pgSz is not None:
+                old = new_sectPr.find(qn('w:pgSz'))
+                if old is not None:
+                    new_sectPr.remove(old)
+                new_sectPr.append(deepcopy(saved_pgSz))
+            if saved_pgMar is not None:
+                old = new_sectPr.find(qn('w:pgMar'))
+                if old is not None:
+                    new_sectPr.remove(old)
+                new_sectPr.append(deepcopy(saved_pgMar))
         for child in list(new_sectPr):
             tag = child.tag
             if tag.endswith('headerReference') or tag.endswith('footerReference'):
@@ -415,12 +956,12 @@ class DocProcessor:
             del pgSz.attrib[qn('w:orient')]
         return new_sectPr
 
-    def _attach_sectPr(self, p_elem):
+    def _attach_sectPr(self, p_elem, page_layout=None):
         pPr = p_elem.find(qn('w:pPr'))
         if pPr is None:
             pPr = OxmlElement('w:pPr')
             p_elem.insert(0, pPr)
-        pPr.append(self._make_sectPr())
+        pPr.append(self._make_sectPr(page_layout=page_layout))
 
     def _purge_continuous_sectPr_in_bab_zone(self, first_bab_p):
         body     = self.doc.element.body
@@ -488,12 +1029,15 @@ class DocProcessor:
                     if parent is not None:
                         parent.remove(br)
 
-    def insert_break_before_xml(self, target_p):
+    def insert_break_before_xml(self, target_p, allow_empty_boundary=False, precomputed_layout=None):
         self._remove_page_breaks_before(target_p)
         body     = self.doc.element.body
         children = list(body)
         tgt_idx  = children.index(target_p)
         j = tgt_idx - 1
+        # Gunakan precomputed_layout (dihitung sebelum purge) sebagai baseline.
+        # Bisa di-override oleh sectPr yang lebih dekat ditemukan saat scan mundur.
+        saved_page_layout = precomputed_layout
         while j >= 0:
             elem = children[j]
             tag  = elem.tag
@@ -503,22 +1047,46 @@ class DocProcessor:
                     sectPr = pPr.find(qn('w:sectPr'))
                     if sectPr is not None:
                         if sectPr.find(qn('w:pgSz')) is not None:
+                            if not self._p_has_content(elem):
+                                # sectPr asli dokumen pada paragraf KOSONG —
+                                # pindahkan ke paragraf konten terakhir agar trailing
+                                # empty paragraphs tidak masuk cover section
+                                # (mencegah overflow cover ke halaman ke-2).
+                                # Override saved_page_layout: sectPr yang lebih dekat lebih spesifik.
+                                saved_page_layout = (
+                                    deepcopy(sectPr.find(qn('w:pgSz'))),
+                                    deepcopy(sectPr.find(qn('w:pgMar'))),
+                                )
+                                pPr.remove(sectPr)
+                                j -= 1
+                                continue
+                            # sectPr pada paragraf BERISI KONTEN (kita sendiri yang pasang).
+                            # Untuk BAB: kalau ada paragraf kosong lebih dekat ke target,
+                            # pakai itu sebagai batas section baru.
+                            if allow_empty_boundary:
+                                for k in range(j + 1, tgt_idx):
+                                    nxt = children[k]
+                                    if (nxt.tag.endswith('}p') and
+                                            not self._p_has_content(nxt) and
+                                            not self._has_sectPr(nxt)):
+                                        self._attach_sectPr(nxt, page_layout=saved_page_layout)
+                                        return
                             return
                         else:
                             pPr.remove(sectPr)
                             if self._p_has_content(elem):
-                                self._attach_sectPr(elem)
+                                self._attach_sectPr(elem, page_layout=saved_page_layout)
                                 return
                             j -= 1
                             continue
                 if self._p_has_content(elem):
-                    self._attach_sectPr(elem)
+                    self._attach_sectPr(elem, page_layout=saved_page_layout)
                     return
             elif tag.endswith('}tbl') or tag.endswith('}sdt'):
                 new_p   = OxmlElement('w:p')
                 new_pPr = OxmlElement('w:pPr')
                 new_p.append(new_pPr)
-                new_pPr.append(self._make_sectPr())
+                new_pPr.append(self._make_sectPr(page_layout=saved_page_layout))
                 body.insert(tgt_idx, new_p)
                 return
             j -= 1
@@ -613,42 +1181,69 @@ class DocProcessor:
                     # [Fix D] Paragraf ini sendiri adalah BAB heading tanpa
                     # page break / Heading style → kemungkinan entri TOC tanpa
                     # nomor halaman → tetap dalam TOC.
+                    # [Fix D+] Lookahead: jika ada >=2 paragraf panjang (konten nyata)
+                    # setelah heading ini, ini adalah BAB asli bukan entri TOC.
+                    # _toc_exit_confirmed mencegah still_in_toc check di bawah
+                    # membatalkan keputusan exit yang sudah dibuat.
+                    _toc_exit_confirmed = False
                     _cur_style = (para.style.name.lower() if para.style else "")
                     if (is_bab_heading(text)
                             and not re.search(r'heading', _cur_style)
                             and not self._para_has_page_break_before(para)):
-                        continue
+                        _real_after = 0
+                        for _lk in range(para_idx + 1, min(para_idx + 10, len(all_paras))):
+                            _lt = all_paras[_lk].text.strip()
+                            _ls = (all_paras[_lk].style.name.lower()
+                                   if all_paras[_lk].style else "")
+                            if not _lt:
+                                continue
+                            if is_toc_entry(_lt) or 'toc' in _ls:
+                                break
+                            if is_bab_heading(_lt):
+                                break
+                            # Konten nyata: panjang > 30 karakter dan bukan sub-heading bernomor
+                            if (len(_lt) > 30
+                                    and not re.match(r'^\d+[\.\d]*\s', _lt)):
+                                _real_after += 1
+                                if _real_after >= 2:
+                                    break
+                        if _real_after < 2:
+                            continue  # masih entri TOC
+                        inside_toc = False
+                        _toc_exit_confirmed = True  # skip still_in_toc check
 
                     # Cek lookahead: kalau dalam 8 paragraf ke depan masih ada
                     # entri TOC (punya toc style atau nomor halaman), tetap di TOC.
-                    still_in_toc = False
-                    for _lk in range(para_idx + 1, min(para_idx + 9, len(all_paras))):
-                        _lp = all_paras[_lk]
-                        _ls = (_lp.style.name.lower() if _lp.style else "")
-                        _lt = _lp.text.strip()
-                        if 'toc' in _ls:
-                            still_in_toc = True
-                            break
-                        if _lt and is_toc_entry(_lt):
-                            still_in_toc = True
-                            break
-                        # [Fix E] Sub-bab bernomor (e.g. "2.1", "4.2.1") = sinyal masih di TOC
-                        # Hanya jika bukan Heading style — Heading 2 "1.2 Judul" adalah konten nyata
-                        if _lt and re.match(r'^\d+\.\d', _lt) and not re.search(r'heading', _ls):
-                            still_in_toc = True
-                            break
-                        if _lt and is_bab_heading(_lt):
-                            # [Fix B] Hanya keluar TOC jika BAB heading ini punya
-                            # indikator nyata (Heading style atau page break).
-                            _lp_heading = bool(re.search(r'heading', _ls))
-                            _lp_has_brk = self._para_has_page_break_before(_lp)
-                            if _lp_heading or _lp_has_brk:
-                                break  # BAB heading nyata → keluar TOC
-                            still_in_toc = True
-                            break
-                    if still_in_toc:
-                        continue
-                    inside_toc = False
+                    # Dilewati jika [Fix D+] sudah memastikan exit.
+                    if not _toc_exit_confirmed:
+                        still_in_toc = False
+                        for _lk in range(para_idx + 1, min(para_idx + 9, len(all_paras))):
+                            _lp = all_paras[_lk]
+                            _ls = (_lp.style.name.lower() if _lp.style else "")
+                            _lt = _lp.text.strip()
+                            if 'toc' in _ls:
+                                still_in_toc = True
+                                break
+                            if _lt and is_toc_entry(_lt):
+                                still_in_toc = True
+                                break
+                            # [Fix E] Sub-bab bernomor (e.g. "2.1", "4.2.1") = sinyal masih di TOC
+                            # Hanya jika bukan Heading style — Heading 2 "1.2 Judul" adalah konten nyata
+                            if _lt and re.match(r'^\d+\.\d', _lt) and not re.search(r'heading', _ls):
+                                still_in_toc = True
+                                break
+                            if _lt and is_bab_heading(_lt):
+                                # [Fix B] Hanya keluar TOC jika BAB heading ini punya
+                                # indikator nyata (Heading style atau page break).
+                                _lp_heading = bool(re.search(r'heading', _ls))
+                                _lp_has_brk = self._para_has_page_break_before(_lp)
+                                if _lp_heading or _lp_has_brk:
+                                    break  # BAB heading nyata → keluar TOC
+                                still_in_toc = True
+                                break
+                        if still_in_toc:
+                            continue
+                        inside_toc = False
 
             if not text:
                 continue
@@ -723,21 +1318,37 @@ class DocProcessor:
                     # di body text (misal Sistematika Penulisan) bisa memicu false positive.
                     _trusted = has_break and _is_heading
                     if not _trusted:
-                        # Lampiran & Daftar Pustaka dibebaskan dari forward_count
+                        # Lampiran & Daftar Pustaka / padanan Inggris dibebaskan dari forward_count
                         _is_endpoint = bool(re.match(
-                            r'^\s*(lampiran|daftar\s+pust?aka)', text, re.IGNORECASE
+                            r'^\s*(lampiran|appendix|appendices|attachment|'
+                            r'daftar\s+pust?aka|references?|bibliography)',
+                            text, re.IGNORECASE
                         ))
                         if not _is_endpoint:
                             forward_count = 0
+                            _next_is_endpoint = False
                             for _k in range(para_idx + 1, len(all_paras)):
                                 _nt = all_paras[_k].text.strip()
                                 if is_bab_heading(_nt) and not is_false_bab(all_paras[_k]):
+                                    # Cek apakah BAB berikutnya adalah endpoint
+                                    _next_is_endpoint = bool(re.match(
+                                        r'^\s*(lampiran|appendix|appendices|attachment|'
+                                        r'daftar\s*pust?aka|references?|bibliography)',
+                                        _nt, re.IGNORECASE
+                                    ))
                                     break
                                 if _nt:
                                     forward_count += 1
                             # Threshold lebih rendah (2) jika ada page break, karena
                             # Sistematika entries hanya punya 1 kalimat per BAB.
-                            _threshold = 2 if has_break else 5
+                            # Threshold diturunkan ke 3 jika BAB ini adalah BAB terakhir
+                            # sebelum LAMPIRAN/DAFTAR PUSTAKA (PENUTUP cenderung pendek).
+                            if has_break:
+                                _threshold = 2
+                            elif _next_is_endpoint:
+                                _threshold = 3
+                            else:
+                                _threshold = 5
                             if forward_count < _threshold:
                                 continue
                 bab_p_list.append(para._p)
@@ -807,14 +1418,24 @@ class DocProcessor:
 
         return roman_start_p, bab_p_list
 
-    def insert_breaks(self, roman_start_p, bab_p_list):
+    def insert_breaks(self, roman_start_p, bab_p_list, exact_roman_start=False):
         """Phase 1.5 + 2: Purge continuous sectPr, insert zone breaks.
-        Returns updated roman_start_p (may differ after _find_section_start)."""
+        Returns updated roman_start_p (may differ after _find_section_start).
+        exact_roman_start=True: skip _find_section_start (untuk multi-cover advance)."""
+        # Pre-compute page layout untuk setiap target SEBELUM purge berjalan.
+        # Purge akan menghapus sectPr referensi, sehingga perlu disimpan lebih dulu.
+        _page_layouts = {}
+        for tp in ([roman_start_p] if roman_start_p is not None else []) + list(bab_p_list):
+            layout = self._get_covering_page_layout(tp)
+            if layout is not None:
+                _page_layouts[id(tp)] = layout
+
         if bab_p_list:
             self._purge_continuous_sectPr_in_bab_zone(bab_p_list[0])
 
         if roman_start_p is not None:
-            roman_start_p = self._find_section_start(roman_start_p)
+            if not exact_roman_start:
+                roman_start_p = self._find_section_start(roman_start_p)
             # Jika section boundary sudah ada tepat sebelum roman_start_p,
             # tidak perlu insert break (agar page break di roman zone tidak dihapus).
             body_ch = list(self.doc.element.body)
@@ -825,14 +1446,149 @@ class DocProcessor:
                 self._has_sectPr(body_ch[_rsp_idx - 1])
             )
             if not _roman_already_bounded:
-                self.insert_break_before_xml(roman_start_p)
+                self.insert_break_before_xml(roman_start_p,
+                                             precomputed_layout=_page_layouts.get(id(roman_start_p)))
                 self._strip_empty_paras_before_bab(roman_start_p)
+            # Maju melewati paragraf kosong di awal zona romawi.
+            # Jika boundary BARU diinsert (_roman_already_bounded=False): hapus empty paras
+            # (mereka adalah "enter dorongan" yang terbentuk karena belum ada section break).
+            # Jika boundary SUDAH ADA (_roman_already_bounded=True): advance pointer saja
+            # tanpa menghapus — empty paras itu adalah spacing intentional dari dokumen asli.
+            _remove_lead_empty = not _roman_already_bounded
+            while not self._p_has_content(roman_start_p) and not self._has_sectPr(roman_start_p):
+                _ch = list(self.doc.element.body)
+                _ri = next((i for i, e in enumerate(_ch) if e is roman_start_p), -1)
+                if _ri < 0:
+                    break
+                _nxt = next((c for c in _ch[_ri + 1:] if c.tag.endswith('}p')), None)
+                if _nxt is None:
+                    break
+                if _remove_lead_empty:
+                    self.doc.element.body.remove(roman_start_p)
+                roman_start_p = _nxt
 
         for bab_p in bab_p_list:
-            self.insert_break_before_xml(bab_p)
+            self.insert_break_before_xml(bab_p, allow_empty_boundary=exact_roman_start,
+                                         precomputed_layout=_page_layouts.get(id(bab_p)))
             self._strip_empty_paras_before_bab(bab_p)
 
         return roman_start_p  # dikembalikan karena bisa berubah
+
+    def ensure_cover_pages(self, roman_start_p, num_cover, already_advanced=False):
+        """Pastikan cover zone punya num_cover section terpisah.
+        Jika dokumen hanya punya 1 section cover tapi num_cover=2:
+          - already_advanced=False: sisipkan blank section break sebelum roman_start_p.
+          - already_advanced=True: advance_roman_start sudah melewati page break cover,
+            tapi cover zone mungkin masih 1 section via page break biasa. Konversi
+            page break terakhir di cover zone menjadi section break yang proper sehingga
+            fmt_cover(first_cover=False) bisa menyembunyikan cover ke-2 dengan benar.
+        Hanya dipanggil jika hidden_cov='Ya'."""
+        if num_cover <= 1 or roman_start_p is None:
+            return
+        W    = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+        body = self.doc.element.body
+        body_els = list(body)
+        try:
+            rsp_idx = body_els.index(roman_start_p)
+        except ValueError:
+            return
+
+        # Temukan terminal sectPr (paragraf terakhir sebelum roman_start_p yang punya sectPr)
+        term_idx = -1
+        for j in range(rsp_idx - 1, -1, -1):
+            el = body_els[j]
+            if el.tag.endswith('}p'):
+                pPr = el.find('{%s}pPr' % W)
+                if pPr is not None and pPr.find('{%s}sectPr' % W) is not None:
+                    term_idx = j
+                    break
+        if term_idx < 0:
+            return
+
+        if already_advanced:
+            # advance_roman_start telah memindah roman_start_p melewati page break cover,
+            # tapi cover zone mungkin masih 1 section yang mencakup num_cover halaman fisik
+            # via page break biasa (bukan section break). Hitung hanya section breaks sebagai
+            # pembagi cover yang valid — jika kurang, konversi page break ke section break.
+            cover_sect_breaks = 0
+            pgbr_paras = []
+            for j in range(rsp_idx):
+                if j == term_idx:
+                    continue
+                el = body_els[j]
+                if any(br.get('{%s}type' % W) == 'page' for br in el.iter('{%s}br' % W)):
+                    pgbr_paras.append(el)
+                pPr = el.find('{%s}pPr' % W)
+                if pPr is not None and pPr.find('{%s}sectPr' % W) is not None:
+                    cover_sect_breaks += 1
+            missing = (num_cover - 1) - cover_sect_breaks
+            if missing <= 0 or not pgbr_paras:
+                return
+            # Konversi page break terakhir (= batas cover N / cover N+1) ke section break.
+            # Diambil dari akhir pgbr_paras sehingga page break paling dekat ke terminal sectPr
+            # yang dipilih — menghindari page break internal di cover pertama yang multi-halaman.
+            for el in pgbr_paras[-missing:]:
+                for br in list(el.findall('.//{%s}br' % W)):
+                    if br.get('{%s}type' % W) == 'page':
+                        parent = br.getparent()
+                        if parent is not None:
+                            parent.remove(br)
+                self._attach_sectPr(el)
+            return
+
+        # Hitung break internal di cover (pgBr + sectPr non-terminal)
+        cover_breaks = 0
+        for j in range(rsp_idx):
+            if j == term_idx:
+                continue
+            el = body_els[j]
+            if any(br.get('{%s}type' % W) == 'page' for br in el.iter('{%s}br' % W)):
+                cover_breaks += 1
+            pPr = el.find('{%s}pPr' % W)
+            if pPr is not None and pPr.find('{%s}sectPr' % W) is not None:
+                cover_breaks += 1
+
+        # Hitung berapa kali teks penutup cover muncul (deteksi duplikat cover tanpa
+        # explicit page break — misal Docx 16 yang punya cover 1 + cover 2 berurutan).
+        # Setiap pengulangan teks yang berjarak >= 5 elemen = 1 halaman cover implicit.
+        def _cover_implicit_pages(end_idx):
+            last_txt, last_j = None, -1
+            for j in range(end_idx, -1, -1):
+                el = body_els[j]
+                if not el.tag.endswith('}p'):
+                    continue
+                t = ''.join(tx.text or '' for tx in el.iter('{%s}t' % W)).strip()
+                if t:
+                    last_txt, last_j = t, j
+                    break
+            if not last_txt or len(last_txt) < 4 or last_j < 0:
+                return 1
+            count, prev_j = 1, last_j
+            for j in range(last_j - 1, -1, -1):
+                el = body_els[j]
+                if not el.tag.endswith('}p'):
+                    continue
+                t = ''.join(tx.text or '' for tx in el.iter('{%s}t' % W)).strip()
+                if t == last_txt and prev_j - j >= 5:
+                    count += 1
+                    prev_j = j
+            return count
+
+        implicit = max(0, _cover_implicit_pages(term_idx) - 1)
+        missing  = (num_cover - 1) - (cover_breaks + implicit)
+        if missing <= 0:
+            return
+
+        # Sisipkan blank paragraph ber-sectPr(nextPage) tepat sebelum roman_start_p
+        # untuk tiap halaman cover yang kurang. Setiap blank section = 1 halaman cover
+        # tambahan yang diformat hidden oleh paket3.apply → fmt_cover(first_cover=False).
+        for _ in range(missing):
+            new_p   = OxmlElement('w:p')
+            new_pPr = OxmlElement('w:pPr')
+            new_p.append(new_pPr)
+            new_pPr.append(self._make_sectPr())
+            rsp_idx = list(body).index(roman_start_p)
+            body.insert(rsp_idx, new_p)
 
     def build_section_map(self, roman_start_p, bab_p_list):
         """Phase 3: Build section boundary map.
@@ -893,7 +1649,10 @@ class DocProcessor:
                 else:
                     self._place_num_in_part(section.footer, align)
             else:
-                # hidden_cov='Ya': sembunyikan semua halaman cover
+                # hidden_cov='Ya': sembunyikan cover 1 via first-page footer.
+                # Regular footer hanya diisi jika visible_pos eksplisit diberikan.
+                # Jika visible_pos=None, regular footer kosong → semua halaman di
+                # section ini (termasuk cover 2 yang overflow konten) tersembunyi.
                 section.different_first_page_header_footer = True
                 fph = section.first_page_header
                 fph.is_linked_to_previous = False
@@ -903,26 +1662,110 @@ class DocProcessor:
                 fpf.is_linked_to_previous = False
                 for p in fpf.paragraphs:
                     self.clear_paragraph(p)
-                # Bersihkan regular header/footer agar cover 2+ (dalam section yang sama) juga tersembunyi
-                self.clear_header(section)
-                self.clear_footer(section)
+                if visible_pos:
+                    if _vis_top:
+                        self._place_num_in_part(section.header, _vis_align)
+                    else:
+                        self._place_num_in_part(section.footer, _vis_align)
+                # else: regular footer kosong → cover 2+ tersembunyi
         else:
             section.different_first_page_header_footer = False
             self.set_page_number_format(section, 'lowerRoman')
-            # Sampul ke-2 dst (section terpisah)
+            # Sampul ke-2 dst
             if show_pos:
-                # hidden_cov='Tidak': tampilkan nomor
+                # hidden_cov='Tidak': tampilkan nomor di semua halaman cover
                 align, top = show_pos
                 if top:
                     self._place_num_in_part(section.header, align)
                 else:
                     self._place_num_in_part(section.footer, align)
-            else:
-                # hidden_cov='Ya': sembunyikan semua cover — jangan tampilkan nomor
-                self.clear_header(section)
-                self.clear_footer(section)
+            elif visible_pos:
+                # hidden_cov='Ya' dengan posisi eksplisit: tampilkan nomor
+                if _vis_top:
+                    self._place_num_in_part(section.header, _vis_align)
+                else:
+                    self._place_num_in_part(section.footer, _vis_align)
+            # else: hidden_cov='Ya', visible_pos=None → footer kosong = nomor tersembunyi
 
-    def fmt_roman(self, section, start=None):
+    def fmt_roman(self, section, start=None, roman_sec=None, num_cover=1):
+        sectPr = section._sectPr
+        _type_el = sectPr.find(qn('w:type'))
+        _is_continuous = (_type_el is not None and
+                          _type_el.get(qn('w:val')) == 'continuous')
+        if _is_continuous:
+            # Continuous sectPr: JANGAN akses header/footer via python-docx.
+            # Menambah headerReference/footerReference ke sectPr continuous menyebabkan
+            # Word merender batas sebagai "Section Break (Next Page)" sehingga DAFTAR ISI
+            # terpisah dari TOC-nya dan muncul blank page ekstra.
+            _tpg = sectPr.find(qn('w:titlePg'))
+            if _tpg is not None:
+                sectPr.remove(_tpg)
+            section.different_first_page_header_footer = False
+            # Bersihkan refs dan pgNumType yang mungkin sudah ada.
+            # pgNumType dengan w:start di sectPr continuous memaksa Word merender
+            # sebagai "Next Page" dan mereset nomor halaman — keduanya harus dihapus.
+            for _ref_tag in (qn('w:headerReference'), qn('w:footerReference')):
+                for _ref in list(sectPr.findall(_ref_tag)):
+                    sectPr.remove(_ref)
+            _pgNum = sectPr.find(qn('w:pgNumType'))
+            if _pgNum is not None:
+                sectPr.remove(_pgNum)
+            # Tetapkan format lowerRoman tanpa w:start agar tidak memaksa Next Page.
+            # w:fmt saja (tanpa w:start) tidak mereset hitungan halaman → aman untuk continuous.
+            self.set_page_number_format(section, 'lowerRoman', None)
+            # Section continuous mewarisi footer dari section SEBELUMNYA.
+            # Agar nomor halaman tetap muncul di halaman Roman zone (KATA PENGANTAR, dll.),
+            # update DEFAULT footer section sebelumnya dengan PAGE field.
+            # Gunakan titlePg=True pada section sebelumnya agar:
+            #   - First page (cover/blank): pakai first-page footer (kosong → tersembunyi)
+            #   - Default footer (diwarisi section continuous ini): punya PAGE field → nomor tampil
+            _sections = list(self.doc.sections)
+            _sec_idx = next((i for i, s in enumerate(_sections) if s._sectPr is sectPr), -1)
+            # Hanya modify previous section jika continuous section ini adalah section PERTAMA
+            # di zona Roman (langsung setelah cover). Jika _sec_idx > roman_sec, previous
+            # section sudah punya footer dari fmt_roman — jangan di-overwrite dengan titlePg=True
+            # karena itu akan menyembunyikan nomor halaman di halaman pertama previous section.
+            # Section continuous cukup mewarisi footer previous section secara otomatis (no refs).
+            if _sec_idx > 0 and (roman_sec is None or _sec_idx == roman_sec):
+                _prev_sec = _sections[_sec_idx - 1]
+                _prev_sec.different_first_page_header_footer = True
+                # First-page header/footer: kosong (halaman cover/blank tersembunyi)
+                for _part in (_prev_sec.first_page_header, _prev_sec.first_page_footer):
+                    _part.is_linked_to_previous = False
+                    for _pp in _part.paragraphs:
+                        self.clear_paragraph(_pp)
+                # Default footer: sisipkan PAGE field agar diwarisi section continuous ini.
+                # ensure_cover_pages (dengan already_advanced=True) sudah mengonversi page break
+                # cover menjadi section break, sehingga cover ke-2 berada di section tersendiri
+                # dan diformat hidden oleh fmt_cover(first_cover=False). Jika konversi tidak
+                # terjadi (edge case: tidak ada page break di cover zone), halaman cover ke-2
+                # dalam section yang sama akan mewarisi footer ini dan tampil — tapi ini hanya
+                # terjadi jika ensure_cover_pages tidak menemukan page break yang bisa dikonversi.
+                _f = _prev_sec.footer
+                _f.is_linked_to_previous = False
+                _pf = self._first_para(_f)
+                self.clear_paragraph(_pf)
+                _pf.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                self.add_page_number(_pf)
+                self._set_pn_spacing(_pf)
+            return
+
+        # Cek apakah section sebelumnya continuous.
+        _sections = list(self.doc.sections)
+        _sec_idx = next((i for i, s in enumerate(_sections) if s._sectPr is sectPr), -1)
+        _prev_continuous = False
+        if _sec_idx > 0:
+            _p_type = _sections[_sec_idx - 1]._sectPr.find(qn('w:type'))
+            _prev_continuous = (_p_type is not None and
+                                _p_type.get(qn('w:val')) == 'continuous')
+
+        if _prev_continuous:
+            # Pastikan continuous sectPr sebelumnya bersih dari refs (defensive cleanup).
+            _prev_sectPr = _sections[_sec_idx - 1]._sectPr
+            for _ref_tag in (qn('w:headerReference'), qn('w:footerReference')):
+                for _ref in list(_prev_sectPr.findall(_ref_tag)):
+                    _prev_sectPr.remove(_ref)
+
         section.different_first_page_header_footer = False
         self.clear_header(section)
         f = section.footer

@@ -116,6 +116,7 @@ def main():
     try:
         proc = DocProcessor(doc, font_arg, font_size_pt)
         proc.purge_all_headers_footers()
+        proc.strip_column_breaks_in_tables()
 
         detected_bab_texts = []
         if paket == 'paket1':
@@ -128,12 +129,18 @@ def main():
             detected_bab_texts = [
                 DocProcessor._p_text(p)[:60] for p in bab_p_list
             ]
-            # Geser roman_start_p jika user memiliki lebih dari 1 cover
-            if num_cover > 1 and hidden_cov == 'Ya':
-                roman_start_p = DocProcessor.advance_roman_start(
-                    doc, roman_start_p, num_cover
-                )
-            roman_start_p             = proc.insert_breaks(roman_start_p, bab_p_list)
+            # Geser roman_start_p: untuk num_cover > 1 (multi-cover), atau num_cover=1
+            # dengan dokumen yang punya duplikat cover (advance_roman_start mendeteksi bb > 1).
+            _advanced = False
+            if hidden_cov == 'Ya':
+                new_rsp, _use_exact = DocProcessor.advance_roman_start(doc, roman_start_p, num_cover)
+                if new_rsp is not roman_start_p:
+                    roman_start_p = new_rsp
+                _advanced = _use_exact
+            roman_start_p             = proc.insert_breaks(roman_start_p, bab_p_list,
+                                                           exact_roman_start=_advanced)
+            if hidden_cov == 'Ya':
+                proc.ensure_cover_pages(roman_start_p, num_cover, already_advanced=_advanced)
             roman_sec, bab_sec_list, n_sections = proc.build_section_map(
                 roman_start_p, bab_p_list
             )
@@ -150,7 +157,7 @@ def main():
                 )
             else:
                 paket3.apply(proc, roman_sec, bab_sec_list, n_sections, hidden_cov,
-                             dimulai_dari=dimulai)
+                             dimulai_dari=dimulai, num_cover=num_cover)
 
     except Exception as e:
         _fail("PROCESSING_ERROR", f"Gagal memproses dokumen: {e}")
@@ -167,7 +174,7 @@ def main():
     except Exception:
         pass  # non-fatal: margin asli dipertahankan jika gagal
 
-    # â”€â”€ Simpan â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    #â”€â”€ Simpan â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     try:
         doc.save(output_file)
     except Exception as e:

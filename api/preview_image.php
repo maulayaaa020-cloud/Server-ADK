@@ -6,10 +6,10 @@ require_once __DIR__ . '/../includes/config.php';
 require_once __DIR__ . '/../includes/db.php';
 
 $isAdmin    = !empty($_SESSION['adk_admin']);
-$phone      = $_SESSION['phone'] ?? $_SESSION['cek_phone'] ?? null;
+$email      = $_SESSION['email'] ?? $_SESSION['cek_email'] ?? null;
 $guestToken = $_SESSION['guest_token'] ?? $_COOKIE['adk_guest'] ?? null;
 
-if (!$isAdmin && !$phone && !$guestToken) {
+if (!$isAdmin && !$email && !$guestToken) {
     ob_end_clean(); http_response_code(403); exit;
 }
 
@@ -24,9 +24,9 @@ try {
     if ($isAdmin) {
         $stmt = $db->prepare("SELECT id FROM orders WHERE id = ?");
         $stmt->execute([$db_id]);
-    } elseif ($phone) {
+    } elseif ($email) {
         $stmt = $db->prepare("SELECT id FROM orders WHERE id = ? AND phone = ?");
-        $stmt->execute([$db_id, $phone]);
+        $stmt->execute([$db_id, $email]);
     } else {
         $stmt = $db->prepare("SELECT id FROM orders WHERE id = ? AND guest_token = ?");
         $stmt->execute([$db_id, $guestToken]);

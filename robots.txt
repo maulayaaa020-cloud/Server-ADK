@@ -10,4 +10,4 @@ Disallow: /includes/
 Disallow: /config/
 Disallow: /vendor/
 
-Sitemap: https://adkphotocopy.com/sitemap.xml
+Sitemap: https://adkivia.com/sitemap.xml

@@ -5,10 +5,10 @@ require_once __DIR__ . '/../includes/db.php';
 header('Content-Type: application/json');
 
 $isAdmin    = !empty($_SESSION['adk_admin']);
-$phone      = $_SESSION['phone'] ?? $_SESSION['cek_phone'] ?? null;
+$email      = $_SESSION['email'] ?? $_SESSION['cek_email'] ?? null;
 $guestToken = $_SESSION['guest_token'] ?? $_COOKIE['adk_guest'] ?? null;
 
-if (!$isAdmin && !$phone && !$guestToken) {
+if (!$isAdmin && !$email && !$guestToken) {
     echo json_encode(['ok' => false, 'error' => 'Unauthorized']); exit;
 }
 
@@ -21,9 +21,9 @@ try {
     if ($isAdmin) {
         $stmt = $db->prepare("SELECT * FROM orders WHERE id = ?");
         $stmt->execute([$db_id]);
-    } elseif ($phone) {
+    } elseif ($email) {
         $stmt = $db->prepare("SELECT * FROM orders WHERE id = ? AND phone = ?");
-        $stmt->execute([$db_id, $phone]);
+        $stmt->execute([$db_id, $email]);
     } else {
         $stmt = $db->prepare("SELECT * FROM orders WHERE id = ? AND guest_token = ?");
         $stmt->execute([$db_id, $guestToken]);
@@ -45,8 +45,8 @@ if (!file_exists(__DIR__ . '/../' . $order['file_output'])) {
 $expires = time() + 300;
 $sig     = hash_hmac('sha256', $db_id . ':' . $expires, DOKU_SECRET_KEY);
 
-$fileUrl = 'https://adkphotocopy.com/api/serve_preview.php'
-         . '?id=' . $db_id . '&t=' . $expires . '&sig=' . urlencode($sig);
+$fileUrl = APP_URL . '/api/serve_preview.php'
+        . '?id=' . $db_id . '&t=' . $expires . '&sig=' . urlencode($sig);
 
 $viewerUrl = 'https://view.officeapps.live.com/op/embed.aspx?src='
            . urlencode($fileUrl) . '&wdScale=PageWidth';

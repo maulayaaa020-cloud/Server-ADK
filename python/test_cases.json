@@ -63,7 +63,7 @@
       },
       {
         "fmt": "lowerRoman",
-        "start": null
+        "start": "2"
       },
       {
         "fmt": "lowerRoman",
@@ -102,7 +102,7 @@
         "start": null
       }
     ],
-    "path": "test_files/Docx 12.docx"
+    "path": "test_files/paket3/cover 1 dimulai dari ii/Docx 12.docx"
   },
   "Docx 8.docx": {
     "detected_bab": [
@@ -212,7 +212,7 @@
       },
       {
         "fmt": "lowerRoman",
-        "start": null
+        "start": "2"
       },
       {
         "fmt": "lowerRoman",
@@ -295,7 +295,7 @@
         "start": null
       }
     ],
-    "path": "test_files/Docx 8.docx"
+    "path": "test_files/paket3/cover 1 dimulai dari ii/Docx 8.docx"
   },
   "Docx 17.docx": {
     "detected_bab": [
@@ -352,7 +352,7 @@
       },
       {
         "fmt": "lowerRoman",
-        "start": null
+        "start": "2"
       },
       {
         "fmt": "decimal",
@@ -383,7 +383,7 @@
         "start": null
       }
     ],
-    "path": "test_files/Docx 17.docx"
+    "path": "test_files/paket3/cover 1 dimulai dari ii/Docx 17.docx"
   },
   "Docx 5.docx": {
     "detected_bab": [
@@ -477,7 +477,7 @@
       },
       {
         "fmt": "lowerRoman",
-        "start": null
+        "start": "2"
       },
       {
         "fmt": "lowerRoman",
@@ -544,7 +544,7 @@
         "start": null
       }
     ],
-    "path": "test_files/Docx 5.docx"
+    "path": "test_files/paket3/cover 1 dimulai dari ii/Docx 5.docx"
   },
   "Docx 10.docx": {
     "detected_bab": [
@@ -587,7 +587,7 @@
       },
       {
         "fmt": "lowerRoman",
-        "start": null
+        "start": "2"
       },
       {
         "fmt": "decimal",
@@ -606,7 +606,7 @@
         "start": null
       }
     ],
-    "path": "test_files/Docx 10.docx"
+    "path": "test_files/paket3/cover 1 dimulai dari ii/Docx 10.docx"
   },
   "Docx 3.docx": {
     "detected_bab": [
@@ -626,7 +626,7 @@
       },
       {
         "index": 1,
-        "first_content": "HALAMAN PENGESAHAN SKRIPSI HALAMAN PERSETUJUAN SKR"
+        "first_content": "NATIONAL UNIVERSITY"
       },
       {
         "index": 2,
@@ -676,7 +676,7 @@
       },
       {
         "fmt": "lowerRoman",
-        "start": null
+        "start": "2"
       },
       {
         "fmt": "lowerRoman",
@@ -719,7 +719,7 @@
         "start": null
       }
     ],
-    "path": "test_files/Docx 3.docx"
+    "path": "test_files/paket3/cover 1 dimulai dari ii/Docx 3.docx"
   },
   "Docx 7.docx": {
     "detected_bab": [
@@ -757,7 +757,7 @@
       },
       {
         "fmt": "lowerRoman",
-        "start": null
+        "start": "2"
       },
       {
         "fmt": "decimal",
@@ -772,7 +772,7 @@
         "start": null
       }
     ],
-    "path": "test_files/Docx 7.docx"
+    "path": "test_files/paket3/cover 1 dimulai dari ii/Docx 7.docx"
   },
   "Docx 1.docx": {
     "detected_bab": [
@@ -792,7 +792,7 @@
       },
       {
         "index": 1,
-        "first_content": "KATA PENGANTAR"
+        "first_content": "Karya Tulis Ilmiah"
       },
       {
         "index": 2,
@@ -834,7 +834,7 @@
       },
       {
         "fmt": "lowerRoman",
-        "start": null
+        "start": "2"
       },
       {
         "fmt": "lowerRoman",
@@ -869,7 +869,7 @@
         "start": null
       }
     ],
-    "path": "test_files/Docx 1.docx"
+    "path": "test_files/paket3/cover 1 dimulai dari ii/Docx 1.docx"
   },
   "Docx 2.docx": {
     "detected_bab": [
@@ -916,7 +916,7 @@
       },
       {
         "fmt": "lowerRoman",
-        "start": null
+        "start": "2"
       },
       {
         "fmt": "decimal",
@@ -939,7 +939,7 @@
         "start": null
       }
     ],
-    "path": "test_files/Docx 2.docx"
+    "path": "test_files/paket3/cover 1 dimulai dari ii/Docx 2.docx"
   },
   "Docx 6.docx": {
     "detected_bab": [
@@ -992,7 +992,7 @@
       },
       {
         "fmt": "lowerRoman",
-        "start": null
+        "start": "2"
       },
       {
         "fmt": "decimal",
@@ -1019,7 +1019,7 @@
         "start": null
       }
     ],
-    "path": "test_files/Docx 6.docx"
+    "path": "test_files/paket3/cover 1 dimulai dari ii/Docx 6.docx"
   },
   "Docx 16.docx": {
     "detected_bab": [
@@ -1039,7 +1039,7 @@
       },
       {
         "index": 1,
-        "first_content": "LEMBAR PERSETUJUAN"
+        "first_content": "SKRIPSI"
       },
       {
         "index": 2,
@@ -1081,7 +1081,7 @@
       },
       {
         "fmt": "lowerRoman",
-        "start": null
+        "start": "2"
       },
       {
         "fmt": "decimal",
@@ -1116,7 +1116,7 @@
         "start": null
       }
     ],
-    "path": "test_files/Docx 16.docx"
+    "path": "test_files/paket3/cover 1 dimulai dari ii/Docx 16.docx"
   },
   "Docx 14.docx": {
     "detected_bab": [
@@ -1136,7 +1136,7 @@
       },
       {
         "index": 1,
-        "first_content": "ANALISIS PEMBELAJARAN KERAJINAN TANGAN PADA MATA P"
+        "first_content": ""
       },
       {
         "index": 2,
@@ -1186,7 +1186,7 @@
       },
       {
         "fmt": "lowerRoman",
-        "start": null
+        "start": "2"
       },
       {
         "fmt": "decimal",
@@ -1229,7 +1229,7 @@
         "start": null
       }
     ],
-    "path": "test_files/Docx 14.docx"
+    "path": "test_files/paket3/cover 1 dimulai dari ii/Docx 14.docx"
   },
   "Docx 4.docx": {
     "detected_bab": [
@@ -1271,7 +1271,7 @@
       },
       {
         "fmt": "lowerRoman",
-        "start": null
+        "start": "2"
       },
       {
         "fmt": "decimal",
@@ -1290,7 +1290,7 @@
         "start": null
       }
     ],
-    "path": "test_files/Docx 4.docx"
+    "path": "test_files/paket3/cover 1 dimulai dari ii/Docx 4.docx"
   },
   "Docx 13.docx": {
     "detected_bab": [
@@ -1332,7 +1332,7 @@
       },
       {
         "fmt": "lowerRoman",
-        "start": null
+        "start": "2"
       },
       {
         "fmt": "decimal",
@@ -1351,7 +1351,7 @@
         "start": null
       }
     ],
-    "path": "test_files/Docx 13.docx"
+    "path": "test_files/paket3/cover 1 dimulai dari ii/Docx 13.docx"
   },
   "Docx 15.docx": {
     "detected_bab": [
@@ -1403,7 +1403,7 @@
         "start": null
       }
     ],
-    "path": "test_files/Docx 15.docx"
+    "path": "test_files/paket3/cover 1 dimulai dari ii/Docx 15.docx"
   },
   "Docx 11.docx": {
     "detected_bab": [
@@ -1482,7 +1482,7 @@
         "start": null
       }
     ],
-    "path": "test_files/Docx 11.docx"
+    "path": "test_files/paket3/cover 1 dimulai dari ii/Docx 11.docx"
   },
   "Docx 9.docx": {
     "detected_bab": [
@@ -1503,7 +1503,7 @@
       },
       {
         "index": 1,
-        "first_content": "HALAMAN PERNYATAAN PERSETUJUAN PENYERAHAN\nTUGAS AH"
+        "first_content": "TUGAS AKHIR"
       },
       {
         "index": 2,
@@ -1549,7 +1549,7 @@
       },
       {
         "fmt": "lowerRoman",
-        "start": null
+        "start": "2"
       },
       {
         "fmt": "decimal",
@@ -1588,10 +1588,10 @@
         "start": null
       }
     ],
-    "path": "test_files/Docx 9.docx"
+    "path": "test_files/paket3/cover 1 dimulai dari ii/Docx 9.docx"
   },
   "Docx 18.docx": {
-    "path": "test_files/Docx 18.docx",
+    "path": "test_files/paket3/cover 1 dimulai dari ii/Docx 18.docx",
     "detected_bab": [
       "BAB I PENDAHULUAN",
       "BAB II PENGARUH JENIS MINUMAN TERHADAP KONDISI GIGI (SIMULAS",
@@ -1632,7 +1632,7 @@
       },
       {
         "fmt": "lowerRoman",
-        "start": null
+        "start": "2"
       },
       {
         "fmt": "decimal",

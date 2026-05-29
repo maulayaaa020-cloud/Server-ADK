@@ -6,69 +6,33 @@ require_once __DIR__ . '/includes/db.php';
 
 $isAdmin = !empty($_SESSION['adk_admin']);
 
-$phone = $_SESSION['phone'] ?? $_SESSION['cek_phone'] ?? null;
-if (empty($phone)) $phone = null;
-// Jika session menandai mode tamu, abaikan nomor telepon lama
-if (!empty($_SESSION['is_guest'])) $phone = null;
+$email = $_SESSION['email'] ?? $_SESSION['cek_email'] ?? null;
+if (empty($email)) $email = null;
+// Jika session menandai mode tamu, abaikan email lama
+if (!empty($_SESSION['is_guest'])) $email = null;
 
 // Pulihkan guest_token dari cookie jika session habis (browser ditutup/dibuka lagi)
 if (empty($_SESSION['guest_token']) && !empty($_COOKIE['adk_guest'])) {
     $_SESSION['guest_token'] = $_COOKIE['adk_guest'];
 }
 $guestToken = $_SESSION['guest_token'] ?? null;
-$isGuest    = empty($phone) && !empty($guestToken);
+$isGuest    = empty($email) && !empty($guestToken);
 
-if (!$isAdmin && !$phone && !$guestToken) { header("Location: cek_pembelian.php"); exit; }
-
-// Bangun kondisi WHERE berdasarkan phone dan/atau guest_token yang tersedia
-function buildWhereClause($phone, $guestToken) {
-    $conds  = [];
-    $params = [];
-    if ($phone) {
-        $conds[]           = 'phone = :phone';
-        $params[':phone']  = $phone;
-    }
-    if ($guestToken) {
-        $conds[]           = 'guest_token = :gt';
-        $params[':gt']     = $guestToken;
-    }
-    $where = empty($conds) ? '1=0' : '(' . implode(' OR ', $conds) . ')';
-    return [$where, $params];
-}
+if (!$isAdmin && !$email && !$guestToken) { header("Location: cek_pembelian.php"); exit; }
 
 try {
     $db = getDB();
     if ($isAdmin) {
         $stmt = $db->query("SELECT * FROM orders ORDER BY created_at DESC");
-        $penomoran = $stmt->fetchAll();
+    } elseif ($isGuest) {
+        $stmt = $db->prepare("SELECT * FROM orders WHERE guest_token = :gt ORDER BY created_at DESC");
+        $stmt->execute([':gt' => $guestToken]);
     } else {
-        [$where, $params] = buildWhereClause($phone, $guestToken);
-        $stmt = $db->prepare("SELECT * FROM orders WHERE $where ORDER BY created_at DESC");
-        $stmt->execute($params);
-        $penomoran = $stmt->fetchAll();
+        $stmt = $db->prepare("SELECT * FROM orders WHERE phone = :phone ORDER BY created_at DESC");
+        $stmt->execute([':phone' => $email]);
     }
-    foreach ($penomoran as &$r) { $r['jasa_type'] = 'penomoran'; }
-    unset($r);
-} catch (Exception $e) { $penomoran = []; }
-
-// Ambil daftar_isi_orders
-try {
-    if ($isAdmin) {
-        $stmt2 = $db->query("SELECT * FROM daftar_isi_orders ORDER BY created_at DESC");
-        $daftar_isi = $stmt2->fetchAll();
-    } else {
-        [$where2, $params2] = buildWhereClause($phone, $guestToken);
-        $stmt2 = $db->prepare("SELECT * FROM daftar_isi_orders WHERE $where2 ORDER BY created_at DESC");
-        $stmt2->execute($params2);
-        $daftar_isi = $stmt2->fetchAll();
-    }
-    foreach ($daftar_isi as &$r) { $r['jasa_type'] = 'daftar_isi'; }
-    unset($r);
-} catch (Exception $e) { $daftar_isi = []; }
-
-// Gabung dan urutkan
-$orders = array_merge($penomoran, $daftar_isi);
-usort($orders, fn($a, $b) => strtotime($b['created_at']) - strtotime($a['created_at']));
+    $orders = $stmt->fetchAll();
+} catch (Exception $e) { $orders = []; }
 
 function namaPaket($p) {
     if ($p === 'paket1') return 'FULL ANGKA';
@@ -110,10 +74,13 @@ function keteranganList($row) {
     return $items;
 }
 
-function maskPhone($p) {
-    $len = strlen($p);
-    if ($len <= 8) return $p;
-    return substr($p, 0, 4) . str_repeat('*', $len - 8) . substr($p, -4);
+function maskEmail($e) {
+    $parts = explode('@', $e, 2);
+    if (count($parts) !== 2) return $e;
+    $local  = $parts[0];
+    $domain = $parts[1];
+    $show   = min(3, strlen($local));
+    return substr($local, 0, $show) . str_repeat('*', max(strlen($local) - $show, 2)) . '@' . $domain;
 }
 
 function tglIndo($dt) {
@@ -123,25 +90,25 @@ function tglIndo($dt) {
     return date('j',$ts).' '.$bulan[(int)date('n',$ts)].' '.date('Y',$ts).' pukul '.date('H.i',$ts);
 }
 
-// Siapkan data pending untuk JS timer (hanya penomoran halaman)
+// Siapkan data pending untuk JS timer
 $pendingJS = [];
 foreach ($orders as $o) {
-    if (($o['jasa_type'] ?? 'penomoran') === 'penomoran' && $o['status'] === 'pending') {
+    if ($o['status'] === 'pending') {
         $expiry = strtotime($o['created_at']) + 1800;
         $pendingJS[] = ['id' => (int)$o['id'], 'expiry' => $expiry];
     }
 }
 $hasPending = !empty($pendingJS);
 
-// Order yang sudah pernah dilaporkan (hanya penomoran)
+// Order yang sudah pernah dilaporkan
 $reportedOrderIds = [];
-if (!empty($penomoran)) {
+if (!empty($orders)) {
     try {
-        $oids = array_column($penomoran, 'order_id');
+        $oids = array_column($orders, 'order_id');
         $placeholders = implode(',', array_fill(0, count($oids), '?'));
-        $stmt3 = $db->prepare("SELECT DISTINCT order_id FROM bug_reports WHERE order_id IN ($placeholders)");
-        $stmt3->execute($oids);
-        $reportedOrderIds = array_column($stmt3->fetchAll(), 'order_id');
+        $stmt2 = $db->prepare("SELECT DISTINCT order_id FROM bug_reports WHERE order_id IN ($placeholders)");
+        $stmt2->execute($oids);
+        $reportedOrderIds = array_column($stmt2->fetchAll(), 'order_id');
     } catch (Exception $e) {}
 }
 ?>
@@ -152,7 +119,8 @@ if (!empty($penomoran)) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Riwayat Orderan - ADK</title>
     <link rel="icon" type="image/png" href="favicon.png">
-    <link rel="stylesheet" href="style.css">
+    <script>(function(){var t=localStorage.getItem('adkTheme')||'light';document.documentElement.setAttribute('data-theme',t);})();</script>
+    <link rel="stylesheet" href="style.css?v=4">
     <style>
         .history-page {
             max-width: 960px;
@@ -893,8 +861,8 @@ if (!empty($penomoran)) {
 
     <div class="navbar">
         <a href="index.html" class="logo">
-            <img src="LOGO ADK.png" alt="ADK Logo" style="width:36px;height:26px;object-fit:contain;flex-shrink:0;">
-            <span>ADK PHOTOCOPY</span>
+            <img src="Favicon Adkivia.png" alt="ADK Logo" style="width:52px;height:52px;object-fit:contain;flex-shrink:0;">
+            <span><span style="color:#1565C0">ADK</span><span style="color:#29B6F6">IVIA</span></span>
         </a>
         <div class="menu">
             <a href="index.html">Home</a>
@@ -906,33 +874,34 @@ if (!empty($penomoran)) {
                         <div class="dropdown-item-icon">📄</div>
                         <div class="dropdown-item-title">Penomoran Halaman</div>
                     </a>
-                    <a href="daftar-isi.html">
-                        <div class="dropdown-item-icon">📋</div>
-                        <div class="dropdown-item-title">Daftar Isi Otomatis</div>
-                    </a>
                 </div>
             </div>
 
             <div class="dropdown">
                 <a href="#" class="dropdown-toggle">Contact Us <span class="dropdown-arrow">▾</span></a>
                 <div class="dropdown-menu">
-                    <a href="https://www.tiktok.com/@adk_rowosari" target="_blank" rel="noopener"><div class="dropdown-item-icon">🎵</div><div class="dropdown-item-title">TikTok</div></a>
-                    <a href="https://www.instagram.com/adk_rowosari?igsh=MXV4OXdwbnQycGp5cg==" target="_blank" rel="noopener"><div class="dropdown-item-icon">📸</div><div class="dropdown-item-title">Instagram</div></a>
-                    <a href="https://wa.me/6281228790091" target="_blank" rel="noopener"><div class="dropdown-item-icon">💬</div><div class="dropdown-item-title">WA Admin</div></a>
-                    <a href="https://wa.me/62895341996647" target="_blank" rel="noopener"><div class="dropdown-item-icon">🏪</div><div class="dropdown-item-title">WA Toko</div></a>
+                    <div class="dropdown-group-label">Hubungi Kami</div>
+                    <a href="https://wa.me/6281228790091" target="_blank" rel="noopener"><div class="dropdown-item-icon" style="background:rgba(37,211,102,0.15);">💬</div><div class="dropdown-item-title">WA Admin</div></a>
+                    <a href="https://wa.me/6287700277748" target="_blank" rel="noopener"><div class="dropdown-item-icon" style="background:rgba(37,211,102,0.15);">🏪</div><div class="dropdown-item-title">WA Toko (Cepiring)</div></a>
+                    <a href="https://wa.me/62895341996647" target="_blank" rel="noopener"><div class="dropdown-item-icon" style="background:rgba(37,211,102,0.15);">🏪</div><div class="dropdown-item-title">WA Toko (Rowosari)</div></a>
+                    <div class="dropdown-divider"></div>
+                    <div class="dropdown-group-label">Sosial Media</div>
+                    <a href="https://www.instagram.com/adk_rowosari?igsh=MXV4OXdwbnQycGp5cg==" target="_blank" rel="noopener"><div class="dropdown-item-icon" style="background:rgba(225,48,108,0.15);">📸</div><div class="dropdown-item-title">Instagram</div></a>
+                    <a href="https://www.tiktok.com/@adk_rowosari" target="_blank" rel="noopener"><div class="dropdown-item-icon" style="background:rgba(0,0,0,0.12);">🎵</div><div class="dropdown-item-title">TikTok</div></a>
                 </div>
             </div>
         </div>
         <div class="nav-right">
+            <button class="theme-toggle" onclick="toggleTheme()" title="Mode Siang">☀️</button>
             <a href="cek_pembelian.php" class="btn-nav">Cek Pembelian</a>
         </div>
         <div class="mobile-jasa-drop" id="jasaDrop">
             <button class="mobile-jasa-link" onclick="toggleJasaDrop()">Jasa ADK <span class="mobile-jasa-arrow">▾</span></button>
             <div class="mobile-jasa-menu">
                 <a href="jasa.html">📄 Penomoran Halaman</a>
-                <a href="daftar-isi.html">📋 Daftar Isi Otomatis</a>
             </div>
         </div>
+        <button class="theme-toggle theme-toggle-mob" onclick="toggleTheme()" title="Mode Siang">☀️</button>
         <button class="hamburger" onclick="openMobileMenu()">
             <span></span><span></span><span></span>
         </button>
@@ -941,20 +910,24 @@ if (!empty($penomoran)) {
     <div class="mobile-nav" id="mobileNav">
         <div class="mobile-nav-header">
             <a href="index.html" class="logo">
-                <img src="LOGO ADK.png" alt="ADK Logo" style="width:36px;height:26px;object-fit:contain;flex-shrink:0;">
-                <span>ADK PHOTOCOPY</span>
+                <img src="Favicon Adkivia.png" alt="ADK Logo" style="width:52px;height:52px;object-fit:contain;flex-shrink:0;">
+                <span><span style="color:#1565C0">ADK</span><span style="color:#29B6F6">IVIA</span></span>
             </a>
-            <button class="mobile-nav-close" onclick="closeMobileMenu()">✕</button>
+            <div style="display:flex;align-items:center;gap:8px;">
+                <button class="theme-toggle" onclick="toggleTheme()" title="Mode Siang">☀️</button>
+                <button class="mobile-nav-close" onclick="closeMobileMenu()">✕</button>
+            </div>
         </div>
         <div class="mobile-nav-links">
             <a href="index.html">Home</a>
             <a href="tutorial.html">Tutorial</a>
             <a href="jasa.html">Jasa ADK</a>
             <div class="mobile-nav-section-title">Contact Us</div>
-            <a href="https://www.tiktok.com/@adk_rowosari" target="_blank" rel="noopener" class="mobile-nav-contact">🎵 TikTok</a>
-            <a href="https://www.instagram.com/adk_rowosari?igsh=MXV4OXdwbnQycGp5cg==" target="_blank" rel="noopener" class="mobile-nav-contact">📸 Instagram</a>
             <a href="https://wa.me/6281228790091" target="_blank" rel="noopener" class="mobile-nav-contact">💬 WA Admin</a>
-            <a href="https://wa.me/62895341996647" target="_blank" rel="noopener" class="mobile-nav-contact">🏪 WA Toko</a>
+            <a href="https://wa.me/6287700277748" target="_blank" rel="noopener" class="mobile-nav-contact">🏪 WA Toko (Cepiring)</a>
+            <a href="https://wa.me/62895341996647" target="_blank" rel="noopener" class="mobile-nav-contact">🏪 WA Toko (Rowosari)</a>
+            <a href="https://www.instagram.com/adk_rowosari?igsh=MXV4OXdwbnQycGp5cg==" target="_blank" rel="noopener" class="mobile-nav-contact">📸 Instagram</a>
+            <a href="https://www.tiktok.com/@adk_rowosari" target="_blank" rel="noopener" class="mobile-nav-contact">🎵 TikTok</a>
         </div>
         <div class="mobile-nav-footer">
             <a href="cek_pembelian.php" class="btn-nav">Cek Pembelian</a>
@@ -978,13 +951,13 @@ if (!empty($penomoran)) {
             <div class="guest-section" id="guestSection">
                 <div class="guest-badge">👤 Mode Tamu</div>
                 <button class="btn-guest-login" onclick="toggleGuestLogin()">
-                    📱 Login Nomor Telepon
+                    📧 Login Email
                 </button>
                 <div class="guest-hint">Silahkan login untuk menyimpan history</div>
                 <div class="guest-form-wrap" id="guestFormWrap" style="display:none">
                     <div class="guest-form-inner">
-                        <input type="tel" id="guestPhoneInput" class="guest-phone-input"
-                               placeholder="Contoh: 08123456789" autocomplete="tel">
+                        <input type="email" id="guestEmailInput" class="guest-phone-input"
+                               placeholder="Contoh: email@kamu.com" autocomplete="email">
                         <button class="btn-guest-submit" id="guestSubmitBtn" onclick="doGuestLogin()">
                             Verifikasi
                         </button>
@@ -996,57 +969,45 @@ if (!empty($penomoran)) {
             <!-- Mode Login -->
             <div class="history-phone-chip">
                 <span>📱</span>
-                <span class="phone-masked"><?= htmlspecialchars(maskPhone($phone)) ?></span>
+                <span class="phone-masked"><?= htmlspecialchars(maskEmail($email)) ?></span>
                 <span class="phone-divider"></span>
-                <a href="cek_pembelian.php?change=1">Ganti Nomor</a>
+                <a href="cek_pembelian.php?change=1">Ganti Email</a>
             </div>
             <?php endif; ?>
         </div>
 
         <div class="order-list">
         <?php if (empty($orders)): ?>
-            <div class="empty-state">Belum ada order untuk nomor ini.</div>
+            <div class="empty-state">Belum ada order untuk email ini.</div>
         <?php else: ?>
             <?php foreach ($orders as $o): ?>
             <?php
-                $jasaType  = $o['jasa_type'] ?? 'penomoran';
-                $isDI      = ($jasaType === 'daftar_isi');
                 $status    = $o['status'];
                 $isPaid    = $status === 'paid';
                 $isFailed  = $status === 'failed';
                 $isPending = $status === 'pending';
-                $isSelesai = $status === 'selesai';  // daftar isi
-                $cardUid   = ($isDI ? 'di_' : 'p_') . $o['id'];
                 $rawName   = preg_replace('/^\d+_/', '', $o['file_input']);
                 $fnBase    = pathinfo($rawName, PATHINFO_FILENAME);
                 $fnExt     = pathinfo($rawName, PATHINFO_EXTENSION);
                 $namaFile  = (mb_strlen($fnBase) > 12 ? mb_substr($fnBase, 0, 12) . '...' : $fnBase) . '.' . $fnExt;
                 $expiry    = strtotime($o['created_at']) + 1800;
-                $keterangan = $isDI ? [
-                    ['Kedalaman',  $o['kedalaman']    ?: '-'],
-                    ['Format',     $o['format_titik'] ?: '-'],
-                ] : keteranganList($o);
+                $keterangan = keteranganList($o);
             ?>
             <div class="card-wrap">
-            <div class="order-card <?= ($isPaid || $isSelesai) ? 'paid' : ($isFailed ? 'failed' : '') ?>"
-                 id="card-<?= $cardUid ?>">
+            <div class="order-card <?= $isPaid ? 'paid' : ($isFailed ? 'failed' : '') ?>"
+                 id="card-<?= $o['id'] ?>">
 
                 <!-- KIRI -->
                 <div class="card-left">
                     <div class="card-file" title="<?= htmlspecialchars($namaFile) ?>">
                         <?= htmlspecialchars($namaFile) ?>
                     </div>
-                    <div class="card-service"><?= $isDI ? 'Daftar Isi Otomatis' : 'Penomoran Halaman' ?></div>
-                    <?php if ($isDI): ?>
-                    <div class="card-status-badge <?= $isSelesai ? 'badge-sukses' : 'badge-pending' ?>">
-                        <?= $isSelesai ? 'Selesai' : 'Diproses' ?>
-                    </div>
-                    <?php else: ?>
+                    <div class="card-service">Penomoran Halaman</div>
                     <div class="card-status-badge <?= $isPaid ? 'badge-sukses' : ($isFailed ? 'badge-failed' : 'badge-pending') ?>"
-                         id="badge-<?= $cardUid ?>">
+                         id="badge-<?= $o['id'] ?>">
                         <?= $isPaid ? 'Sukses' : ($isFailed ? 'Failed' : 'Waiting Payment') ?>
                     </div>
-                    <?php if (!$isDI && !empty($o['file_output']) && !$isFailed && !$isPaid): ?>
+                    <?php if (!empty($o['file_output']) && !$isFailed && !$isPaid): ?>
                     <button class="btn-preview" onclick="openPreview(
                         '<?= addslashes(htmlspecialchars($namaFile)) ?>',
                         <?= $isPending ? 'true' : 'false' ?>,
@@ -1055,7 +1016,7 @@ if (!empty($penomoran)) {
                         <?= (int)$o['harga'] ?>
                     )">PREVIEW HASIL</button>
                     <?php endif; ?>
-                    <?php if (!$isDI && !empty($o['file_output'])): ?>
+                    <?php if (!empty($o['file_output'])): ?>
                     <?php if (!in_array($o['order_id'], $reportedOrderIds)): ?>
                     <button class="btn-bug" id="bugBtn-<?= $o['id'] ?>" onclick="openBugReport(
                         '<?= addslashes(htmlspecialchars($namaFile)) ?>',
@@ -1065,17 +1026,12 @@ if (!empty($penomoran)) {
                     )">Laporkan Bug</button>
                     <?php endif; ?>
                     <?php endif; ?>
-                    <?php endif; // end else (non-DI) ?>
                 </div>
 
                 <!-- TENGAH -->
                 <div class="card-mid">
                     <div class="ket-label">Keterangan</div>
-                    <?php if (!$isDI): ?>
                     <div class="ket-paket"><?= namaPaket($o['paket']) ?></div>
-                    <?php else: ?>
-                    <div class="ket-paket">Daftar Isi Otomatis</div>
-                    <?php endif; ?>
                     <ul class="ket-list">
                         <?php foreach ($keterangan as $row): ?>
                         <li>
@@ -1090,7 +1046,7 @@ if (!empty($penomoran)) {
                 <div class="card-right">
                     <div class="card-date"><?= tglIndo($o['created_at']) ?></div>
 
-                    <?php if (!$isDI && $isPending): ?>
+                    <?php if ($isPending): ?>
                     <a href="sk.html" target="_blank" class="sk-link">S&amp;K berlaku</a>
                     <?php
                         $existingPayUrl = '';
@@ -1107,10 +1063,7 @@ if (!empty($penomoran)) {
 
                     <div class="download-row">
                         <span>Download:</span>
-                        <?php if ($isDI && $o['file_output']): ?>
-                        <a href="<?= BASE_PATH ?>/download_daftar_isi.php?id=<?= $o['id'] ?>"
-                           class="btn-dl active">Docx</a>
-                        <?php elseif (!$isDI && $isPaid && $o['file_output']): ?>
+                        <?php if ($isPaid && $o['file_output']): ?>
                         <a href="<?= BASE_PATH ?>/download.php?id=<?= $o['id'] ?>"
                            class="btn-dl active" download>Docx</a>
                         <?php else: ?>
@@ -1120,7 +1073,7 @@ if (!empty($penomoran)) {
                 </div>
 
             </div><!-- /order-card -->
-            <?php if (!$isDI && $isPending): ?>
+            <?php if ($isPending): ?>
             <div class="payment-warning" id="warning-<?= $o['id'] ?>"
                  data-expiry="<?= $expiry ?>">
                 !!! Lakukan Pembayaran untuk Download
@@ -1621,7 +1574,7 @@ if (!empty($penomoran)) {
             const wrap = document.getElementById('guestFormWrap');
             const isHidden = wrap.style.display === 'none';
             wrap.style.display = isHidden ? 'block' : 'none';
-            if (isHidden) document.getElementById('guestPhoneInput').focus();
+            if (isHidden) document.getElementById('guestEmailInput').focus();
         }
 
         function setGuestError(msg) {
@@ -1629,20 +1582,20 @@ if (!empty($penomoran)) {
         }
 
         function doGuestLogin() {
-            const phone = document.getElementById('guestPhoneInput').value.trim();
-            if (!phone) { setGuestError('Masukkan nomor telepon.'); return; }
+            const email = document.getElementById('guestEmailInput').value.trim();
+            if (!email) { setGuestError('Masukkan email.'); return; }
 
             const btn = document.getElementById('guestSubmitBtn');
             btn.disabled    = true;
             btn.textContent = 'Memproses...';
             setGuestError('');
 
-            requireOTP(phone, function () {
-                // OTP terverifikasi, klaim order tamu ke nomor ini
+            requireOTP(email, function () {
+                // OTP terverifikasi, klaim order tamu ke email ini
                 fetch('api/claim_guest.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ phone: phone, guest_token: _guestToken })
+                    body: JSON.stringify({ email: email, guest_token: _guestToken })
                 })
                 .then(function(r) { return r.json(); })
                 .then(function(data) {
@@ -1682,7 +1635,6 @@ if (!empty($penomoran)) {
             <div class="footer-col">
                 <h4>Jasa</h4>
                 <a href="jasa.html">Penomoran Halaman</a>
-                <a href="daftar-isi.html">Daftar Isi Otomatis</a>
             </div>
             <div class="footer-col">
                 <h4>Bantuan</h4>
@@ -1706,6 +1658,7 @@ if (!empty($penomoran)) {
         <p class="footer-bottom">© 2025 ADK PHOTOCOPY · All Rights Reserved.</p>
     </footer>
     <script src="nocopy.js"></script>
+    <script src="theme.js?v=1"></script>
 </body>
 </html>
 

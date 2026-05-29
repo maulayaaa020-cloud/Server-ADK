@@ -3,31 +3,35 @@ run_tests.py — Regression test suite untuk ADK page numbering.
 
 Struktur folder:
   adk/
-    test_files/          <- file .docx input (di-commit ke git, portable)
-      Docx 1.docx
-      Docx 2.docx
-      ...
+    test_files/
+      paket1/
+      paket2/
+      paket3/
+        cover 1 dimulai dari ii/    <- paket3 standar (18 file)
+        [subfolder lain]/
+      paket4/
       hasil/             <- output --preview (di-gitignore, tidak di-commit)
     python/
       run_tests.py
       test_cases.json    <- expected results (di-commit ke git)
 
 Usage:
-  python run_tests.py              Jalankan semua test, bandingkan dengan expected
-  python run_tests.py --lock       Simpan output saat ini sebagai expected (setelah konfirmasi manual)
-  python run_tests.py --add <path> Copy file baru ke test_files/ dan tambah ke test suite
-  python run_tests.py --preview    Simpan semua output ke test_files/hasil/ untuk dicek manual
-  python run_tests.py --show       Tampilkan semua expected results
+  python run_tests.py                        Jalankan semua test
+  python run_tests.py --lock                 Simpan output saat ini sebagai expected
+  python run_tests.py --add <path> <folder>  Copy file baru ke test_files/<folder>/ dan tambah ke test suite
+                                             Contoh folder: paket3/cover 1 dimulai dari ii
+  python run_tests.py --preview              Simpan semua output ke test_files/hasil/
+  python run_tests.py --show                 Tampilkan semua expected results
 
 Cara kerja:
   1. Semua file test ada di test_files/ dan sudah di-commit → portable, tidak hilang kalau pindah PC
   2. Saat fix bug file baru:
-       a. python run_tests.py              <- harus N PASS dulu (tidak ada regresi)
+       a. python run_tests.py                          <- harus N PASS dulu (tidak ada regresi)
        b. [fix utils.py]
-       c. python run_tests.py              <- pastikan masih N PASS
-       d. python run_tests.py --preview    <- buka hasil di test_files/hasil/, cek manual
-       e. python run_tests.py --add <path> <- copy file baru, simpan ke test suite
-       f. git add test_files/<file> python/test_cases.json python/utils.py
+       c. python run_tests.py                          <- pastikan masih N PASS
+       d. python run_tests.py --preview                <- buka hasil di test_files/hasil/, cek manual
+       e. python run_tests.py --add <path> <folder>   <- copy file baru, simpan ke test suite
+       f. git add test_files/<folder>/<file> python/test_cases.json python/utils.py
        g. git commit + push
 """
 import sys, json, os, subprocess, shutil
@@ -218,25 +222,36 @@ def cmd_lock(cases):
     print(f"\n{locked} file di-lock -> {CASES_F}")
 
 
-def cmd_add(cases, src_path):
-    """Copy file baru ke test_files/, proses, dan tambah ke test suite."""
+def cmd_add(cases, src_path, folder=None):
+    """Copy file baru ke test_files/<folder>/, proses, dan tambah ke test suite.
+
+    folder: subfolder relatif dari test_files/, misal 'paket3/cover 1 dimulai dari ii'
+            Default: 'paket3/cover 1 dimulai dari ii'
+    """
     src_path = os.path.abspath(src_path)
     if not os.path.exists(src_path):
         print(f"File tidak ditemukan: {src_path}")
         sys.exit(1)
     name = os.path.basename(src_path)
-    if name in cases:
-        print(f"{name} sudah ada di test suite. Gunakan --lock untuk update.")
+
+    # Tentukan subfolder tujuan
+    subfolder = folder or 'paket3/cover 1 dimulai dari ii'
+    dest_dir  = os.path.join(TEST_FILES, *subfolder.replace('\\', '/').split('/'))
+    dest_path = os.path.join(dest_dir, name)
+
+    # Key di test_cases.json menggunakan path relatif agar unik lintas subfolder
+    rel = os.path.relpath(dest_path, _ROOT).replace('\\', '/')
+    if rel in cases:
+        print(f"{rel} sudah ada di test suite. Gunakan --lock untuk update.")
         return
 
-    # Copy ke test_files/ agar ter-commit ke git
-    os.makedirs(TEST_FILES, exist_ok=True)
-    dest_path = os.path.join(TEST_FILES, name)
+    # Copy ke subfolder agar ter-commit ke git
+    os.makedirs(dest_dir, exist_ok=True)
     if src_path != dest_path:
         shutil.copy2(src_path, dest_path)
         print(f"Disalin ke: {dest_path}")
 
-    print(f"Memproses {name}...")
+    print(f"Memproses {name} (folder: {subfolder})...")
     result = run_file(dest_path, args=None)
     if result.get('status') != 'success':
         print(f"Error: {result.get('message', '')}")
@@ -253,12 +268,10 @@ def cmd_add(cases, src_path):
     print(f"\nHasil benar? Tambah ke test suite? [y/N] ", end='')
     ans = input().strip().lower()
     if ans == 'y':
-        # Simpan path relatif agar portable lintas PC
-        rel = os.path.relpath(dest_path, _ROOT).replace('\\', '/')
-        cases[name] = {'path': rel, **snap}
+        cases[rel] = {'path': rel, **snap}
         save_cases(cases)
-        print(f"Ditambahkan: {name}  (total: {len(cases)} file)")
-        print(f"Selanjutnya: git add test_files/{name} python/test_cases.json")
+        print(f"Ditambahkan: {rel}  (total: {len(cases)} file)")
+        print(f"Selanjutnya: git add {rel} python/test_cases.json")
     else:
         print("Dibatalkan.")
 
@@ -330,9 +343,11 @@ if __name__ == '__main__':
         cmd_lock(cases)
     elif cmd == '--add':
         if len(sys.argv) < 3:
-            print("Usage: run_tests.py --add <path/to/file.docx>")
+            print("Usage: run_tests.py --add <path/to/file.docx> [folder]")
+            print("       folder default: paket3/cover 1 dimulai dari ii")
             sys.exit(1)
-        cmd_add(cases, sys.argv[2])
+        folder = sys.argv[3] if len(sys.argv) > 3 else None
+        cmd_add(cases, sys.argv[2], folder)
     elif cmd == '--show':
         cmd_show(cases)
     elif cmd == '--preview':
