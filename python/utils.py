@@ -618,20 +618,37 @@ class DocProcessor:
 
         # Kasus num_cover > 1 dengan breaks_before=0: roman_start_p sendiri (mis. KATA
         # PENGANTAR) seharusnya menjadi cover ke-2 (unnumbered). Advance ke heading Roman
-        # berikutnya (mis. DAFTAR ISI) agar seluruh konten antara cover dan heading itu
-        # masuk section cover yang sama — tanpa perlu sisipkan halaman kosong.
+        # berikutnya agar seluruh konten antara cover dan heading itu masuk section cover.
+        # Guard: hanya advance jika cover tampak hanya 1 halaman fisik. Deteksi multi-cover
+        # implisit dengan cek apakah teks akhir cover muncul >=2x (pola "cover repeat").
         if num_cover > 1:
-            rsp_txt = _txt(body_els[rsp_idx]).lower()
-            for j in range(rsp_idx + 1, min(rsp_idx + 300, len(body_els))):
-                nxt = body_els[j]
-                if _el_tag(nxt) != 'p':
-                    continue
-                pPr = nxt.find('{%s}pPr' % W)
-                if pPr is not None and pPr.find('{%s}sectPr' % W) is not None:
+            _last_cov_txt = None
+            _last_cov_j   = -1
+            for _k in range(rsp_idx - 1, -1, -1):
+                _t = _txt(body_els[_k]).strip()
+                if _t:
+                    _last_cov_txt = _t
+                    _last_cov_j   = _k
                     break
-                ntxt = _txt(nxt).strip()
-                if ntxt and is_roman_start(ntxt) and ntxt.lower() != rsp_txt:
-                    return nxt, True
+            _implicit_pages = 1
+            if _last_cov_txt and len(_last_cov_txt) >= 4 and _last_cov_j >= 5:
+                for _k in range(_last_cov_j - 1, -1, -1):
+                    _t = _txt(body_els[_k]).strip()
+                    if _t == _last_cov_txt and _last_cov_j - _k >= 5:
+                        _implicit_pages += 1
+                        break
+            if _implicit_pages < num_cover:
+                rsp_txt = _txt(body_els[rsp_idx]).lower()
+                for j in range(rsp_idx + 1, min(rsp_idx + 300, len(body_els))):
+                    nxt = body_els[j]
+                    if _el_tag(nxt) != 'p':
+                        continue
+                    pPr = nxt.find('{%s}pPr' % W)
+                    if pPr is not None and pPr.find('{%s}sectPr' % W) is not None:
+                        break
+                    ntxt = _txt(nxt).strip()
+                    if ntxt and is_roman_start(ntxt) and ntxt.lower() != rsp_txt:
+                        return nxt, True
         return roman_start_p, False
 
     @staticmethod
