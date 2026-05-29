@@ -612,15 +612,26 @@ class DocProcessor:
                             continue
                         _bt_txt = _txt(_bt)
                         if _bt_txt and is_roman_start(_bt_txt):
-                            return roman_start_p, True  # pgBr di dalam roman zone
+                            # Fix B2: Roman keyword antara rsp dan pgBr → pgBr di dalam roman zone.
+                            # num_cover=1: batas benar, return sekarang.
+                            # num_cover>1: biarkan Change 2 berjalan untuk advance rsp.
+                            if num_cover <= 1:
+                                return roman_start_p, True  # pgBr di dalam roman zone
+                            break  # → Change 2 akan advance rsp ke keyword berikutnya
                 for k in range(j + 1, len(body_els)):
                     nxt  = body_els[k]
                     ntag = _el_tag(nxt)
                     if ntag == 'p':
                         _nxt_txt = _txt(nxt)
                         if _nxt_txt and is_roman_start(_nxt_txt):
-                            # Fix B1: pgBr dalam roman zone → jangan advance
-                            return roman_start_p, True
+                            # Fix B1: pgBr dalam roman zone → jangan advance ke nxt.
+                            # num_cover=1: batas sudah benar, return sekarang.
+                            # num_cover>1: biarkan Change 2 berjalan untuk advance dari
+                            # roman_start_p ke keyword berikutnya (mis. Lembar Pengesahan
+                            # → KATA PENGANTAR) sehingga roman_start_p bisa jadi cover ke-2.
+                            if num_cover <= 1:
+                                return roman_start_p, True
+                            break  # → keluar for k, lalu for j → Change 2 akan berjalan
                         return nxt, True
                 break
 
