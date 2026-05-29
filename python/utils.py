@@ -1475,17 +1475,15 @@ class DocProcessor:
         return roman_start_p  # dikembalikan karena bisa berubah
 
     def ensure_cover_pages(self, roman_start_p, num_cover, already_advanced=False):
-        """Pastikan cover section span num_cover halaman fisik.
-        Jika dokumen hanya punya 1 halaman cover tapi num_cover=2, sisipkan
-        blank section break (nextPage) tepat sebelum roman_start_p untuk tiap
-        halaman cover yang kurang. Word lalu memperlakukan blank section sebagai
-        halaman cover tambahan — diformat hidden oleh fmt_cover(first_cover=False).
-        Hanya dipanggil jika hidden_cov='Ya'.
-        already_advanced=True: advance_roman_start sudah memindah posisi roman_start_p
-        (cover sudah punya halaman cukup secara alami) — skip insert."""
+        """Pastikan cover zone punya num_cover section terpisah.
+        Jika dokumen hanya punya 1 section cover tapi num_cover=2:
+          - already_advanced=False: sisipkan blank section break sebelum roman_start_p.
+          - already_advanced=True: advance_roman_start sudah melewati page break cover,
+            tapi cover zone mungkin masih 1 section via page break biasa. Konversi
+            page break terakhir di cover zone menjadi section break yang proper sehingga
+            fmt_cover(first_cover=False) bisa menyembunyikan cover ke-2 dengan benar.
+        Hanya dipanggil jika hidden_cov='Ya'."""
         if num_cover <= 1 or roman_start_p is None:
-            return
-        if already_advanced:
             return
         W    = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
         body = self.doc.element.body
@@ -1505,6 +1503,37 @@ class DocProcessor:
                     term_idx = j
                     break
         if term_idx < 0:
+            return
+
+        if already_advanced:
+            # advance_roman_start telah memindah roman_start_p melewati page break cover,
+            # tapi cover zone mungkin masih 1 section yang mencakup num_cover halaman fisik
+            # via page break biasa (bukan section break). Hitung hanya section breaks sebagai
+            # pembagi cover yang valid — jika kurang, konversi page break ke section break.
+            cover_sect_breaks = 0
+            pgbr_paras = []
+            for j in range(rsp_idx):
+                if j == term_idx:
+                    continue
+                el = body_els[j]
+                if any(br.get('{%s}type' % W) == 'page' for br in el.iter('{%s}br' % W)):
+                    pgbr_paras.append(el)
+                pPr = el.find('{%s}pPr' % W)
+                if pPr is not None and pPr.find('{%s}sectPr' % W) is not None:
+                    cover_sect_breaks += 1
+            missing = (num_cover - 1) - cover_sect_breaks
+            if missing <= 0 or not pgbr_paras:
+                return
+            # Konversi page break terakhir (= batas cover N / cover N+1) ke section break.
+            # Diambil dari akhir pgbr_paras sehingga page break paling dekat ke terminal sectPr
+            # yang dipilih — menghindari page break internal di cover pertama yang multi-halaman.
+            for el in pgbr_paras[-missing:]:
+                for br in list(el.findall('.//{%s}br' % W)):
+                    if br.get('{%s}type' % W) == 'page':
+                        parent = br.getparent()
+                        if parent is not None:
+                            parent.remove(br)
+                self._attach_sectPr(el)
             return
 
         # Hitung break internal di cover (pgBr + sectPr non-terminal)
@@ -1658,36 +1687,70 @@ class DocProcessor:
                     self._place_num_in_part(section.footer, _vis_align)
             # else: hidden_cov='Ya', visible_pos=None → footer kosong = nomor tersembunyi
 
-    def fmt_roman(self, section, start=None):
+    def fmt_roman(self, section, start=None, roman_sec=None, num_cover=1):
         sectPr = section._sectPr
         _type_el = sectPr.find(qn('w:type'))
         _is_continuous = (_type_el is not None and
                           _type_el.get(qn('w:val')) == 'continuous')
         if _is_continuous:
-            # Continuous sectPr: hapus titlePg, set format, pasang footer nomor halaman.
-            # - titlePg dihapus agar kompatibel dengan section berikutnya (keduanya False).
-            # - start TIDAK di-set → Word memaksa next-page break jika continuous section
-            #   punya pgNumType start=X.
-            # - Footer nomor halaman dipasang agar halaman romawi menampilkan nomor.
-            #   Jika diikuti roman section lain (_prev_continuous), footer ini akan
-            #   di-sinkronkan oleh branch _prev_continuous di iterasi berikutnya.
-            self.set_page_number_format(section, 'lowerRoman', None)
+            # Continuous sectPr: JANGAN akses header/footer via python-docx.
+            # Menambah headerReference/footerReference ke sectPr continuous menyebabkan
+            # Word merender batas sebagai "Section Break (Next Page)" sehingga DAFTAR ISI
+            # terpisah dari TOC-nya dan muncul blank page ekstra.
             _tpg = sectPr.find(qn('w:titlePg'))
             if _tpg is not None:
                 sectPr.remove(_tpg)
             section.different_first_page_header_footer = False
-            self.clear_header(section)
-            f = section.footer
-            f.is_linked_to_previous = False
-            p = self._first_para(f)
-            self.clear_paragraph(p)
-            p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-            self.add_page_number(p)
-            self._set_pn_spacing(p)
+            # Bersihkan refs dan pgNumType yang mungkin sudah ada.
+            # pgNumType dengan w:start di sectPr continuous memaksa Word merender
+            # sebagai "Next Page" dan mereset nomor halaman — keduanya harus dihapus.
+            for _ref_tag in (qn('w:headerReference'), qn('w:footerReference')):
+                for _ref in list(sectPr.findall(_ref_tag)):
+                    sectPr.remove(_ref)
+            _pgNum = sectPr.find(qn('w:pgNumType'))
+            if _pgNum is not None:
+                sectPr.remove(_pgNum)
+            # Tetapkan format lowerRoman tanpa w:start agar tidak memaksa Next Page.
+            # w:fmt saja (tanpa w:start) tidak mereset hitungan halaman → aman untuk continuous.
+            self.set_page_number_format(section, 'lowerRoman', None)
+            # Section continuous mewarisi footer dari section SEBELUMNYA.
+            # Agar nomor halaman tetap muncul di halaman Roman zone (KATA PENGANTAR, dll.),
+            # update DEFAULT footer section sebelumnya dengan PAGE field.
+            # Gunakan titlePg=True pada section sebelumnya agar:
+            #   - First page (cover/blank): pakai first-page footer (kosong → tersembunyi)
+            #   - Default footer (diwarisi section continuous ini): punya PAGE field → nomor tampil
+            _sections = list(self.doc.sections)
+            _sec_idx = next((i for i, s in enumerate(_sections) if s._sectPr is sectPr), -1)
+            # Hanya modify previous section jika continuous section ini adalah section PERTAMA
+            # di zona Roman (langsung setelah cover). Jika _sec_idx > roman_sec, previous
+            # section sudah punya footer dari fmt_roman — jangan di-overwrite dengan titlePg=True
+            # karena itu akan menyembunyikan nomor halaman di halaman pertama previous section.
+            # Section continuous cukup mewarisi footer previous section secara otomatis (no refs).
+            if _sec_idx > 0 and (roman_sec is None or _sec_idx == roman_sec):
+                _prev_sec = _sections[_sec_idx - 1]
+                _prev_sec.different_first_page_header_footer = True
+                # First-page header/footer: kosong (halaman cover/blank tersembunyi)
+                for _part in (_prev_sec.first_page_header, _prev_sec.first_page_footer):
+                    _part.is_linked_to_previous = False
+                    for _pp in _part.paragraphs:
+                        self.clear_paragraph(_pp)
+                # Default footer: sisipkan PAGE field agar diwarisi section continuous ini.
+                # ensure_cover_pages (dengan already_advanced=True) sudah mengonversi page break
+                # cover menjadi section break, sehingga cover ke-2 berada di section tersendiri
+                # dan diformat hidden oleh fmt_cover(first_cover=False). Jika konversi tidak
+                # terjadi (edge case: tidak ada page break di cover zone), halaman cover ke-2
+                # dalam section yang sama akan mewarisi footer ini dan tampil — tapi ini hanya
+                # terjadi jika ensure_cover_pages tidak menemukan page break yang bisa dikonversi.
+                _f = _prev_sec.footer
+                _f.is_linked_to_previous = False
+                _pf = self._first_para(_f)
+                self.clear_paragraph(_pf)
+                _pf.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                self.add_page_number(_pf)
+                self._set_pn_spacing(_pf)
             return
 
-        # Cek apakah section sebelumnya continuous SEBELUM menyentuh header/footer.
-        # Harus dilakukan lebih awal agar clear_header tidak dipanggil saat tidak perlu.
+        # Cek apakah section sebelumnya continuous.
         _sections = list(self.doc.sections)
         _sec_idx = next((i for i, s in enumerate(_sections) if s._sectPr is sectPr), -1)
         _prev_continuous = False
@@ -1697,37 +1760,21 @@ class DocProcessor:
                                 _p_type.get(qn('w:val')) == 'continuous')
 
         if _prev_continuous:
-            # Section ini langsung mengikuti continuous section (misal DAFTAR ISI di Docx 15).
-            # Word memaksa page break di batas continuous jika dua section punya footer/header
-            # reference yang BERBEDA. Solusi: pasang footer nomor halaman di section ini,
-            # lalu salin ref yang sama ke continuous section sebelumnya — keduanya identik
-            # → Word render batas itu benar-benar continuous (tidak ada forced page break).
-            section.different_first_page_header_footer = False
-            self.clear_header(section)
-            f = section.footer
-            f.is_linked_to_previous = False
-            p = self._first_para(f)
-            self.clear_paragraph(p)
-            p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-            self.add_page_number(p)
-            self._set_pn_spacing(p)
+            # Pastikan continuous sectPr sebelumnya bersih dari refs (defensive cleanup).
             _prev_sectPr = _sections[_sec_idx - 1]._sectPr
             for _ref_tag in (qn('w:headerReference'), qn('w:footerReference')):
                 for _ref in list(_prev_sectPr.findall(_ref_tag)):
                     _prev_sectPr.remove(_ref)
-            for _ref_tag in (qn('w:headerReference'), qn('w:footerReference')):
-                for _ref in list(sectPr.findall(_ref_tag)):
-                    _prev_sectPr.append(deepcopy(_ref))
-        else:
-            section.different_first_page_header_footer = False
-            self.clear_header(section)
-            f = section.footer
-            f.is_linked_to_previous = False
-            p = self._first_para(f)
-            self.clear_paragraph(p)
-            p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-            self.add_page_number(p)
-            self._set_pn_spacing(p)
+
+        section.different_first_page_header_footer = False
+        self.clear_header(section)
+        f = section.footer
+        f.is_linked_to_previous = False
+        p = self._first_para(f)
+        self.clear_paragraph(p)
+        p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        self.add_page_number(p)
+        self._set_pn_spacing(p)
         self.set_page_number_format(section, 'lowerRoman', start)
 
     def fmt_bab_first(self, section, reset_to_1=False):
