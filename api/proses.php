@@ -69,7 +69,9 @@ if (isset($_FILES['file']) && isset($_POST['paket'])) {
         mkdir($uploadDir, 0775, true);
     }
 
-    $namaBaru = time() . "_" . preg_replace("/[^a-zA-Z0-9._]/", "", $namaFile);
+    $sanitized = preg_replace("/[^a-zA-Z0-9. _-]/", "", $namaFile);
+    $sanitized = preg_replace('/\s+/', '_', $sanitized);
+    $namaBaru  = time() . "_" . $sanitized;
     if (!move_uploaded_file($tmpFile, $uploadDir . "/" . $namaBaru)) {
         die("Gagal menyimpan file. Coba lagi.");
     }

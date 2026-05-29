@@ -66,10 +66,15 @@ if (!file_exists($absPath)) {
 }
 
 $basename = basename($absPath);
+$ext      = pathinfo($basename, PATHINFO_EXTENSION);
+$stem     = pathinfo($basename, PATHINFO_FILENAME);
+$friendly = preg_replace('/_ADK_\d{14}_[a-f0-9]{8}$/', '', $stem);
+$friendly = str_replace('_', ' ', $friendly);
+$friendly = trim($friendly) . '.' . $ext;
 
 ob_end_clean();
 header('Content-Type: application/vnd.openxmlformats-officedocument.wordprocessingml.document');
-header('Content-Disposition: attachment; filename="' . $basename . '"');
+header('Content-Disposition: attachment; filename="' . $friendly . '"');
 header('Content-Length: ' . filesize($absPath));
 header('Cache-Control: private, no-cache');
 header('X-Content-Type-Options: nosniff');
