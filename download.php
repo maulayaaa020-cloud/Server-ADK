@@ -28,13 +28,6 @@ if (!$order) {
     exit('Order tidak ditemukan.');
 }
 
-// Hanya order yang sudah lunas yang bisa diunduh
-if ($order['status'] !== 'paid') {
-    ob_end_clean();
-    http_response_code(403);
-    exit('File hanya tersedia setelah pembayaran selesai.');
-}
-
 // Validasi kepemilikan: admin, pemilik email, atau pemilik guest_token
 $isAdmin    = !empty($_SESSION['adk_admin']);
 $sessEmail  = $_SESSION['email'] ?? $_SESSION['cek_email'] ?? null;
@@ -48,6 +41,13 @@ if (!$isOwner) {
     ob_end_clean();
     http_response_code(403);
     exit('Akses ditolak.');
+}
+
+// Hanya order yang sudah lunas yang bisa diunduh (kecuali admin)
+if (!$isAdmin && $order['status'] !== 'paid') {
+    ob_end_clean();
+    http_response_code(403);
+    exit('File hanya tersedia setelah pembayaran selesai.');
 }
 
 $relPath = $order['file_output'] ?? '';
