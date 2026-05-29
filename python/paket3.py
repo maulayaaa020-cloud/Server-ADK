@@ -39,9 +39,11 @@ def apply(proc, roman_sec, bab_sec_list, n_sections, hidden_cov, dimulai_dari='i
 
             # ── Romawi zone ──
             if first_bab_sec is None or i < first_bab_sec:
-                # Multi-cover + hidden: reset eksplisit agar roman zone tampil di roman_start_num
-                _rs = roman_start_num if (i == roman_sec and num_cover > 1 and hidden_cov == 'Ya') else None
-                proc.fmt_roman(section, start=_rs)
+                # Hidden cover: reset eksplisit agar roman zone selalu tampil di roman_start_num,
+                # terlepas dari berapa halaman fisik yang ditempati cover (mencegah "iii" di halaman 3
+                # ketika konten cover overflow ke halaman ke-2).
+                _rs = roman_start_num if (i == roman_sec and hidden_cov == 'Ya') else None
+                proc.fmt_roman(section, start=_rs, roman_sec=roman_sec, num_cover=num_cover)
                 continue
 
             # ── BAB zone ──

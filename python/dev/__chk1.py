@@ -22,15 +22,15 @@ def read_pns(path):
     return r
 
 def check(pns):
-    # Cover 1, dimulai_dari='ii': cover=lowerRoman:1, roman=lowerRoman:None, decimal after
+    # Cover 1, dimulai_dari='ii': cover=lowerRoman:1, roman=lowerRoman:2, decimal after
     lr1 = next((i for i,p in enumerate(pns) if p['fmt']=='lowerRoman' and p['start']=='1'), None)
     if lr1 is None: return False, 'no lowerRoman:1 cover'
-    # Roman section: lowerRoman with None start, right after cover
-    lr_none = next((i for i,p in enumerate(pns) if i > lr1 and p['fmt']=='lowerRoman' and p['start'] is None), None)
-    if lr_none is None: return False, 'no lowerRoman:None roman section after cover'
-    dec = next((i for i,p in enumerate(pns) if i > lr_none and p['fmt']=='decimal'), None)
+    # Roman section: lowerRoman with explicit start=2, right after cover
+    lr2 = next((i for i,p in enumerate(pns) if i > lr1 and p['fmt']=='lowerRoman' and p['start']=='2'), None)
+    if lr2 is None: return False, 'no lowerRoman:2 roman section after cover'
+    dec = next((i for i,p in enumerate(pns) if i > lr2 and p['fmt']=='decimal'), None)
     if dec is None: return False, 'no decimal section after roman'
-    return True, "cov@sec[%d], rom@sec[%d], dec@sec[%d]" % (lr1, lr_none, dec)
+    return True, "cov@sec[%d], rom@sec[%d], dec@sec[%d]" % (lr1, lr2, dec)
 
 os.makedirs(HASIL, exist_ok=True)
 ok=bad=err=0
