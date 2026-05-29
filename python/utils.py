@@ -502,11 +502,23 @@ class DocProcessor:
                 # Fix A: jika break terakhir sebelum rsp adalah sectPr di paragraf KOSONG,
                 # boundary sudah ada dengan benar → tidak perlu advance.
                 # (sectPr di paragraf ber-konten = batas cover1/cover2, bukan batas covers/roman)
+                _WP_NS = "http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"
                 for _j in range(rsp_idx - 1, -1, -1):
                     if _has_break(body_els[_j]):
                         _pPr = body_els[_j].find('{%s}pPr' % W)
                         if (_pPr is not None and _pPr.find('{%s}sectPr' % W) is not None
                                 and not _txt(body_els[_j])):
+                            # Jika sectPr mengandung gambar, Section 0 meluas ke halaman fisik
+                            # tambahan karena gambar itu. Roman zone harus mulai dari elemen
+                            # PERTAMA setelah sectPr, bukan dari roman_start_p yang jauh.
+                            _sect_has_img = (
+                                body_els[_j].find('.//{%s}inline' % _WP_NS) is not None or
+                                body_els[_j].find('.//{%s}anchor' % _WP_NS) is not None
+                            )
+                            if _sect_has_img:
+                                _after = _j + 1
+                                return (body_els[_after]
+                                        if _after < len(body_els) else roman_start_p), True
                             return roman_start_p, True
                         # Fix C (Docx 9): pgBr kosong sebelum rsp dengan banyak konten sebelumnya
                         # → cover sudah memenuhi ≥ num_cover halaman → pgBr adalah batas covers/roman.
@@ -603,6 +615,23 @@ class DocProcessor:
                             return roman_start_p, True
                         return nxt, True
                 break
+
+        # Kasus num_cover > 1 dengan breaks_before=0: roman_start_p sendiri (mis. KATA
+        # PENGANTAR) seharusnya menjadi cover ke-2 (unnumbered). Advance ke heading Roman
+        # berikutnya (mis. DAFTAR ISI) agar seluruh konten antara cover dan heading itu
+        # masuk section cover yang sama — tanpa perlu sisipkan halaman kosong.
+        if num_cover > 1:
+            rsp_txt = _txt(body_els[rsp_idx]).lower()
+            for j in range(rsp_idx + 1, min(rsp_idx + 300, len(body_els))):
+                nxt = body_els[j]
+                if _el_tag(nxt) != 'p':
+                    continue
+                pPr = nxt.find('{%s}pPr' % W)
+                if pPr is not None and pPr.find('{%s}sectPr' % W) is not None:
+                    break
+                ntxt = _txt(nxt).strip()
+                if ntxt and is_roman_start(ntxt) and ntxt.lower() != rsp_txt:
+                    return nxt, True
         return roman_start_p, False
 
     @staticmethod
