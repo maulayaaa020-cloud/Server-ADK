@@ -1413,9 +1413,12 @@ class DocProcessor:
                 self.insert_break_before_xml(roman_start_p,
                                              precomputed_layout=_page_layouts.get(id(roman_start_p)))
                 self._strip_empty_paras_before_bab(roman_start_p)
-            # Hapus paragraf kosong di awal zona romawi (mencegah blank page ekstra).
-            # Berlaku untuk kedua kasus: boundary baru (insert) maupun boundary lama
-            # yang sudah ada (misal sectPr pada paragraf gambar — Docx 14).
+            # Maju melewati paragraf kosong di awal zona romawi.
+            # Jika boundary BARU diinsert (_roman_already_bounded=False): hapus empty paras
+            # (mereka adalah "enter dorongan" yang terbentuk karena belum ada section break).
+            # Jika boundary SUDAH ADA (_roman_already_bounded=True): advance pointer saja
+            # tanpa menghapus — empty paras itu adalah spacing intentional dari dokumen asli.
+            _remove_lead_empty = not _roman_already_bounded
             while not self._p_has_content(roman_start_p) and not self._has_sectPr(roman_start_p):
                 _ch = list(self.doc.element.body)
                 _ri = next((i for i, e in enumerate(_ch) if e is roman_start_p), -1)
@@ -1424,7 +1427,8 @@ class DocProcessor:
                 _nxt = next((c for c in _ch[_ri + 1:] if c.tag.endswith('}p')), None)
                 if _nxt is None:
                     break
-                self.doc.element.body.remove(roman_start_p)
+                if _remove_lead_empty:
+                    self.doc.element.body.remove(roman_start_p)
                 roman_start_p = _nxt
 
         for bab_p in bab_p_list:
