@@ -41,6 +41,7 @@ $snapToken = \Midtrans\Snap::getSnapToken($params);
 <html>
 <head>
     <title>Pembayaran</title>
+    <script>(function(){var t=localStorage.getItem('adkTheme')||'light';document.documentElement.setAttribute('data-theme',t);})();</script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>

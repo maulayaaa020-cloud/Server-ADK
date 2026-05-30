@@ -58,6 +58,23 @@
         }
         .contact-item .label { font-size: 11px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
         .contact-item .val { font-size: 14px; color: white; font-weight: 600; }
+        html[data-theme="light"] .page-wrap h1 { color: #1a2332; }
+        html[data-theme="light"] .page-wrap .sub { color: #6d28d9; }
+        html[data-theme="light"] .section {
+            background: #ffffff;
+            border-color: #e2e8f0;
+        }
+        html[data-theme="light"] .section h2 { color: #4f46e5; }
+        html[data-theme="light"] .section p,
+        html[data-theme="light"] .section li { color: #374151; }
+        html[data-theme="light"] strong[style*="color:white"],
+        html[data-theme="light"] strong[style*="color: white"] { color: #1a2332 !important; }
+        html[data-theme="light"] .contact-item {
+            background: #f1f5f9;
+            border-color: #e2e8f0;
+        }
+        html[data-theme="light"] .contact-item .val { color: #1a2332; }
+        html[data-theme="light"] .contact-item .label { color: #64748b; }
     </style>
 </head>
 <body>
@@ -74,7 +91,34 @@
         <div class="nav-right">
             <button class="theme-toggle" onclick="toggleTheme()" title="Mode Siang">☀️</button>
         </div>
+        <button class="theme-toggle theme-toggle-mob" onclick="toggleTheme()" title="Mode Siang">☀️</button>
+        <button class="hamburger" onclick="openMobileMenu()"><span></span><span></span><span></span></button>
     </div>
+
+    <div class="mobile-nav" id="mobileNav">
+        <div class="mobile-nav-header">
+            <a href="index.html" class="logo">
+                <img src="Favicon Adkivia.png" alt="ADK Logo" style="width:52px;height:52px;object-fit:contain;flex-shrink:0;">
+                <span><span style="color:#1565C0">ADK</span><span style="color:#29B6F6">IVIA</span></span>
+            </a>
+            <div style="display:flex;align-items:center;gap:8px;">
+                <button class="theme-toggle" onclick="toggleTheme()" title="Mode Siang">☀️</button>
+                <button class="mobile-nav-close" onclick="closeMobileMenu()">✕</button>
+            </div>
+        </div>
+        <div class="mobile-nav-links">
+            <a href="index.html">Home</a>
+            <a href="tutorial.html">Tutorial</a>
+            <a href="jasa.html">Jasa ADK</a>
+        </div>
+        <div class="mobile-nav-footer">
+            <a href="cek_pembelian.php" class="btn-nav">Cek Pembelian</a>
+        </div>
+    </div>
+    <script>
+        function openMobileMenu()  { document.getElementById('mobileNav').classList.add('open'); document.body.style.overflow='hidden'; }
+        function closeMobileMenu() { document.getElementById('mobileNav').classList.remove('open'); document.body.style.overflow=''; }
+    </script>
 
     <div class="page-wrap">
         <h1>Tentang Kami</h1>
