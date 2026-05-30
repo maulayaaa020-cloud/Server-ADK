@@ -787,6 +787,8 @@ class DocProcessor:
                 elem = part._element
                 for sdt in list(elem.findall(qn('w:sdt'))):
                     elem.remove(sdt)
+                for tbl in list(elem.findall(qn('w:tbl'))):
+                    elem.remove(tbl)
                 paras = list(elem.findall(qn('w:p')))
                 if paras:
                     for child in list(paras[0]):
@@ -1656,10 +1658,14 @@ class DocProcessor:
                 section.different_first_page_header_footer = True
                 fph = section.first_page_header
                 fph.is_linked_to_previous = False
+                for _sdt in list(fph._element.findall(qn('w:sdt'))):
+                    fph._element.remove(_sdt)
                 for p in fph.paragraphs:
                     self.clear_paragraph(p)
                 fpf = section.first_page_footer
                 fpf.is_linked_to_previous = False
+                for _sdt in list(fpf._element.findall(qn('w:sdt'))):
+                    fpf._element.remove(_sdt)
                 for p in fpf.paragraphs:
                     self.clear_paragraph(p)
                 if visible_pos:
@@ -1732,6 +1738,8 @@ class DocProcessor:
                 # First-page header/footer: kosong (halaman cover/blank tersembunyi)
                 for _part in (_prev_sec.first_page_header, _prev_sec.first_page_footer):
                     _part.is_linked_to_previous = False
+                    for _sdt in list(_part._element.findall(qn('w:sdt'))):
+                        _part._element.remove(_sdt)
                     for _pp in _part.paragraphs:
                         self.clear_paragraph(_pp)
                 # Default footer: sisipkan PAGE field agar diwarisi section continuous ini.
@@ -1786,11 +1794,15 @@ class DocProcessor:
 
         fph = section.first_page_header
         fph.is_linked_to_previous = False
+        for _sdt in list(fph._element.findall(qn('w:sdt'))):
+            fph._element.remove(_sdt)
         for p in fph.paragraphs:
             self.clear_paragraph(p)
 
         fpf = section.first_page_footer
         fpf.is_linked_to_previous = False
+        for _sdt in list(fpf._element.findall(qn('w:sdt'))):
+            fpf._element.remove(_sdt)
         for p in fpf.paragraphs:
             self.clear_paragraph(p)
         p = self._first_para(fpf)
