@@ -43,7 +43,7 @@ if (!file_exists(__DIR__ . '/../' . $order['file_output'])) {
 
 // Token berlaku 5 menit — cukup untuk Office Online fetch file
 $expires = time() + 300;
-$sig     = hash_hmac('sha256', $db_id . ':' . $expires, DOKU_SECRET_KEY);
+$sig     = hash_hmac('sha256', $db_id . ':' . $expires, PREVIEW_SECRET_KEY);
 
 $fileUrl = APP_URL . '/api/serve_preview.php'
         . '?id=' . $db_id . '&t=' . $expires . '&sig=' . urlencode($sig);
