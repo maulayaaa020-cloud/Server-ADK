@@ -92,6 +92,19 @@ if ($exitCode !== 0 || !file_exists($output_full)) {
         FILE_APPEND | LOCK_EX
     );
 
+    // Jika Python sempat menulis file sebelum crash, simpan ke DB supaya admin bisa download.
+    // Status TIDAK diubah — user yang sudah bayar tetap berstatus 'paid'.
+    if ($dbIdFull && $outputRel && file_exists($output_full)) {
+        try {
+            $db = getDB();
+            $db->prepare(
+                "UPDATE orders SET file_output = COALESCE(file_output, :out) WHERE id = :id"
+            )->execute([':out' => $outputRel, ':id' => $dbIdFull]);
+        } catch (Exception $e) {
+            adk_log('error', 'Simpan partial file_output gagal', ['job' => $jobId, 'err' => $e->getMessage()]);
+        }
+    }
+
     $pesanMap = [
         'FORMAT_NOT_SUPPORTED' => 'Format <b>.doc</b> tidak didukung. Buka di Microsoft Word → Simpan Sebagai → .docx, lalu upload ulang.',
         'FILE_TOO_LARGE'       => 'File terlalu besar. Coba hapus gambar yang tidak perlu atau kompres dulu.',
