@@ -234,10 +234,14 @@ def apply(proc, roman_sec, bab_sec_list, n_sections, hidden_cov,
                 fpf.is_linked_to_previous = False
                 for _sdt in list(fph._element.findall(qn('w:sdt'))):
                     fph._element.remove(_sdt)
+                for _tbl in list(fph._element.findall(qn('w:tbl'))):
+                    fph._element.remove(_tbl)
                 for p in list(fph.paragraphs):
                     proc.clear_paragraph(p)
                 for _sdt in list(fpf._element.findall(qn('w:sdt'))):
                     fpf._element.remove(_sdt)
+                for _tbl in list(fpf._element.findall(qn('w:tbl'))):
+                    fpf._element.remove(_tbl)
                 for p in list(fpf.paragraphs):
                     proc.clear_paragraph(p)
 

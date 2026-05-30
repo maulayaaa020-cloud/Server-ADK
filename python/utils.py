@@ -1660,12 +1660,16 @@ class DocProcessor:
                 fph.is_linked_to_previous = False
                 for _sdt in list(fph._element.findall(qn('w:sdt'))):
                     fph._element.remove(_sdt)
+                for _tbl in list(fph._element.findall(qn('w:tbl'))):
+                    fph._element.remove(_tbl)
                 for p in fph.paragraphs:
                     self.clear_paragraph(p)
                 fpf = section.first_page_footer
                 fpf.is_linked_to_previous = False
                 for _sdt in list(fpf._element.findall(qn('w:sdt'))):
                     fpf._element.remove(_sdt)
+                for _tbl in list(fpf._element.findall(qn('w:tbl'))):
+                    fpf._element.remove(_tbl)
                 for p in fpf.paragraphs:
                     self.clear_paragraph(p)
                 if visible_pos:
@@ -1740,6 +1744,8 @@ class DocProcessor:
                     _part.is_linked_to_previous = False
                     for _sdt in list(_part._element.findall(qn('w:sdt'))):
                         _part._element.remove(_sdt)
+                    for _tbl in list(_part._element.findall(qn('w:tbl'))):
+                        _part._element.remove(_tbl)
                     for _pp in _part.paragraphs:
                         self.clear_paragraph(_pp)
                 # Default footer: sisipkan PAGE field agar diwarisi section continuous ini.
@@ -1796,6 +1802,8 @@ class DocProcessor:
         fph.is_linked_to_previous = False
         for _sdt in list(fph._element.findall(qn('w:sdt'))):
             fph._element.remove(_sdt)
+        for _tbl in list(fph._element.findall(qn('w:tbl'))):
+            fph._element.remove(_tbl)
         for p in fph.paragraphs:
             self.clear_paragraph(p)
 
@@ -1803,6 +1811,8 @@ class DocProcessor:
         fpf.is_linked_to_previous = False
         for _sdt in list(fpf._element.findall(qn('w:sdt'))):
             fpf._element.remove(_sdt)
+        for _tbl in list(fpf._element.findall(qn('w:tbl'))):
+            fpf._element.remove(_tbl)
         for p in fpf.paragraphs:
             self.clear_paragraph(p)
         p = self._first_para(fpf)

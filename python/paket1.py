@@ -31,6 +31,8 @@ def apply(proc, hidden_cov, posisi, dimulai_dari='1'):
                 part.is_linked_to_previous = False
                 for _sdt in list(part._element.findall(qn('w:sdt'))):
                     part._element.remove(_sdt)
+                for _tbl in list(part._element.findall(qn('w:tbl'))):
+                    part._element.remove(_tbl)
                 for p in part.paragraphs:
                     proc.clear_paragraph(p)
             proc.set_page_number_format(section, 'decimal', start_num - 1)
