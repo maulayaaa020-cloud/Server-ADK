@@ -5,10 +5,8 @@
 define('MIDTRANS_SERVER_KEY', 'Mid-server-xxx');
 define('MIDTRANS_CLIENT_KEY', 'Mid-client-xxx');
 
-// DOKU JOKUL
-define('DOKU_CLIENT_ID',  'BRN-xxxx');
-define('DOKU_SECRET_KEY', 'doku_key_xxx');
-define('DOKU_BASE_URL',   'https://api.doku.com'); // sandbox: https://api-sandbox.doku.com
+// Preview signing key — generate dengan: bin2hex(random_bytes(32))
+define('PREVIEW_SECRET_KEY', 'ganti-dengan-random-64-char-hex');
 
 define('DB_HOST', 'localhost');
 define('DB_USER', 'root');

@@ -20,6 +20,7 @@ if (!$jobId) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Memproses File – ADK PHOTOCOPY</title>
     <link rel="icon" type="image/png" href="favicon.png">
+    <script>(function(){var t=localStorage.getItem('adkTheme')||'light';document.documentElement.setAttribute('data-theme',t);})();</script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
@@ -95,6 +96,40 @@ if (!$jobId) {
             font-size: 0.85rem;
             margin-bottom: 12px;
         }
+
+        html[data-theme="light"] body {
+            background: linear-gradient(135deg, #f0f7ff, #e1f0fb);
+            color: #1a2332;
+        }
+        html[data-theme="light"] .card {
+            background: #ffffff;
+            border-color: #e2e8f0;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+        }
+        html[data-theme="light"] .spinner {
+            border-color: rgba(99,102,241,0.15);
+            border-top-color: #6d28d9;
+        }
+        html[data-theme="light"] h2 { color: #1a2332; }
+        html[data-theme="light"] p  { color: #64748b; }
+        html[data-theme="light"] .step { color: #64748b; }
+        html[data-theme="light"] .step span { color: #6d28d9; }
+        html[data-theme="light"] .err-msg {
+            background: rgba(239,68,68,0.07);
+            border-color: rgba(239,68,68,0.25);
+            color: #dc2626;
+        }
+        html[data-theme="light"] .btn-back {
+            background: rgba(99,102,241,0.08);
+            border-color: rgba(99,102,241,0.25);
+            color: #6d28d9;
+        }
+        html[data-theme="light"] .btn-back:hover { background: rgba(99,102,241,0.15); }
+        html[data-theme="light"] .queue-badge {
+            background: rgba(245,158,11,0.1);
+            border-color: rgba(245,158,11,0.25);
+            color: #b45309;
+        }
     </style>
 </head>
 <body>
@@ -150,5 +185,6 @@ fetch(BASE + endpoint + '?job=' + encodeURIComponent(JOB) + '&db_id=' + DB_ID, {
     showError('Koneksi terputus atau proses timeout. Cek history — mungkin file sudah selesai. Jika belum, coba upload ulang.');
 });
 </script>
+    <script src="theme.js?v=1"></script>
 </body>
 </html>

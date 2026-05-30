@@ -12,7 +12,7 @@ if (!$db_id || !$expires || !$sig) { http_response_code(400); exit; }
 if (time() > $expires) { http_response_code(403); exit; }
 
 // Verifikasi HMAC — pastikan token tidak dipalsukan
-$expected = hash_hmac('sha256', $db_id . ':' . $expires, DOKU_SECRET_KEY);
+$expected = hash_hmac('sha256', $db_id . ':' . $expires, PREVIEW_SECRET_KEY);
 if (!hash_equals($expected, $sig)) { http_response_code(403); exit; }
 
 try {

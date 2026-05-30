@@ -732,6 +732,10 @@ function tglAdmin(string $dt): string {
                         $inputFile  = $o['file_input']      ?? '';
                         $outputFile = $o['file_output']     ?? '';
                         $pdfFile    = $o['file_output_pdf'] ?? '';
+                        $rootDir    = __DIR__ . '/../';
+                        $inputExists  = $inputFile  && file_exists($rootDir . 'upload/' . basename($inputFile));
+                        $outputExists = $outputFile && file_exists($rootDir . $outputFile);
+                        $pdfExists    = $pdfFile    && file_exists($rootDir . $pdfFile);
                     ?>
                     <tr>
                         <td style="color:#4b5563"><?= $i + 1 ?></td>
@@ -749,23 +753,29 @@ function tglAdmin(string $dt): string {
                         <td style="white-space:nowrap;color:#9ca3af;font-size:12px"><?= tglAdmin($o['created_at']) ?></td>
                         <td>
                             <div class="actions-cell">
-                                <?php if ($inputFile): ?>
+                                <?php if ($inputExists): ?>
                                 <a href="<?= BASE_PATH ?>/upload/<?= htmlspecialchars(basename($inputFile)) ?>"
                                    class="action-btn" download title="Download file upload asli">Input</a>
+                                <?php elseif ($inputFile): ?>
+                                <span class="action-btn disabled" title="File sudah dihapus">Input</span>
                                 <?php else: ?>
                                 <span class="action-btn disabled">Input</span>
                                 <?php endif; ?>
 
-                                <?php if ($outputFile): ?>
+                                <?php if ($outputExists): ?>
                                 <a href="<?= BASE_PATH ?>/<?= htmlspecialchars($outputFile) ?>"
                                    class="action-btn green" download title="Download hasil .docx">Docx</a>
+                                <?php elseif ($outputFile): ?>
+                                <span class="action-btn disabled" title="File sudah dihapus">Docx</span>
                                 <?php else: ?>
                                 <span class="action-btn disabled">Docx</span>
                                 <?php endif; ?>
 
-                                <?php if ($pdfFile): ?>
+                                <?php if ($pdfExists): ?>
                                 <a href="<?= BASE_PATH ?>/<?= htmlspecialchars($pdfFile) ?>"
                                    class="action-btn green" target="_blank" title="Lihat PDF hasil">PDF</a>
+                                <?php elseif ($pdfFile): ?>
+                                <span class="action-btn disabled" title="File sudah dihapus">PDF</span>
                                 <?php else: ?>
                                 <span class="action-btn disabled">PDF</span>
                                 <?php endif; ?>

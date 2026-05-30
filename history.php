@@ -855,6 +855,50 @@ if (!empty($orders)) {
             box-shadow: 0 6px 20px rgba(124,58,237,0.45);
         }
 
+        /* ── LIGHT MODE ── */
+        html[data-theme="light"] .history-heading { color: #1a2332; }
+        html[data-theme="light"] .history-phone-chip { background: rgba(109,40,217,0.1); border-color: rgba(109,40,217,0.25); }
+        html[data-theme="light"] .phone-masked { color: #1a2332; }
+        html[data-theme="light"] .phone-divider { background: rgba(0,0,0,0.15); }
+        html[data-theme="light"] .history-phone-chip a { color: #6d28d9; }
+        html[data-theme="light"] .history-phone-chip a:hover { color: #4f46e5; }
+        html[data-theme="light"] .order-card { background: #ffffff; border-color: rgba(109,40,217,0.2); }
+        html[data-theme="light"] .order-card:hover { box-shadow: 0 0 0 1px rgba(109,40,217,0.3), 0 8px 32px rgba(109,40,217,0.07); }
+        html[data-theme="light"] .card-file { color: #1a2332; }
+        html[data-theme="light"] .card-service { color: #6d28d9; }
+        html[data-theme="light"] .btn-preview { background: #f1f5f9; color: #374151; border-color: #e2e8f0; }
+        html[data-theme="light"] .btn-preview:hover { background: rgba(109,40,217,0.08); border-color: #6d28d9; color: #6d28d9; }
+        html[data-theme="light"] .ket-paket { color: #1a2332; }
+        html[data-theme="light"] .ket-list li { color: #64748b; }
+        html[data-theme="light"] .ket-key { color: #374151; }
+        html[data-theme="light"] .btn-dl.locked { background: #f1f5f9; border-color: #e2e8f0; }
+        html[data-theme="light"] .btn-dl.active { color: #6d28d9; }
+        html[data-theme="light"] .pv-overlay { background: rgba(0,0,0,0.6); }
+        html[data-theme="light"] .pv-box { background: #ffffff; border-color: rgba(109,40,217,0.25); box-shadow: 0 28px 72px rgba(0,0,0,0.15); }
+        html[data-theme="light"] .pv-title { color: #1a2332; }
+        html[data-theme="light"] .pv-header { border-bottom-color: #e2e8f0; }
+        html[data-theme="light"] .pv-close { color: #9ca3af; }
+        html[data-theme="light"] .pv-close:hover { color: #374151; background: rgba(0,0,0,0.06); }
+        html[data-theme="light"] .pv-loading { color: #6d28d9; }
+        html[data-theme="light"] .pv-footer { border-top-color: #e2e8f0; }
+        html[data-theme="light"] .bug-overlay { background: rgba(0,0,0,0.55); }
+        html[data-theme="light"] .bug-box { background: #ffffff; border-color: rgba(239,68,68,0.3); box-shadow: 0 24px 60px rgba(0,0,0,0.1); }
+        html[data-theme="light"] .bug-title { color: #1a2332; }
+        html[data-theme="light"] .bug-option { border-color: #e2e8f0; }
+        html[data-theme="light"] .bug-option:hover { background: rgba(239,68,68,0.04); }
+        html[data-theme="light"] .bug-option label { color: #374151; }
+        html[data-theme="light"] .bug-textarea { background: #f8fafc; border-color: #e2e8f0; color: #1a2332; }
+        html[data-theme="light"] .bug-cancel { background: #f1f5f9; border-color: #e2e8f0; color: #64748b; }
+        html[data-theme="light"] .bug-cancel:hover { background: #e2e8f0; color: #374151; }
+        html[data-theme="light"] .reminder-overlay { background: rgba(0,0,0,0.5); }
+        html[data-theme="light"] .reminder-card { background: #ffffff; border-color: rgba(109,40,217,0.35); box-shadow: 0 28px 70px rgba(0,0,0,0.12); }
+        html[data-theme="light"] .reminder-title { color: #1a2332; }
+        html[data-theme="light"] .reminder-desc { color: #64748b; }
+        html[data-theme="light"] .guest-phone-input { background: #f8fafc; color: #1a2332; border-color: rgba(109,40,217,0.3); }
+        html[data-theme="light"] .guest-phone-input:focus { background: rgba(109,40,217,0.05); }
+        html[data-theme="light"] .btn-guest-login { color: #6d28d9; }
+        html[data-theme="light"] .btn-guest-login:hover { color: #4f46e5; }
+
     </style>
 </head>
 <body>

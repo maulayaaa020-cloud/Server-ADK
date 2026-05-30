@@ -120,6 +120,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             background: #a855f7;
             box-shadow: 0 6px 20px rgba(124,58,237,0.45);
         }
+
+        /* ── LIGHT MODE ── */
+        html[data-theme="light"] .login-card { background: #ffffff; border-color: #e2e8f0; box-shadow: 0 4px 24px rgba(0,0,0,0.06); }
+        html[data-theme="light"] .login-title { color: #1a2332; }
+        html[data-theme="light"] .login-sub { color: #6d28d9; }
+        html[data-theme="light"] .login-label { color: #64748b; }
+        html[data-theme="light"] .login-input { background: #f8fafc; color: #1a2332; border-color: rgba(109,40,217,0.3); }
+        html[data-theme="light"] .login-input::placeholder { color: #9ca3af; }
+        html[data-theme="light"] .login-input:focus { background: rgba(109,40,217,0.05); border-color: #6d28d9; }
     </style>
 </head>
 <body>

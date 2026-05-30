@@ -3,6 +3,7 @@ paket1.py — Full Angka (posisi bebas, semua halaman bernomor Arab).
 Tidak butuh deteksi zona; langsung terapkan ke semua section.
 """
 from docx.shared import Cm
+from docx.oxml.ns import qn
 
 
 def apply(proc, hidden_cov, posisi, dimulai_dari='1'):
@@ -28,6 +29,10 @@ def apply(proc, hidden_cov, posisi, dimulai_dari='1'):
             section.different_first_page_header_footer = True
             for part in [section.first_page_header, section.first_page_footer]:
                 part.is_linked_to_previous = False
+                for _sdt in list(part._element.findall(qn('w:sdt'))):
+                    part._element.remove(_sdt)
+                for _tbl in list(part._element.findall(qn('w:tbl'))):
+                    part._element.remove(_tbl)
                 for p in part.paragraphs:
                     proc.clear_paragraph(p)
             proc.set_page_number_format(section, 'decimal', start_num - 1)

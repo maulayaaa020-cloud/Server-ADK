@@ -171,6 +171,18 @@ $chipText  = $isPaid ? 'Lunas' : ($order['status'] === 'failed' ? 'Gagal' : 'Men
             transition: 0.2s;
         }
         .btn-bayar-now:hover { background: #dc2626; }
+
+        /* ── LIGHT MODE ── */
+        html[data-theme="light"] .preview-info h2 { color: #1a2332; }
+        html[data-theme="light"] .preview-info p { color: #6d28d9; }
+        html[data-theme="light"] .btn-back { background: #f1f5f9; color: #374151; border-color: #e2e8f0; }
+        html[data-theme="light"] .btn-back:hover { background: #e2e8f0; color: #1a2332; }
+        html[data-theme="light"] .btn-dl-docx { color: #6d28d9; }
+        html[data-theme="light"] .btn-locked { background: #f1f5f9; border-color: #e2e8f0; color: #9ca3af; }
+        html[data-theme="light"] .pdf-container { background: #f8fafc; border-color: #e2e8f0; }
+        html[data-theme="light"] .info-box.neutral { background: #f8fafc; border-color: #e2e8f0; }
+        html[data-theme="light"] .info-title { color: #1a2332; }
+        html[data-theme="light"] .info-sub { color: #64748b; }
     </style>
 </head>
 <body>

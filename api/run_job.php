@@ -92,6 +92,7 @@ if ($exitCode !== 0 || !file_exists($output_full)) {
         FILE_APPEND | LOCK_EX
     );
 
+
     $pesanMap = [
         'FORMAT_NOT_SUPPORTED' => 'Format <b>.doc</b> tidak didukung. Buka di Microsoft Word → Simpan Sebagai → .docx, lalu upload ulang.',
         'FILE_TOO_LARGE'       => 'File terlalu besar. Coba hapus gambar yang tidak perlu atau kompres dulu.',
