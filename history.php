@@ -930,8 +930,8 @@ if (!empty($orders)) {
                     <a href="https://wa.me/62895341996647" target="_blank" rel="noopener"><div class="dropdown-item-icon" style="background:rgba(37,211,102,0.15);">🏪</div><div class="dropdown-item-title">WA Toko (Rowosari)</div></a>
                     <div class="dropdown-divider"></div>
                     <div class="dropdown-group-label">Sosial Media</div>
-                    <a href="https://www.instagram.com/adk_rowosari?igsh=MXV4OXdwbnQycGp5cg==" target="_blank" rel="noopener"><div class="dropdown-item-icon" style="background:rgba(225,48,108,0.15);">📸</div><div class="dropdown-item-title">Instagram</div></a>
-                    <a href="https://www.tiktok.com/@adk_rowosari" target="_blank" rel="noopener"><div class="dropdown-item-icon" style="background:rgba(0,0,0,0.12);">🎵</div><div class="dropdown-item-title">TikTok</div></a>
+                    <a href="https://www.instagram.com/adkivia" target="_blank" rel="noopener"><div class="dropdown-item-icon" style="background:rgba(225,48,108,0.15);">📸</div><div class="dropdown-item-title">Instagram</div></a>
+                    <a href="https://www.tiktok.com/@adkivia" target="_blank" rel="noopener"><div class="dropdown-item-icon" style="background:rgba(0,0,0,0.12);">🎵</div><div class="dropdown-item-title">TikTok</div></a>
                 </div>
             </div>
         </div>
@@ -970,8 +970,8 @@ if (!empty($orders)) {
             <a href="https://wa.me/6281228790091" target="_blank" rel="noopener" class="mobile-nav-contact">💬 WA Admin</a>
             <a href="https://wa.me/6287700277748" target="_blank" rel="noopener" class="mobile-nav-contact">🏪 WA Toko (Cepiring)</a>
             <a href="https://wa.me/62895341996647" target="_blank" rel="noopener" class="mobile-nav-contact">🏪 WA Toko (Rowosari)</a>
-            <a href="https://www.instagram.com/adk_rowosari?igsh=MXV4OXdwbnQycGp5cg==" target="_blank" rel="noopener" class="mobile-nav-contact">📸 Instagram</a>
-            <a href="https://www.tiktok.com/@adk_rowosari" target="_blank" rel="noopener" class="mobile-nav-contact">🎵 TikTok</a>
+            <a href="https://www.instagram.com/adkivia" target="_blank" rel="noopener" class="mobile-nav-contact">📸 Instagram</a>
+            <a href="https://www.tiktok.com/@adkivia" target="_blank" rel="noopener" class="mobile-nav-contact">🎵 TikTok</a>
         </div>
         <div class="mobile-nav-footer">
             <a href="cek_pembelian.php" class="btn-nav">Cek Pembelian</a>
@@ -1694,8 +1694,8 @@ if (!empty($orders)) {
             </div>
             <div class="footer-col">
                 <h4>Ikuti Kami</h4>
-                <a href="https://www.tiktok.com/@adk_rowosari" target="_blank" rel="noopener">TikTok</a>
-                <a href="https://www.instagram.com/adk_rowosari?igsh=MXV4OXdwbnQycGp5cg==" target="_blank" rel="noopener">Instagram</a>
+                <a href="https://www.tiktok.com/@adkivia" target="_blank" rel="noopener">TikTok</a>
+                <a href="https://www.instagram.com/adkivia" target="_blank" rel="noopener">Instagram</a>
             </div>
         </div>
         <hr class="footer-divider">

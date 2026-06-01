@@ -1,0 +1,53 @@
+﻿roman_sec=1  n_sections=9
+bab_sec_list: [2, 3, 4, 5, 6, 7, 8]
+
+Saved to C:\Users\farizal\Downloads\GEMA_c4_semb_lamprn.docx
+
+=== Output sections ===
+  sec[0] fmt=lowerRoman start=0 hdr='' hlink=False ftr='' flink=False
+  sec[1] fmt=lowerRoman start=None hdr='' hlink=False ftr='' flink=False
+  sec[2] fmt=decimal start=1 hdr='' hlink=False ftr='' flink=False
+  sec[3] fmt=decimal start=None hdr='' hlink=False ftr='' flink=False
+  sec[4] fmt=decimal start=None hdr='' hlink=False ftr='' flink=False
+  sec[5] fmt=decimal start=None hdr='' hlink=False ftr='' flink=False
+  sec[6] fmt=decimal start=None hdr='' hlink=False ftr='' flink=False
+  sec[7] fmt=decimal start=None hdr='' hlink=False ftr='' flink=False
+  sec[8] fmt=None start=None hdr='' hlink=False ftr='' flink=False
+  sec[9] fmt=None start=None hdr='' hlink=False ftr='' flink=False
+
+=== Body [1040:1075] of OUTPUT ===
+  [1040] 'P' []
+  [1041] 'I' []
+  [1042] 'R' []
+  [1043] 'A' []
+  [1044] 'N' ['SECT(nextPage)']
+  [1045] 'Lampiran 1' []
+  [1046] 'KUESIONER PENELITIAN' []
+  [1047] (empty) []
+  [1048] 'PENGARUH STORYTELLING DAN KREDIBILITAS KREATOR KON' []
+  [1049] (empty) []
+  [1050] 'Peran dan partisipasi Bapak/Ibu dalam mengisi kues' []
+  [1051] 'Identitas Peneliti' []
+  [1052] 'Nama: Gema Ramadhan' []
+  [1053] 'NPM: 2261201178' []
+  [1054] 'Program Studi: Manajemen' []
+  [1055] 'Fakultas: Ekonomi dan Bisnis' []
+  [1056] 'Perguruan tinggi : Universitas Muhammadiyah Bengku' []
+  [1057] (empty) []
+  [1058] 'Identitas responden' []
+  [1059] 'Nama: ...........' []
+  [1060] 'Jenis Kelamin: ☐ Laki-laki☐ Perempuan' []
+  [1061] 'Pendidikan: ☐ SLTA Sederajat☐ D3☐ S1☐ S2' []
+  [1062] 'Pekerjaan: ...........' []
+  [1063] 'Rentan Usia: ☐ 17 – 25☐ 26- 34☐ > 35' []
+  [1064] (empty) []
+  [1065] 'Apakah Anda pernah melihat konten video TikTok Kop' []
+  [1066] '☐ Pernah  ☐ Tidak' []
+  [1067] (empty) []
+  [1068] 'Petunjuk Pengisian Responden' []
+  [1069] 'Berilah jawaban/tanggapan atas pernyataan berikut ' []
+  [1070] '1 = Sangat Tidak Setuju (STS)' []
+  [1071] '2 = Tidak Setuju (TS)' []
+  [1072] '3 = Netral (N)' []
+  [1073] '4 = Setuju (S)' []
+  [1074] '5 = Sangat Setuju (SS)' []
