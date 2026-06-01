@@ -129,6 +129,26 @@
                         <div class="dropdown-item-icon">📄</div>
                         <div class="dropdown-item-title">Penomoran Halaman</div>
                     </a>
+                    <a href="#layanan" onclick="selectLayanan(1)">
+                        <div class="dropdown-item-icon" style="background:rgba(139,92,246,0.15);">📑</div>
+                        <div class="dropdown-item-title">Daftar Isi Otomatis</div>
+                    </a>
+                    <a href="#layanan" onclick="selectLayanan(2)">
+                        <div class="dropdown-item-icon" style="background:rgba(139,92,246,0.15);">📊</div>
+                        <div class="dropdown-item-title">Daftar Tabel Otomatis</div>
+                    </a>
+                    <a href="#layanan" onclick="selectLayanan(3)">
+                        <div class="dropdown-item-icon" style="background:rgba(139,92,246,0.15);">🖼️</div>
+                        <div class="dropdown-item-title">Daftar Gambar Otomatis</div>
+                    </a>
+                    <a href="#layanan" onclick="selectLayanan(4)">
+                        <div class="dropdown-item-icon" style="background:rgba(139,92,246,0.15);">📎</div>
+                        <div class="dropdown-item-title">Daftar Lampiran Otomatis</div>
+                    </a>
+                    <a href="#layanan" onclick="selectLayanan(5)">
+                        <div class="dropdown-item-icon" style="background:rgba(139,92,246,0.15);">✍️</div>
+                        <div class="dropdown-item-title">Ketik / Lamaran / CV</div>
+                    </a>
                 </div>
             </div>
 
@@ -220,29 +240,12 @@
 
         <!-- KIRI -->
         <div class="hero-left">
-            <h1>
-                Penomoran Halaman<br>
-                Otomatis, Cepat<br>
-                &amp; Akurat
-            </h1>
+            <h1>Solusi Cepat layanan Dokumen dan Tugas Kamu...</h1>
 
             <p>
-                Solusi praktis penomoran halaman sesuai pedoman kampus.<br>
-                Tanpa ribet, tanpa software tambahan.
+                Lamaran/CV ,Penomoran halaman, daftar isi / tabel / gambar / lampiran otomatis, hingga undangan digital premium.
             </p>
 
-            <div class="stats-row">
-                <div class="stat-item">
-                    <span class="stat-label">Dokumen Diproses</span>
-                    <span class="stat-num">500++</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">Rata-rata Selesai</span>
-                    <span class="stat-num">5 Menit</span>
-                </div>
-            </div>
-
-            <a href="jasa.html" class="btn-main">Coba Sekarang</a>
         </div>
 
         <!-- KANAN -->
@@ -290,7 +293,21 @@
                 <!-- Dots dekoratif -->
                 <div class="hc-dots"><span></span><span></span><span></span></div>
 
+            </div>
+        </div>
 
+        <!-- CAROUSEL — full width row -->
+        <div class="hero-carousel-row">
+            <div class="layanan-head">
+                <h2 class="layanan-title">Layanan <span>Kami</span></h2>
+                <p class="layanan-subtitle">Pilih layanan yang kamu butuhkan</p>
+            </div>
+            <div class="layanan-carousel-outer">
+                <button class="car-arrow car-left" id="carLeft" onclick="carScroll(-1)" aria-label="Sebelumnya">&#8249;</button>
+                <div class="layanan-carousel" id="layananCarousel">
+                    <!-- diisi oleh JS -->
+                </div>
+                <button class="car-arrow car-right" id="carRight" onclick="carScroll(1)" aria-label="Berikutnya">&#8250;</button>
             </div>
         </div>
 
@@ -308,6 +325,19 @@
         });
     </script>
 
+    <!-- LAYANAN DETAIL -->
+    <section class="layanan-section" id="layanan">
+        <div class="layanan-wrap">
+            <!-- SELECTED LABEL -->
+            <p class="lay-selected-name" id="laySelectedName">Penomoran Halaman</p>
+
+            <!-- DETAIL PANEL -->
+            <div class="lay-detail" id="layDetail">
+                <!-- diisi oleh JS -->
+            </div>
+        </div>
+    </section>
+
     <!-- FAQ Section -->
     <section class="faq-section" id="faq">
         <div class="faq-wrap">
@@ -316,14 +346,21 @@
             <div class="faq-list">
                 <div class="faq-item">
                     <button class="faq-q" onclick="toggleFaq(this)">
-                        Berapa biaya penomoran halaman?
+                        Layanan apa saja yang tersedia di ADK Photocopy?
+                        <span class="faq-icon"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></span>
+                    </button>
+                    <div class="faq-a">Tersedia berbagai layanan: <strong>Penomoran Halaman</strong>, Daftar Isi Otomatis, Daftar Tabel Otomatis, Daftar Gambar Otomatis, Daftar Lampiran Otomatis, dan Ketik / Lamaran / CV.</div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-q" onclick="toggleFaq(this)">
+                        Berapa biaya layanan penomoran halaman?
                         <span class="faq-icon"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></span>
                     </button>
                     <div class="faq-a">Mulai dari <strong>Rp 5.000</strong> per dokumen. Harga bervariasi tergantung paket yang dipilih.</div>
                 </div>
                 <div class="faq-item">
                     <button class="faq-q" onclick="toggleFaq(this)">
-                        Berapa lama proses penomoran halaman?
+                        Berapa lama proses selesai?
                         <span class="faq-icon"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></span>
                     </button>
                     <div class="faq-a">Rata-rata selesai dalam <strong>5 menit</strong>. Prosesnya otomatis tanpa perlu menunggu admin.</div>
@@ -333,7 +370,7 @@
                         Apakah bisa preview sebelum bayar?
                         <span class="faq-icon"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></span>
                     </button>
-                    <div class="faq-a">Ya, Anda bisa melihat hasil penomoran terlebih dahulu <strong>sebelum melakukan pembayaran</strong>.</div>
+                    <div class="faq-a">Ya, Anda bisa melihat hasil terlebih dahulu <strong>sebelum melakukan pembayaran</strong>.</div>
                 </div>
                 <div class="faq-item">
                     <button class="faq-q" onclick="toggleFaq(this)">
@@ -344,10 +381,17 @@
                 </div>
                 <div class="faq-item">
                     <button class="faq-q" onclick="toggleFaq(this)">
-                        Dokumen apa saja yang bisa diproses?
+                        Dokumen apa yang bisa diproses?
                         <span class="faq-icon"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></span>
                     </button>
-                    <div class="faq-a">Skripsi, laporan kerja praktik, tugas akhir, dan dokumen kampus lainnya yang memerlukan penomoran halaman romawi dan angka.</div>
+                    <div class="faq-a">Skripsi, laporan kerja praktik, tugas akhir, dan dokumen kampus lainnya dalam format <strong>.docx (Microsoft Word)</strong>.</div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-q" onclick="toggleFaq(this)">
+                        Apakah dokumen saya aman?
+                        <span class="faq-icon"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></span>
+                    </button>
+                    <div class="faq-a">Ya. Kami <strong>sangat menjaga kerahasiaan</strong> setiap dokumen pelanggan. File hanya digunakan untuk proses layanan dan tidak disimpan permanen.</div>
                 </div>
                 <div class="faq-item">
                     <button class="faq-q" onclick="toggleFaq(this)">
@@ -372,6 +416,11 @@
             <div class="footer-col">
                 <h4>Jasa</h4>
                 <a href="jasa.html">Penomoran Halaman</a>
+                <a href="#layanan" style="opacity:0.5" onclick="selectLayanan(1)">Daftar Isi Otomatis</a>
+                <a href="#layanan" style="opacity:0.5" onclick="selectLayanan(2)">Daftar Tabel Otomatis</a>
+                <a href="#layanan" style="opacity:0.5" onclick="selectLayanan(3)">Daftar Gambar Otomatis</a>
+                <a href="#layanan" style="opacity:0.5" onclick="selectLayanan(4)">Daftar Lampiran Otomatis</a>
+                <a href="#layanan" style="opacity:0.5" onclick="selectLayanan(5)">Ketik / Lamaran / CV</a>
             </div>
             <div class="footer-col">
                 <h4>Bantuan</h4>
@@ -407,6 +456,203 @@
         if (!isOpen) { item.classList.add('open'); a.classList.add('open'); }
     }
     </script>
+    <!-- LAYANAN KAMI SCRIPT -->
+    <script>
+    var LAYANAN = [
+        { id:'penomoran',       name:'Penomoran Halaman',        icon:'📄', title:'Penomoran Halaman Otomatis, Cepat & Akurat',      desc:'Solusi praktis penomoran halaman sesuai pedoman kampus, tanpa ribet, tanpa software tambahan.',        link:'jasa.html' },
+        { id:'daftar_isi',      name:'Daftar Isi Otomatis',      icon:'📑', title:'Daftar Isi Otomatis, Rapi & Terstruktur',         desc:'Generate daftar isi dokumen secara otomatis sesuai format penulisan ilmiah kampus.',                 link:'#' },
+        { id:'daftar_tabel',    name:'Daftar Tabel Otomatis',    icon:'📊', title:'Daftar Tabel Otomatis, Lengkap & Akurat',         desc:'Buat daftar tabel lengkap secara otomatis untuk skripsi dan laporan kampus.',                         link:'#' },
+        { id:'daftar_gambar',   name:'Daftar Gambar Otomatis',   icon:'🖼️', title:'Daftar Gambar Otomatis, Lengkap & Rapi',          desc:'Generate daftar gambar dokumen secara otomatis sesuai standar penulisan kampus.',                     link:'#' },
+        { id:'daftar_lampiran', name:'Daftar Lampiran Otomatis', icon:'📎', title:'Daftar Lampiran Otomatis, Teratur & Akurat',      desc:'Buat daftar lampiran lengkap dan terstruktur secara otomatis untuk dokumen akademik.',                 link:'#' },
+        { id:'ketik',           name:'Ketik / Lamaran / CV',     icon:'✍️', title:'Ketik Dokumen, Lamaran & CV Profesional',         desc:'Layanan pengetikan dokumen, surat lamaran kerja, dan CV profesional siap kirim.',                     link:'#' }
+    ];
+
+    /* ── Ilustrasi SVG per layanan ─────────────────────────────────────── */
+    var SERVICE_ILLUS = {
+        /* Penomoran — dokumen + dashed divider + dua badge halaman */
+        penomoran:
+            '<svg width="100%" height="100%" viewBox="0 0 200 160" xmlns="http://www.w3.org/2000/svg">' +
+            '<circle cx="100" cy="80" r="62" fill="rgba(41,182,246,0.06)"/>' +
+            '<rect x="62" y="18" width="76" height="100" rx="8" fill="rgba(8,13,48,0.95)" stroke="rgba(41,182,246,0.45)" stroke-width="2"/>' +
+            '<path d="M118 18 L138 38 L118 38 Z" fill="rgba(41,182,246,0.22)"/>' +
+            '<rect x="72" y="32" width="36" height="5" rx="2.5" fill="rgba(41,182,246,0.45)"/>' +
+            '<rect x="72" y="42" width="28" height="4" rx="2" fill="rgba(255,255,255,0.18)"/>' +
+            '<rect x="72" y="50" width="32" height="4" rx="2" fill="rgba(255,255,255,0.14)"/>' +
+            '<line x1="68" y1="62" x2="132" y2="62" stroke="rgba(41,182,246,0.4)" stroke-width="1.5" stroke-dasharray="5,4"/>' +
+            '<rect x="72" y="70" width="30" height="4" rx="2" fill="rgba(255,255,255,0.18)"/>' +
+            '<rect x="72" y="79" width="36" height="4" rx="2" fill="rgba(255,255,255,0.14)"/>' +
+            '<rect x="72" y="88" width="26" height="4" rx="2" fill="rgba(255,255,255,0.10)"/>' +
+            '<circle cx="78" cy="130" r="14" fill="rgba(21,101,192,0.35)" stroke="rgba(41,182,246,0.65)" stroke-width="2"/>' +
+            '<rect x="72" y="124" width="5" height="12" rx="2.5" fill="rgba(167,139,250,0.9)"/>' +
+            '<rect x="80" y="124" width="5" height="12" rx="2.5" fill="rgba(167,139,250,0.9)"/>' +
+            '<circle cx="122" cy="130" r="14" fill="rgba(21,101,192,0.35)" stroke="rgba(41,182,246,0.65)" stroke-width="2"/>' +
+            '<rect x="116" y="124" width="12" height="5" rx="2.5" fill="rgba(41,182,246,0.9)"/>' +
+            '<rect x="116" y="131" width="12" height="4" rx="2" fill="rgba(41,182,246,0.55)"/>' +
+            '</svg>',
+
+        /* Daftar Isi — baris hirarki dengan titik di kanan */
+        daftar_isi:
+            '<svg width="100%" height="100%" viewBox="0 0 200 160" xmlns="http://www.w3.org/2000/svg">' +
+            '<circle cx="100" cy="80" r="62" fill="rgba(139,92,246,0.07)"/>' +
+            '<rect x="38" y="38" width="8" height="8" rx="2" fill="rgba(167,139,250,0.8)"/>' +
+            '<rect x="52" y="39" width="80" height="6" rx="3" fill="rgba(255,255,255,0.85)"/>' +
+            '<circle cx="152" cy="42" r="5" fill="rgba(167,139,250,0.7)"/>' +
+            '<rect x="46" y="55" width="4" height="4" rx="1" fill="rgba(167,139,250,0.5)"/>' +
+            '<rect x="56" y="56" width="60" height="4" rx="2" fill="rgba(255,255,255,0.35)"/>' +
+            '<circle cx="140" cy="58" r="4" fill="rgba(167,139,250,0.4)"/>' +
+            '<rect x="46" y="68" width="4" height="4" rx="1" fill="rgba(167,139,250,0.5)"/>' +
+            '<rect x="56" y="69" width="68" height="4" rx="2" fill="rgba(255,255,255,0.35)"/>' +
+            '<circle cx="140" cy="71" r="4" fill="rgba(167,139,250,0.4)"/>' +
+            '<rect x="38" y="83" width="8" height="8" rx="2" fill="rgba(167,139,250,0.8)"/>' +
+            '<rect x="52" y="84" width="72" height="6" rx="3" fill="rgba(255,255,255,0.85)"/>' +
+            '<circle cx="152" cy="87" r="5" fill="rgba(167,139,250,0.7)"/>' +
+            '<rect x="46" y="100" width="4" height="4" rx="1" fill="rgba(167,139,250,0.5)"/>' +
+            '<rect x="56" y="101" width="56" height="4" rx="2" fill="rgba(255,255,255,0.35)"/>' +
+            '<circle cx="140" cy="103" r="4" fill="rgba(167,139,250,0.4)"/>' +
+            '<rect x="38" y="115" width="8" height="8" rx="2" fill="rgba(167,139,250,0.8)"/>' +
+            '<rect x="52" y="116" width="76" height="6" rx="3" fill="rgba(255,255,255,0.85)"/>' +
+            '<circle cx="152" cy="119" r="5" fill="rgba(167,139,250,0.7)"/>' +
+            '</svg>',
+
+        /* Daftar Tabel — grid 3x4 bersih dengan header berwarna */
+        daftar_tabel:
+            '<svg width="100%" height="100%" viewBox="0 0 200 160" xmlns="http://www.w3.org/2000/svg">' +
+            '<circle cx="100" cy="80" r="62" fill="rgba(52,211,153,0.06)"/>' +
+            '<rect x="30" y="30" width="140" height="100" rx="10" fill="rgba(8,13,48,0.9)" stroke="rgba(52,211,153,0.4)" stroke-width="2"/>' +
+            '<rect x="30" y="30" width="140" height="24" rx="10" fill="rgba(4,100,70,0.7)"/>' +
+            '<rect x="30" y="46" width="140" height="8" fill="rgba(4,100,70,0.7)"/>' +
+            '<rect x="36" y="37" width="32" height="5" rx="2.5" fill="rgba(52,211,153,0.7)"/>' +
+            '<rect x="80" y="37" width="38" height="5" rx="2.5" fill="rgba(52,211,153,0.7)"/>' +
+            '<rect x="130" y="37" width="32" height="5" rx="2.5" fill="rgba(52,211,153,0.7)"/>' +
+            '<line x1="77" y1="54" x2="77" y2="130" stroke="rgba(52,211,153,0.25)" stroke-width="1"/>' +
+            '<line x1="127" y1="54" x2="127" y2="130" stroke="rgba(52,211,153,0.25)" stroke-width="1"/>' +
+            '<line x1="30" y1="76" x2="170" y2="76" stroke="rgba(52,211,153,0.2)" stroke-width="1"/>' +
+            '<line x1="30" y1="98" x2="170" y2="98" stroke="rgba(52,211,153,0.2)" stroke-width="1"/>' +
+            '<line x1="30" y1="114" x2="170" y2="114" stroke="rgba(52,211,153,0.2)" stroke-width="1"/>' +
+            '</svg>',
+
+        /* Daftar Gambar — frame foto dengan lanskap */
+        daftar_gambar:
+            '<svg width="100%" height="100%" viewBox="0 0 200 160" xmlns="http://www.w3.org/2000/svg">' +
+            '<circle cx="100" cy="80" r="62" fill="rgba(251,191,36,0.06)"/>' +
+            '<rect x="30" y="22" width="140" height="108" rx="10" fill="rgba(8,13,48,0.9)" stroke="rgba(251,191,36,0.4)" stroke-width="2"/>' +
+            '<rect x="42" y="34" width="116" height="78" rx="6" fill="rgba(251,191,36,0.08)" stroke="rgba(251,191,36,0.3)" stroke-width="1.5"/>' +
+            '<circle cx="68" cy="52" r="10" fill="rgba(251,191,36,0.35)"/>' +
+            '<circle cx="68" cy="52" r="5" fill="rgba(251,191,36,0.6)"/>' +
+            '<polygon points="42,112 75,72 98,90 120,68 158,112" fill="rgba(251,191,36,0.18)"/>' +
+            '<polygon points="42,112 75,72 98,90 120,68 158,112" fill="none" stroke="rgba(251,191,36,0.4)" stroke-width="1.5" stroke-linejoin="round"/>' +
+            '<rect x="42" y="118" width="116" height="4" rx="2" fill="rgba(255,255,255,0.2)"/>' +
+            '<rect x="42" y="125" width="80" height="3" rx="1.5" fill="rgba(255,255,255,0.12)"/>' +
+            '</svg>',
+
+        /* Daftar Lampiran — paperclip besar terpusat */
+        daftar_lampiran:
+            '<svg width="100%" height="100%" viewBox="0 0 200 160" xmlns="http://www.w3.org/2000/svg">' +
+            '<circle cx="100" cy="80" r="62" fill="rgba(244,114,182,0.06)"/>' +
+            '<rect x="55" y="26" width="60" height="90" rx="10" fill="rgba(8,13,48,0.85)" stroke="rgba(244,114,182,0.3)" stroke-width="1.5"/>' +
+            '<rect x="63" y="36" width="44" height="4" rx="2" fill="rgba(255,255,255,0.18)"/>' +
+            '<rect x="63" y="46" width="36" height="3" rx="1.5" fill="rgba(255,255,255,0.12)"/>' +
+            '<rect x="63" y="54" width="40" height="3" rx="1.5" fill="rgba(255,255,255,0.12)"/>' +
+            '<rect x="63" y="62" width="32" height="3" rx="1.5" fill="rgba(255,255,255,0.10)"/>' +
+            '<path d="M130 118 C130 96 112 80 92 80 C72 80 58 96 58 116 L58 52 C58 36 70 26 84 26 C98 26 108 36 108 52 L108 108 C108 116 103 122 96 122 C89 122 84 116 84 108 L84 60" stroke="rgba(244,114,182,0.75)" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>' +
+            '</svg>',
+
+        /* Ketik/CV — profil orang + baris konten */
+        ketik:
+            '<svg width="100%" height="100%" viewBox="0 0 200 160" xmlns="http://www.w3.org/2000/svg">' +
+            '<circle cx="100" cy="80" r="62" fill="rgba(96,165,250,0.06)"/>' +
+            '<rect x="26" y="20" width="148" height="120" rx="10" fill="rgba(8,13,48,0.9)" stroke="rgba(96,165,250,0.4)" stroke-width="2"/>' +
+            '<circle cx="62" cy="56" r="20" fill="rgba(96,165,250,0.15)" stroke="rgba(96,165,250,0.45)" stroke-width="1.5"/>' +
+            '<circle cx="62" cy="51" r="9" fill="rgba(96,165,250,0.5)"/>' +
+            '<path d="M42 76 Q62 65 82 76" fill="rgba(96,165,250,0.2)" stroke="rgba(96,165,250,0.4)" stroke-width="1.5" stroke-linecap="round"/>' +
+            '<rect x="94" y="38" width="68" height="6" rx="3" fill="rgba(96,165,250,0.6)"/>' +
+            '<rect x="94" y="50" width="54" height="4" rx="2" fill="rgba(255,255,255,0.25)"/>' +
+            '<rect x="94" y="60" width="46" height="4" rx="2" fill="rgba(255,255,255,0.18)"/>' +
+            '<line x1="36" y1="90" x2="164" y2="90" stroke="rgba(96,165,250,0.2)" stroke-width="1"/>' +
+            '<rect x="36" y="98" width="54" height="5" rx="2.5" fill="rgba(96,165,250,0.4)"/>' +
+            '<rect x="36" y="110" width="128" height="4" rx="2" fill="rgba(255,255,255,0.14)"/>' +
+            '<rect x="36" y="120" width="110" height="4" rx="2" fill="rgba(255,255,255,0.10)"/>' +
+            '<path d="M36 133 Q55 126 78 130 Q98 126 118 130" stroke="rgba(96,165,250,0.45)" stroke-width="2" fill="none" stroke-linecap="round"/>' +
+            '</svg>'
+    };
+
+    var _activeIdx = 0;
+    var _maintStatus = {};
+
+    function renderCarousel() {
+        var car = document.getElementById('layananCarousel');
+        car.innerHTML = '';
+        LAYANAN.forEach(function(s, i) {
+            var card = document.createElement('div');
+            card.className = 'lay-card' + (i === _activeIdx ? ' active' : '');
+            card.setAttribute('data-idx', i);
+            card.onclick = function() { selectLayanan(i); };
+            card.innerHTML =
+                '<div class="lay-card-icon">' +
+                    '<img src="icons/' + s.id + '.png" alt="' + s.name + '" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">' +
+                    '<div class="lay-card-icon-emoji" style="display:none">' + s.icon + '</div>' +
+                '</div>' +
+                '<span class="lay-card-name">' + s.name + '</span>';
+            car.appendChild(card);
+        });
+    }
+
+    function renderDetail() {
+        var s = LAYANAN[_activeIdx];
+        var isMaint = _maintStatus[s.id] === true;
+        var panel = document.getElementById('layDetail');
+        var btnHtml = isMaint
+            ? '<button class="lay-btn-main lay-btn-maint" disabled>🔧 Maintenance</button>'
+            : '<a href="' + s.link + '" class="lay-btn-main lay-btn-full">Buat Sekarang</a>';
+        var illus = SERVICE_ILLUS[s.id] || '';
+        panel.innerHTML =
+            '<div class="lay-detail-inner">' +
+                '<div class="lay-detail-left">' +
+                    '<h3 class="lay-detail-title">' + s.title + '</h3>' +
+                    '<p class="lay-detail-desc">' + s.desc + '</p>' +
+                    '<div class="lay-steps">' +
+                        '<div class="lay-step"><span class="lay-step-num">1</span><span>Upload File</span></div>' +
+                        '<div class="lay-step-arrow">→</div>' +
+                        '<div class="lay-step"><span class="lay-step-num">2</span><span>Lihat Hasil</span></div>' +
+                        '<div class="lay-step-arrow">→</div>' +
+                        '<div class="lay-step"><span class="lay-step-num">3</span><span>Bayar</span></div>' +
+                    '</div>' +
+                    '<p class="lay-admin-text">Minta bantuan admin : <a href="https://wa.me/6281228790091" target="_blank" rel="noopener" class="lay-admin-link">Hubungi Admin</a></p>' +
+                    '<p class="lay-privacy">Kami sangat menjaga kerahasiaan setiap dokumen pelanggan. File hanya digunakan untuk proses layanan dan tidak disimpan permanen.</p>' +
+                '</div>' +
+                '<div class="lay-detail-right">' +
+                    '<div class="lay-img-wrap">' + illus + '</div>' +
+                    btnHtml +
+                '</div>' +
+            '</div>';
+        document.getElementById('laySelectedName').textContent = s.name;
+        document.querySelectorAll('.lay-card').forEach(function(el, i) {
+            el.classList.toggle('active', i === _activeIdx);
+        });
+    }
+
+    function selectLayanan(idx) {
+        _activeIdx = idx;
+        renderDetail();
+        document.querySelectorAll('.lay-card').forEach(function(el, i) {
+            el.classList.toggle('active', i === idx);
+        });
+    }
+
+    function carScroll(dir) {
+        var car = document.getElementById('layananCarousel');
+        car.scrollBy({ left: dir * 200, behavior: 'smooth' });
+    }
+
+    renderCarousel();
+    renderDetail();
+
+    fetch('api/maintenance_status.php')
+        .then(function(r){ return r.json(); })
+        .then(function(d){ _maintStatus = d.services || {}; renderDetail(); })
+        .catch(function(){});
+    </script>
+
     <script src="nocopy.js"></script>
     <script src="theme.js?v=1"></script>
 </body>

@@ -2,33 +2,59 @@
 date_default_timezone_set('Asia/Jakarta');
 require_once __DIR__ . '/_guard.php';
 
-// ── Maintenance mode toggle ───────────────────────────────────────────────────
-$maintenanceFlag = __DIR__ . '/../config/maintenance.flag';
-$isMaintenance   = file_exists($maintenanceFlag);
+// ── Per-service maintenance toggle ───────────────────────────────────────────
+$serviceKeys  = ['penomoran', 'daftar_isi', 'daftar_tabel', 'daftar_gambar', 'daftar_lampiran', 'ketik'];
+$serviceNames = [
+    'penomoran'        => 'Penomoran Halaman',
+    'daftar_isi'       => 'Daftar Isi Otomatis',
+    'daftar_tabel'     => 'Daftar Tabel Otomatis',
+    'daftar_gambar'    => 'Daftar Gambar Otomatis',
+    'daftar_lampiran'  => 'Daftar Lampiran Otomatis',
+    'ketik'            => 'Ketik / Lamaran / CV',
+];
+$serviceIcons = [
+    'penomoran'        => '📄',
+    'daftar_isi'       => '📑',
+    'daftar_tabel'     => '📊',
+    'daftar_gambar'    => '🖼️',
+    'daftar_lampiran'  => '📎',
+    'ketik'            => '✍️',
+];
+$serviceStatus = [];
+foreach ($serviceKeys as $k) {
+    $serviceStatus[$k] = file_exists(__DIR__ . '/../config/maintenance_' . $k . '.flag');
+}
+$maintenanceCount = count(array_filter($serviceStatus));
 
-// Ambil flash message dari session (hasil redirect sebelumnya)
+// Ambil flash message dari session
 $maintenanceError   = $_SESSION['maint_error']   ?? '';
 $maintenanceSuccess = $_SESSION['maint_success'] ?? '';
-unset($_SESSION['maint_error'], $_SESSION['maint_success']);
+$maintErrorService  = $_SESSION['maint_error_service'] ?? '';
+unset($_SESSION['maint_error'], $_SESSION['maint_success'], $_SESSION['maint_error_service']);
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['toggle_maintenance'])) {
-    $pwd = $_POST['maintenance_password'] ?? '';
-    if (!password_verify($pwd, ADMIN_PASSWORD_HASH)) {
-        $_SESSION['maint_error'] = 'Sandi salah.';
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['toggle_service'])) {
+    $serviceKey = $_POST['service_key'] ?? '';
+    $pwd        = $_POST['maintenance_password'] ?? '';
+    if (!in_array($serviceKey, $serviceKeys, true)) {
+        $_SESSION['maint_error'] = 'Service tidak valid.';
+    } elseif (!password_verify($pwd, ADMIN_PASSWORD_HASH)) {
+        $_SESSION['maint_error']         = 'Sandi salah.';
+        $_SESSION['maint_error_service'] = $serviceKey;
     } else {
-        if ($isMaintenance) {
-            @unlink($maintenanceFlag);
-            $_SESSION['maint_success'] = 'Maintenance mode dinonaktifkan.';
+        $flag = __DIR__ . '/../config/maintenance_' . $serviceKey . '.flag';
+        if (file_exists($flag)) {
+            @unlink($flag);
+            $_SESSION['maint_success'] = $serviceNames[$serviceKey] . ' kembali aktif.';
         } else {
-            $written = file_put_contents($maintenanceFlag, date('Y-m-d H:i:s'));
+            $written = file_put_contents($flag, date('Y-m-d H:i:s'));
             if ($written !== false) {
-                $_SESSION['maint_success'] = 'Maintenance mode diaktifkan.';
+                $_SESSION['maint_success'] = $serviceNames[$serviceKey] . ' masuk maintenance.';
             } else {
-                $_SESSION['maint_error'] = 'Gagal mengaktifkan. Periksa izin folder config/.';
+                $_SESSION['maint_error']         = 'Gagal. Periksa izin folder config/.';
+                $_SESSION['maint_error_service'] = $serviceKey;
             }
         }
     }
-    // PRG: redirect supaya refresh tidak memicu resubmit form
     header('Location: dashboard.php');
     exit;
 }
@@ -510,8 +536,79 @@ function tglAdmin(string $dt): string {
             border-radius: 8px; cursor: pointer;
             border: 1px solid rgba(255,255,255,0.06);
             background: rgba(255,255,255,0.03);
+            text-decoration: none;
         }
         .maint-sidebar:hover { background: rgba(255,255,255,0.06); }
+
+        /* ===== MAINTENANCE GRID ===== */
+        .maint-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 12px;
+            margin-bottom: 44px;
+        }
+        .maint-card {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(124,58,237,0.18);
+            border-radius: 14px;
+            padding: 16px 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .maint-card.is-maint {
+            border-color: rgba(239,68,68,0.3);
+            background: rgba(239,68,68,0.05);
+        }
+        .maint-card-top {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .maint-card-icon { font-size: 22px; line-height: 1; }
+        .maint-card-name {
+            font-size: 13px;
+            font-weight: 700;
+            color: #e5e7eb;
+            line-height: 1.3;
+        }
+        .maint-card-status {
+            font-size: 11px;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 20px;
+            width: fit-content;
+        }
+        .maint-card-status.aktif {
+            background: rgba(52,211,153,0.12);
+            color: #34d399;
+        }
+        .maint-card-status.maint {
+            background: rgba(239,68,68,0.1);
+            color: #f87171;
+        }
+        .maint-card-btn {
+            padding: 7px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            border: none;
+            font-family: inherit;
+            transition: 0.15s;
+        }
+        .maint-card-btn.btn-activate {
+            background: rgba(239,68,68,0.12);
+            color: #f87171;
+            border: 1px solid rgba(239,68,68,0.3);
+        }
+        .maint-card-btn.btn-activate:hover { background: rgba(239,68,68,0.22); }
+        .maint-card-btn.btn-deactivate {
+            background: rgba(52,211,153,0.1);
+            color: #34d399;
+            border: 1px solid rgba(52,211,153,0.3);
+        }
+        .maint-card-btn.btn-deactivate:hover { background: rgba(52,211,153,0.2); }
         .maint-dot {
             width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
         }
@@ -571,11 +668,11 @@ function tglAdmin(string $dt): string {
     <div class="sidebar-brand">
         ADK PHOTOCOPY
         <span>Panel Admin</span>
-        <div class="maint-sidebar" onclick="openMaintModal()" title="Mode Maintenance">
-            <span class="maint-dot <?= $isMaintenance ? 'on' : 'off' ?>"></span>
-            <span class="maint-label <?= $isMaintenance ? 'on' : '' ?>"><?= $isMaintenance ? 'Maintenance ON' : 'Maintenance' ?></span>
+        <a href="#maint-section" class="maint-sidebar" title="Maintenance Layanan">
+            <span class="maint-dot <?= $maintenanceCount > 0 ? 'on' : 'off' ?>"></span>
+            <span class="maint-label <?= $maintenanceCount > 0 ? 'on' : '' ?>"><?= $maintenanceCount ?>/<?= count($serviceKeys) ?> Maintenance</span>
             <span class="maint-gear">⚙</span>
-        </div>
+        </a>
     </div>
 
     <ul class="sidebar-nav">
@@ -666,6 +763,38 @@ function tglAdmin(string $dt): string {
             <div class="stat-label">Pendapatan</div>
             <div class="stat-value green sm" id="sv-revenue"><?= fmtRupiah($stats['revenue']) ?></div>
         </div>
+    </div>
+
+    <!-- MAINTENANCE LAYANAN -->
+    <div class="section-header" id="maint-section">
+        <div class="section-title">Maintenance Layanan</div>
+        <span style="font-size:12px;color:#6b7280;font-weight:600"><?= $maintenanceCount ?>/<?= count($serviceKeys) ?> sedang maintenance</span>
+    </div>
+
+    <?php if ($maintenanceSuccess): ?>
+    <div style="background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.3);color:#34d399;padding:10px 16px;border-radius:10px;font-size:13px;font-weight:600;margin-bottom:16px;">
+        ✓ <?= htmlspecialchars($maintenanceSuccess) ?>
+    </div>
+    <?php endif; ?>
+
+    <div class="maint-grid">
+        <?php foreach ($serviceKeys as $k):
+            $isMaint = $serviceStatus[$k];
+        ?>
+        <div class="maint-card <?= $isMaint ? 'is-maint' : '' ?>">
+            <div class="maint-card-top">
+                <span class="maint-card-icon"><?= $serviceIcons[$k] ?></span>
+                <span class="maint-card-name"><?= htmlspecialchars($serviceNames[$k]) ?></span>
+            </div>
+            <span class="maint-card-status <?= $isMaint ? 'maint' : 'aktif' ?>">
+                <?= $isMaint ? '🔴 Maintenance' : '🟢 Aktif' ?>
+            </span>
+            <button class="maint-card-btn <?= $isMaint ? 'btn-deactivate' : 'btn-activate' ?>"
+                    onclick="openServiceMaint('<?= $k ?>', <?= $isMaint ? 'true' : 'false' ?>)">
+                <?= $isMaint ? 'Aktifkan Kembali' : 'Set Maintenance' ?>
+            </button>
+        </div>
+        <?php endforeach; ?>
     </div>
 
     <!-- ORDERS TABLE -->
@@ -834,26 +963,21 @@ function tglAdmin(string $dt): string {
     </div>
 </main>
 
-<!-- MAINTENANCE MODAL -->
+<!-- MAINTENANCE MODAL (per-service) -->
 <div class="maint-overlay" id="maintOverlay">
     <div class="maint-modal">
-        <h3><?= $isMaintenance ? '🔴 Nonaktifkan Maintenance' : '⚙ Aktifkan Maintenance' ?></h3>
-        <p><?= $isMaintenance
-            ? 'Server akan kembali normal dan order baru dapat masuk.'
-            : 'Order baru akan ditolak. Order lama tetap bisa bayar &amp; unduh.' ?></p>
-        <?php if ($maintenanceError): ?>
-        <div class="maint-error show"><?= htmlspecialchars($maintenanceError) ?></div>
-        <?php else: ?>
-        <div class="maint-error" id="maintErrMsg"></div>
-        <?php endif; ?>
+        <h3 id="maintModalTitle">⚙ Maintenance</h3>
+        <p id="maintModalDesc">Konfirmasi perubahan status maintenance.</p>
+        <div class="maint-error <?= $maintenanceError ? 'show' : '' ?>" id="maintErrMsg">
+            <?= htmlspecialchars($maintenanceError) ?>
+        </div>
         <form method="POST" id="maintForm">
+            <input type="hidden" name="service_key" id="maintServiceKey" value="">
             <input type="password" name="maintenance_password" id="maintPwd"
                    placeholder="Sandi admin" autocomplete="current-password" required>
             <div class="maint-modal-actions">
-                <button type="submit" name="toggle_maintenance"
-                        class="btn-confirm <?= $isMaintenance ? 'deactivate' : 'activate' ?>">
-                    <?= $isMaintenance ? 'Nonaktifkan' : 'Aktifkan' ?>
-                </button>
+                <button type="submit" name="toggle_service" id="maintConfirmBtn"
+                        class="btn-confirm activate">Konfirmasi</button>
                 <button type="button" class="btn-cancel" onclick="closeMaintModal()">Batal</button>
             </div>
         </form>
@@ -872,13 +996,31 @@ function switchStatPeriod(p) {
         'Rp ' + s.revenue.toLocaleString('id-ID');
 }
 
+const _serviceNames = <?= json_encode($serviceNames) ?>;
+
 function toggleSidebar() {
     document.getElementById('sidebar').classList.toggle('open');
     document.getElementById('sidebarOverlay').classList.toggle('open');
 }
-function openMaintModal() {
+function openServiceMaint(key, isMaint) {
+    var name = _serviceNames[key] || key;
+    document.getElementById('maintServiceKey').value = key;
+    document.getElementById('maintPwd').value = '';
+    document.getElementById('maintErrMsg').classList.remove('show');
+    document.getElementById('maintErrMsg').textContent = '';
+    if (isMaint) {
+        document.getElementById('maintModalTitle').textContent = '🟢 Aktifkan Kembali';
+        document.getElementById('maintModalDesc').textContent  = name + ' akan kembali aktif dan bisa diorder.';
+        document.getElementById('maintConfirmBtn').className   = 'btn-confirm deactivate';
+        document.getElementById('maintConfirmBtn').textContent = 'Aktifkan Kembali';
+    } else {
+        document.getElementById('maintModalTitle').textContent = '🔴 Set Maintenance';
+        document.getElementById('maintModalDesc').textContent  = name + ' akan masuk maintenance. Order baru ditolak.';
+        document.getElementById('maintConfirmBtn').className   = 'btn-confirm activate';
+        document.getElementById('maintConfirmBtn').textContent = 'Set Maintenance';
+    }
     document.getElementById('maintOverlay').classList.add('show');
-    setTimeout(function(){ var p = document.getElementById('maintPwd'); if(p) p.focus(); }, 100);
+    setTimeout(function(){ document.getElementById('maintPwd').focus(); }, 100);
 }
 function closeMaintModal() {
     document.getElementById('maintOverlay').classList.remove('show');
@@ -886,8 +1028,10 @@ function closeMaintModal() {
 document.getElementById('maintOverlay').addEventListener('click', function(e){
     if (e.target === this) closeMaintModal();
 });
-<?php if ($maintenanceError): ?>
-openMaintModal();
+<?php if ($maintenanceError && $maintErrorService): ?>
+openServiceMaint(<?= json_encode($maintErrorService) ?>, <?= $serviceStatus[$maintErrorService] ? 'false' : 'true' ?>);
+document.getElementById('maintErrMsg').textContent = <?= json_encode($maintenanceError) ?>;
+document.getElementById('maintErrMsg').classList.add('show');
 <?php endif; ?>
 <?php if ($maintenanceSuccess): ?>
 (function(){
