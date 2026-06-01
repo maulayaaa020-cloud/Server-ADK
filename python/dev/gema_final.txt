@@ -1,0 +1,51 @@
+﻿Total body elements: 1205
+Total sections: 10
+
+=== body[1020:1055] ===
+  [1020] 'Ki, C. W. C., Cuevas, L. M., Chong, S. M., & Lim, H. (2020).' []
+  [1021] 'Kim, J. (2025). Emotional Storytelling and engagement in sho' []
+  [1022] 'Kumar, V., & Pansari, A. (2021). Competitive advantage throu' []
+  [1023] 'Lim, X. J., Radzol, A. M., Cheah, J. H., & Wong, M. W. (2023' []
+  [1024] 'Lou, C., & Yuan, S. (2021). Influencer marketing: How messag' []
+  [1025] 'Lundqvist, A., Liljander, V., Gummerus, J., & van Riel, A. (' []
+  [1026] 'Pera, R., & Viglia, G. (2021). Exploring how video digital S' []
+  [1027] 'Rather, R. A. (2021). Customer experience and engagement: Th' []
+  [1028] 'Safrianto, R., et al. (2024). Pengaruh media sosial terhadap' []
+  [1029] 'Sokolova, K., & Kefi, H. (2020). Instagram and YouTube blogg' []
+  [1030] 'Sugiyono. (2019). Metode penelitian kuantitatif, kualitatif,' []
+  [1031] 'Walsh, G., Kliamenakis, E., & Laroche, M. (2024). Source cre' []
+  [1032] 'Wiwarottami, A., & Widyatama, R. (2023). TikTok as a marketi' []
+  [1033] 'Woodside, A. G. (2022). Narrative research in marketing. Jou' ['SECT(nextPage)']
+  [1034] (empty) []
+  [1035] (empty) []
+  [1036] (empty) []
+  [1037] 'L' []
+  [1038] 'A' []
+  [1039] 'M' []
+  [1040] 'P' []
+  [1041] 'I' []
+  [1042] 'R' []
+  [1043] 'A' []
+  [1044] 'N' ['SECT(nextPage)']
+  [1045] 'Lampiran 1' []
+  [1046] 'KUESIONER PENELITIAN' []
+  [1047] (empty) []
+  [1048] 'PENGARUH STORYTELLING DAN KREDIBILITAS KREATOR KONTEN PADA K' []
+  [1049] (empty) []
+  [1050] 'Peran dan partisipasi Bapak/Ibu dalam mengisi kuesioner (uji' []
+  [1051] 'Identitas Peneliti' []
+  [1052] 'Nama: Gema Ramadhan' []
+  [1053] 'NPM: 2261201178' []
+  [1054] 'Program Studi: Manajemen' []
+
+=== Section headers/footers ===
+  sec[0] fmt=lowerRoman start=0 hdr_has_content=False ftr_has_content=True
+  sec[1] fmt=lowerRoman start=None hdr_has_content=False ftr_has_content=True
+  sec[2] fmt=decimal start=1 hdr_has_content=True ftr_has_content=False
+  sec[3] fmt=decimal start=None hdr_has_content=True ftr_has_content=False
+  sec[4] fmt=decimal start=None hdr_has_content=True ftr_has_content=False
+  sec[5] fmt=decimal start=None hdr_has_content=True ftr_has_content=False
+  sec[6] fmt=decimal start=None hdr_has_content=True ftr_has_content=False
+  sec[7] fmt=decimal start=None hdr_has_content=True ftr_has_content=False
+  sec[8] fmt=None start=None hdr_has_content=False ftr_has_content=False
+  sec[9] fmt=None start=None hdr_has_content=False ftr_has_content=False

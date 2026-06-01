@@ -1,0 +1,50 @@
+﻿Found "Lampiran 1" at body[1059]
+
+=== body[1029:1064] (30 before) ===
+  [1029] style='NormalWeb' 'Ghanad, A. (2023). Social media marketing and Brand Engagement: An empirical study. International Journal of Marketing Studies.' []
+  [1030] style='NormalWeb' 'Githaiga, J., et al. (2024). Digital Storytelling and consumer engagement in emerging markets. Journal of Interactive Media.' []
+  [1031] style='NormalWeb' 'Hollebeek, L. D., Glynn, M. S., & Brodie, R. J. (2020). Consumer Brand Engagement in social media: Conceptualization and scale development. Journal of Interactive Marketing, 28(2), 149–165. https://doi.org/10.1016/j.intmar.2013.12.002' []
+  [1032] style='NormalWeb' 'Huang, L. (2026). Short video platforms and consumer engagement behavior. Journal of Digital Consumer Research.' []
+  [1033] style='NormalWeb' 'Katiaj, A., et al. (2024). Storytelling in TikTok marketing and its impact on audience engagement. Journal of Social Media Studies.' []
+  [1034] style='NormalWeb' 'Ki, C. W. C., Cuevas, L. M., Chong, S. M., & Lim, H. (2020). Influencer marketing: Social media influencers as human brands. Journal of Business Research, 120, 1–10. https://doi.org/10.1016/j.jbusres.2020.07.050' []
+  [1035] style='NormalWeb' 'Kim, J. (2025). Emotional Storytelling and engagement in short-form video platforms. Journal of Digital Media Research.' []
+  [1036] style='NormalWeb' 'Kumar, V., & Pansari, A. (2021). Competitive advantage through engagement. Journal of Marketing Research, 53(4), 497–514. https://doi.org/10.1509/jmr.15.0044' []
+  [1037] style='NormalWeb' 'Lim, X. J., Radzol, A. M., Cheah, J. H., & Wong, M. W. (2023). The impact of social media influencers on purchase intention and Brand Engagement. Journal of Retailing and Consumer Services, 68, 103–115.' []
+  [1038] style='NormalWeb' 'Lou, C., & Yuan, S. (2021). Influencer marketing: How message value and credibility affect consumer trust. Journal of Interactive Advertising, 19(1), 58–73. https://doi.org/10.1080/15252019.2018.1533501' []
+  [1039] style='NormalWeb' 'Lundqvist, A., Liljander, V., Gummerus, J., & van Riel, A. (2020). The impact of Storytelling on brand perception. Journal of Brand Management, 20(4), 283–297. https://doi.org/10.1057/bm.2012.15' []
+  [1040] style='NormalWeb' 'Pera, R., & Viglia, G. (2021). Exploring how video digital Storytelling builds relationship experiences. Psychology & Marketing, 33(12), 1142–1150. https://doi.org/10.1002/mar.20951' []
+  [1041] style='NormalWeb' 'Rather, R. A. (2021). Customer experience and engagement: The role of emotions. Journal of Hospitality and Tourism Management, 45, 1–10.' []
+  [1042] style='NormalWeb' 'Safrianto, R., et al. (2024). Pengaruh media sosial terhadap perilaku konsumen generasi Z. Jurnal Manajemen dan Bisnis.' []
+  [1043] style='NormalWeb' 'Sokolova, K., & Kefi, H. (2020). Instagram and YouTube bloggers promote it, why should I buy? Journal of Retailing and Consumer Services, 53, 101742. https://doi.org/10.1016/j.jretconser.2019.01.011' []
+  [1044] style='NormalWeb' 'Sugiyono. (2019). Metode penelitian kuantitatif, kualitatif, dan R&D. Alfabeta.' []
+  [1045] style='NormalWeb' 'Walsh, G., Kliamenakis, E., & Laroche, M. (2024). Source credibility and its effect on consumer engagement. Journal of Marketing Theory and Practice.' []
+  [1046] style='NormalWeb' 'Wiwarottami, A., & Widyatama, R. (2023). TikTok as a marketing platform: Engagement and consumer behavior. Jurnal Komunikasi Digital.' []
+  [1047] style='NormalWeb' 'Woodside, A. G. (2022). Narrative research in marketing. Journal of Business Research, 140, 1–10.' []
+  [1048] style='NormalWeb' (empty) []
+  [1049] style=None (empty) ['pgBr']
+  [1050] style=None (empty) []
+  [1051] style=None 'L' []
+  [1052] style=None 'A' []
+  [1053] style=None 'M' []
+  [1054] style=None 'P' []
+  [1055] style=None 'I' []
+  [1056] style=None 'R' []
+  [1057] style=None 'A' []
+  [1058] style=None 'N' ['SECT']
+  [1059] style='NoSpacing' 'Lampiran 1' []
+  [1060] style='NoSpacing' 'KUESIONER PENELITIAN' []
+  [1061] style='NoSpacing' (empty) []
+  [1062] style=None 'PENGARUH STORYTELLING DAN KREDIBILITAS KREATOR KONTEN PADA KONTEN VIDEO TIKTOK TERHADAP BRAND ENGAGEMENT KONSUMEN KOPI KENANGAN' []
+  [1063] style='NoSpacing' (empty) []
+
+=== all_paras scan for single-letter / LAMPIRAN ===
+  para[1020] body_el=1051 style='Normal' char='L'
+  para[1021] body_el=1052 style='Normal' char='A'
+  para[1022] body_el=1053 style='Normal' char='M'
+  para[1023] body_el=1054 style='Normal' char='P'
+  para[1024] body_el=1055 style='Normal' char='I'
+  para[1025] body_el=1056 style='Normal' char='R'
+  para[1026] body_el=1057 style='Normal' char='A'
+  para[1027] body_el=1058 style='Normal' char='N'
+  para[1028] style='No Spacing' text='Lampiran 1' sect=False pgBr=False
+  para[1090] style='Normal' text='Lampiran 2' sect=False pgBr=False

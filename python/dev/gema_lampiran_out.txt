@@ -1,0 +1,82 @@
+﻿=== Paragraphs near "lampiran" (para.text) ===
+  [652] style='Normal' pgBr=False sect=False
+       text='Jenis penelitian ini menggunakan pendekatan kuantitatif dengan desain survei, ya'
+  [666] style='Normal' pgBr=False sect=False
+       text='Sebelum penelitian utama dilakukan, peneliti melaksanakan uji coba instrumen (pi'
+  [669] style='Normal' pgBr=False sect=False
+       text='Adapun kriteria responden dalam penelitian ini yaitu pengguna aktif TikTok, pern'
+  [678] style='Normal' pgBr=False sect=False
+       text='3.4.3 Kuesioner'
+  [679] style='Normal' pgBr=False sect=False
+       text='Metode pengumpulan data yang digunakan dalam penelitian ini dilakukan dengan men'
+  [681] style='Normal' pgBr=False sect=False
+       text='Untuk mengukur tanggapan atau sikap responden terhadap pernyataan-pernyataan dal'
+  [687] style='Normal' pgBr=False sect=False
+       text='Pengolahan data dilakukan untuk menjawab tujuan penelitian yaitu mengetahui Peng'
+  [689] style='Normal' pgBr=False sect=False
+       text='Untuk menjawab identifikasi masalah dilakukan penyusunan tabel frekuensi distrib'
+  [710] style='Normal' pgBr=False sect=False
+       text='Uji validitas dilakukan untuk mengetahui kemampuan setiap butir pernyataan dalam'
+  [711] style='Normal' pgBr=False sect=False
+       text='Uji validitas dilakukan terhadap 30 responden di luar sampel penelitian yang mem'
+  [720] style='Body Text' pgBr=False sect=False
+       text='Dari tabel diatas terlihat bahwa tabel korelasi total item yang disesuaikan atau'
+  [724] style='Normal' pgBr=False sect=False
+       text='Nilai Cronbach’s Alpha ≥ 0,70 → kuesioner reliabel'
+  [725] style='Normal' pgBr=False sect=False
+       text='Nilai Cronbach’s Alpha < 0,70 → kuesioner belum reliabel'
+  [726] style='Normal' pgBr=False sect=False
+       text='Apabila seluruh variabel memiliki nilai Cronbach’s Alpha di atas batas minimum, '
+  [732] style='Normal' pgBr=False sect=False
+       text='Berdasarkan tabel diatas menampilkan hasil pengujian untuk setiap variabel, dapa'
+  [810] style='Normal' pgBr=False sect=False
+       text='Responden yang menjadi objek dalam penelitian ini adalah konsumen Kopi Kenangan '
+  [938] style='Normal' pgBr=False sect=False
+       text='Berdasarkan hasil penelitian dan pengolahan data yang dilakukan pada konsumen Ko'
+  [1028] style='No Spacing' pgBr=False sect=False
+       text='Lampiran 1'
+  [1029] style='No Spacing' pgBr=False sect=False
+       text='KUESIONER PENELITIAN'
+  [1033] style='Normal' pgBr=False sect=False
+       text='Peran dan partisipasi Bapak/Ibu dalam mengisi kuesioner (uji instrumen) ini sang'
+  [1058] style='Normal' pgBr=False sect=False
+       text='Dengan ini memohon kesediaan Bapak/Ibu untuk berpartisipasi sebagai reponden dal'
+  [1090] style='Normal' pgBr=False sect=False
+       text='Lampiran 2'
+  [1110] style='Normal' pgBr=False sect=False
+       text='Lampiran 3'
+  [1144] style='Normal' pgBr=False sect=False
+       text='Lampiran 4'
+  [1159] style='Normal' pgBr=False sect=False
+       text='Lampiran 5'
+
+=== Text boxes / drawings (w:txbx) containing "lampiran" ===
+
+=== Runs with "lampiran" in w:t (including in drawings) ===
+  body[292] <sdt> text='LAMPIRAN' parents=['r', 'hyperlink', 'p', 'sdtContent', 'sdt', 'body']
+  body[1059] <p> text='Lampiran 1' parents=['r', 'p', 'body', 'document']
+  body[1125] <p> text='Lampiran 2' parents=['r', 'p', 'body', 'document']
+  body[1151] <p> text='Lampiran 3' parents=['r', 'p', 'body', 'document']
+  body[1191] <p> text='Lampiran' parents=['r', 'p', 'body', 'document']
+  body[1209] <p> text='Lampiran' parents=['r', 'p', 'body', 'document']
+
+=== Sections in document ===
+  sec[0] fmt=lowerRoman start=1
+  sec[1] fmt=lowerRoman start=2
+  sec[2] fmt=lowerRoman start=1
+  sec[3] fmt=None start=1
+  sec[4] fmt=None start=None
+  sec[5] fmt=None start=None
+  sec[6] fmt=None start=None
+  sec[7] fmt=None start=None
+
+=== scan_zones result ===
+  roman_start_p index: 79
+  bab_p_list count: 7
+  bab[0] body[357] text='BAB I'
+  bab[1] body[409] text='BAB II'
+  bab[2] body[656] text='BAB III'
+  bab[3] body[815] text='BAB IV'
+  bab[4] body[991] text='BAB V'
+  bab[5] body[1017] text='DAFTAR PUSTAKA'
+  bab[6] body[1059] text='Lampiran 1'
