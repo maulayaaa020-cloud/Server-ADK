@@ -212,7 +212,7 @@
 .paket-accordion {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 0;
     margin-bottom: 24px;
 }
 
@@ -224,9 +224,13 @@
     transition: border-color 0.2s, background 0.2s;
 }
 
+.paket-card + .paket-card {
+    margin-top: 10px;
+}
+
 .paket-card[data-paket="3"],
 .paket-card[data-paket="4"] {
-    margin-top: 21px; /* 10px jarak visual + 11px ruang badge di atas card */
+    margin-top: 21px; /* 10px jarak visual + 11px ruang badge */
 }
 
 .paket-card:not(.paket-card-disabled):hover {
