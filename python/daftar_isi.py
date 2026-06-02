@@ -198,6 +198,13 @@ def get_para_level(para):
       - Font size / style name kustom / ALL CAPS tanpa pola → dihapus
         (terlalu banyak false positive dari judul cover dan paragraf body)
     """
+    # Paragraf yang sudah diberi outlineLvl=9 (dikecualikan secara eksplisit)
+    _pPr_check = para._p.find(qn('w:pPr'))
+    if _pPr_check is not None:
+        _ol_check = _pPr_check.find(qn('w:outlineLvl'))
+        if _ol_check is not None and _ol_check.get(qn('w:val')) == '9':
+            return None
+
     text = para.text.strip()
     if not text or len(text) > 150:
         return None
@@ -343,6 +350,77 @@ def detect_headings(doc, max_level):
 
     results = _dedup_bab_clusters(results)
     return results
+
+
+# ── Pra-proses struktur dokumen ───────────────────────────────────────────────
+
+def _fix_bab_line_breaks(doc):
+    """Ganti soft return (w:br) dalam paragraf BAB dengan spasi."""
+    for para in doc.paragraphs:
+        text = para.text.strip()
+        if not re.match(r'^\s*BAB\s+[IVXivx\d]+\b', text, re.IGNORECASE):
+            continue
+        for r_el in para._p.findall(f'.//{qn("w:r")}'):
+            for br in r_el.findall(qn('w:br')):
+                idx_br = list(r_el).index(br)
+                r_el.remove(br)
+                t = OxmlElement('w:t')
+                t.set('{http://www.w3.org/XML/1998/namespace}space', 'preserve')
+                t.text = ' '
+                r_el.insert(idx_br, t)
+
+
+def _merge_bab_name_paras(doc):
+    """
+    Untuk paragraf 'BAB X' yang diikuti nama bab ALL CAPS di paragraf terpisah:
+    - Tambahkan nama ke teks paragraf BAB X sebagai run baru
+    - Set outlineLvl=9 pada paragraf nama agar tidak masuk TOC field
+    """
+    paras = doc.paragraphs
+    for i, para in enumerate(paras):
+        text = para.text.strip()
+        if not re.match(r'^\s*BAB\s+[IVXivx\d]+\s*$', text, re.IGNORECASE):
+            continue
+        for j in range(i + 1, min(i + 3, len(paras))):
+            nt = paras[j].text.strip()
+            if not nt or nt != nt.upper() or len(nt) <= 3:
+                continue
+            # Tambah nama ke paragraf BAB
+            run = para.add_run(' ' + nt)
+            # Set outlineLvl=9 pada paragraf nama agar tidak masuk TOC field
+            name_pPr = paras[j]._p.find(qn('w:pPr'))
+            if name_pPr is None:
+                name_pPr = OxmlElement('w:pPr')
+                paras[j]._p.insert(0, name_pPr)
+            ol = name_pPr.find(qn('w:outlineLvl'))
+            if ol is None:
+                ol = OxmlElement('w:outlineLvl')
+                name_pPr.append(ol)
+            ol.set(qn('w:val'), '9')
+            break
+
+
+def _exclude_metadata_headings(doc):
+    """
+    Set outlineLvl=9 pada paragraf metadata (cover) ber-Heading style agar
+    tidak masuk TOC field saat Word update.
+    """
+    for para in doc.paragraphs:
+        text = para.text.strip()
+        if not text or not _META_LABEL_RE.match(text):
+            continue
+        style_name = para.style.name if para.style else ''
+        if not style_name.startswith('Heading '):
+            continue
+        pPr = para._p.find(qn('w:pPr'))
+        if pPr is None:
+            pPr = OxmlElement('w:pPr')
+            para._p.insert(0, pPr)
+        ol = pPr.find(qn('w:outlineLvl'))
+        if ol is None:
+            ol = OxmlElement('w:outlineLvl')
+            pPr.append(ol)
+        ol.set(qn('w:val'), '9')
 
 
 # ── Bold normalization untuk heading ─────────────────────────────────────────
@@ -1105,6 +1183,12 @@ def main():
     # (majorHAnsi = Calibri Light) yang OVERRIDE font Times New Roman dari
     # definisi style TOC. Solusi: samakan font Heading X Char dengan TOC font.
     _fix_heading_char_styles(doc, font=font, size_pt=size_pt)
+
+    # ── Pra-proses struktur dokumen ──────────────────────────────────────────
+    # Harus sebelum detect_headings agar hasil deteksi sudah bersih.
+    _fix_bab_line_breaks(doc)       # "BAB I\nPENDAHULUAN" → "BAB I PENDAHULUAN"
+    _merge_bab_name_paras(doc)      # "BAB II" + "LANDASAN TEORI" → satu paragraf
+    _exclude_metadata_headings(doc) # "Dosen Pengampu:" → outlineLvl=9
 
     # ── Deteksi heading ──────────────────────────────────────────────────────
     headings = detect_headings(doc, max_level)
