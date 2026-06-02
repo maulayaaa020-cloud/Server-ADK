@@ -225,6 +225,20 @@ def get_para_level(para):
     if _FRONT_MATTER_RE.match(text):
         return 1
 
+    # 5. Fallback: style chain Heading (untuk list-numbered heading seperti A./1./B.)
+    # Teks tidak punya prefix nomor karena nomor dari Word list numbering.
+    # Batasi ≤80 char agar body text panjang tidak ikut masuk.
+    if len(text) <= 80:
+        style = para.style
+        while style:
+            sname = style.name or ''
+            if sname.startswith('Heading '):
+                try:
+                    return int(sname.split()[-1])
+                except ValueError:
+                    return 2
+            style = style.base_style
+
     return None
 
 
@@ -1282,6 +1296,98 @@ def _make_page_break_para():
     return p
 
 
+def _remove_old_toc_block(doc, daftar_idx):
+    """Hapus seluruh block TOC field lama (dari fldChar begin hingga fldChar end)."""
+    paras = doc.paragraphs
+    start_j = None
+    for _j in range(daftar_idx + 1, min(daftar_idx + 20, len(paras))):
+        if _has_toc_field(paras[_j]._p):
+            start_j = _j
+            break
+    if start_j is None:
+        return
+    # Kumpulkan semua paragraf dari begin hingga fldChar end
+    depth = 0
+    end_j = start_j
+    for _j in range(start_j, min(start_j + 300, len(paras))):
+        p = paras[_j]._p
+        for fld in p.iter(qn('w:fldChar')):
+            ft = fld.get(qn('w:fldCharType'), '')
+            if ft == 'begin':
+                depth += 1
+            elif ft == 'end':
+                depth -= 1
+        end_j = _j
+        if depth <= 0:
+            break
+    # Hapus semua paragraf dari end ke start (reverse agar indeks tidak bergeser)
+    to_remove = [paras[_j]._p for _j in range(start_j, end_j + 1)]
+    parent = to_remove[0].getparent() if to_remove else None
+    if parent is not None:
+        for p_el in to_remove:
+            if p_el.getparent() is not None:
+                p_el.getparent().remove(p_el)
+
+
+def _remove_trailing_empty_paras(after_el):
+    """Hapus paragraf kosong dan sisa TOC field berturut-turut setelah after_el."""
+    nxt = after_el.getnext()
+    while nxt is not None:
+        if not nxt.tag.endswith('}p'):
+            break
+        # Jangan hapus jika ada sectPr (section break)
+        pPr = nxt.find(qn('w:pPr'))
+        if pPr is not None and pPr.find(qn('w:sectPr')) is not None:
+            break
+        # TOC field block sisa (ada instrText TOC) → hapus seluruh block begin→end
+        if _has_toc_field(nxt):
+            depth = 0
+            block = []
+            cur = nxt
+            while cur is not None and cur.tag.endswith('}p'):
+                block.append(cur)
+                for fld in cur.iter(qn('w:fldChar')):
+                    ft = fld.get(qn('w:fldCharType'), '')
+                    if ft == 'begin':
+                        depth += 1
+                    elif ft == 'end':
+                        depth -= 1
+                if depth <= 0:
+                    break
+                cur = cur.getnext()
+            nxt = block[-1].getnext() if block else nxt.getnext()
+            for p_el in block:
+                if p_el.getparent() is not None:
+                    p_el.getparent().remove(p_el)
+            continue
+        # Cek apakah ada teks atau konten khusus
+        text = ''.join(t.text or '' for t in nxt.findall(f'.//{qn("w:t")}')).strip()
+        fld_chars  = nxt.findall(f'.//{qn("w:fldChar")}')
+        instr_texts = nxt.findall(f'.//{qn("w:instrText")}')
+        all_brs    = nxt.findall(f'.//{qn("w:br")}')
+        page_brs   = [b for b in all_brs if b.get(qn('w:type')) == 'page']
+        other_brs  = [b for b in all_brs if b.get(qn('w:type')) != 'page']
+        has_drawing = bool(nxt.findall(f'.//{qn("w:drawing")}') or nxt.findall(f'.//{qn("w:object")}'))
+
+        # Orphaned fldChar (sisa end/separate tanpa instrText dan tanpa teks) → hapus
+        if not text and fld_chars and not instr_texts and not all_brs and not has_drawing:
+            to_remove = nxt
+            nxt = nxt.getnext()
+            to_remove.getparent().remove(to_remove)
+            continue
+        # Paragraf kosong berisi hanya page break → redundant setelah pb kita, hapus
+        if not text and page_brs and not other_brs and not fld_chars and not has_drawing:
+            to_remove = nxt
+            nxt = nxt.getnext()
+            to_remove.getparent().remove(to_remove)
+            continue
+        if text or other_brs or has_drawing or (fld_chars and instr_texts):
+            break
+        to_remove = nxt
+        nxt = nxt.getnext()
+        to_remove.getparent().remove(to_remove)
+
+
 # ── Cari posisi DAFTAR ISI ────────────────────────────────────────────────────
 
 def find_daftar_isi_idx(doc):
@@ -1359,7 +1465,6 @@ def main():
 
     # ── Pra-proses struktur dokumen ──────────────────────────────────────────
     # Harus sebelum detect_headings agar hasil deteksi sudah bersih.
-    _fix_bab_line_breaks(doc)   # "BAB I\nPENDAHULUAN" → "BAB I PENDAHULUAN"
     _merge_bab_name_paras(doc)  # "BAB II" + "LANDASAN TEORI" → satu paragraf
 
     # ── Deteksi heading ──────────────────────────────────────────────────────
@@ -1374,13 +1479,31 @@ def main():
     # ── Demote semua Heading-styled paragraf yang tidak terdeteksi ────────────
     # Heading yang tidak lolos deteksi (body text salah format, metadata cover,
     # dll.) di-clone ke style non-Heading agar tidak masuk TOC field Word.
+    # Cek seluruh style chain — custom style basedOn Heading X juga harus demote.
     detected_idx = {idx for idx, _, _ in headings}
     for i, para in enumerate(doc.paragraphs):
         if i in detected_idx:
             continue
-        sname = para.style.name if para.style else ''
-        if sname.startswith('Heading ') or sname in _ALL_HEADING_STYLES:
+        style = para.style
+        is_heading_family = False
+        while style:
+            sname = style.name or ''
+            if sname.startswith('Heading ') or sname in _ALL_HEADING_STYLES:
+                is_heading_family = True
+                break
+            style = style.base_style
+        if is_heading_family:
             _demote_heading_to_normal(para, doc)
+
+    # ── Paksa outlineLvl=9 pada semua paragraf yang tidak terdeteksi ──────────
+    # Paragraf non-heading bisa punya outlineLvl < 9 dari style definition
+    # (bukan hanya dari paragraph pPr). TOC field \u membaca keduanya.
+    # _set_outline_excluded() selalu menyisipkan outlineLvl=9 ke paragraph pPr
+    # sehingga override style-level outlineLvl apapun nilainya.
+    for i, para in enumerate(doc.paragraphs):
+        if i in detected_idx:
+            continue
+        _set_outline_excluded(para)
 
     # ── Terapkan outline level pada heading terdeteksi ──────────────────────
     # Hanya set outlineLvl (metadata tak terlihat) — tidak ada perubahan visual
@@ -1397,11 +1520,8 @@ def main():
     # ── Sisipkan setelah "DAFTAR ISI" ────────────────────────────────────────
     daftar_idx = find_daftar_isi_idx(doc)
     if daftar_idx is not None:
-        # Hapus TOC field lama jika ada (cegah duplikasi saat dokumen di-proses ulang)
-        for _j in range(daftar_idx + 1, min(daftar_idx + 5, len(doc.paragraphs))):
-            if _has_toc_field(doc.paragraphs[_j]._p):
-                doc.paragraphs[_j]._p.getparent().remove(doc.paragraphs[_j]._p)
-                break
+        # Hapus seluruh TOC field lama (begin → end) jika ada
+        _remove_old_toc_block(doc, daftar_idx)
 
         import copy as _copy
         daftar_para = doc.paragraphs[daftar_idx]
@@ -1433,8 +1553,35 @@ def main():
             last_inserted.addnext(sect_para)
             last_inserted = sect_para
 
-        if had_pb:
-            last_inserted.addnext(_make_page_break_para())
+        # Cek apakah sudah ada section break (non-continuous) yang membuat halaman baru.
+        # Jika ya, skip page break agar tidak double.
+        def _sectPr_is_page_breaking(sp):
+            type_el = sp.find(qn('w:type'))
+            val = type_el.get(qn('w:val'), 'nextPage') if type_el is not None else 'nextPage'
+            return val not in ('continuous',)
+
+        _needs_pb = True
+        if saved_sectPr is not None and _sectPr_is_page_breaking(saved_sectPr):
+            _needs_pb = False
+        if _needs_pb:
+            nxt = last_inserted.getnext()
+            while nxt is not None and nxt.tag.endswith('}p'):
+                pPr = nxt.find(qn('w:pPr'))
+                if pPr is not None:
+                    sp = pPr.find(qn('w:sectPr'))
+                    if sp is not None:
+                        if _sectPr_is_page_breaking(sp):
+                            _needs_pb = False
+                        break
+                text = ''.join(t.text or '' for t in nxt.findall(f'.//{qn("w:t")}')).strip()
+                if text:
+                    break
+                nxt = nxt.getnext()
+
+        if _needs_pb:
+            pb = _make_page_break_para()
+            last_inserted.addnext(pb)
+            _remove_trailing_empty_paras(pb)
 
         insert_pos_desc = f'setelah paragraf "DAFTAR ISI" (index {daftar_idx})'
     else:
