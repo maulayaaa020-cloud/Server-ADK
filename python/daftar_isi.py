@@ -425,44 +425,91 @@ def _set_outline_excluded(para):
     ol.set(qn('w:val'), '9')
 
 
-def _demote_heading_to_normal(para, doc):
+def _get_or_create_cover_style(doc, orig_style_name):
     """
-    Ganti style Heading ke Normal agar paragraf tidak masuk TOC field.
-    outlineLvl=9 saja tidak cukup — Word tetap ikutkan paragraf ber-Heading
-    style ke TOC berdasarkan style definition, mengabaikan override outlineLvl.
-
-    Preserve bold dari Heading style sebagai direct run formatting agar
-    tampilan visual tetap konsisten.
+    Buat clone style dari orig_style_name dengan formatting identik,
+    tapi tanpa outline level sehingga tidak masuk TOC field.
+    Clone disimpan dengan nama '_Cover_<OrigStyleId>'.
     """
-    # Baca bold efektif dari rantai style
-    eff_bold = None
-    s = para.style
-    while s:
-        rPr_el = s.element.find(qn('w:rPr'))
-        if rPr_el is not None and eff_bold is None:
-            b = rPr_el.find(qn('w:b'))
-            if b is not None:
-                eff_bold = b.get(qn('w:val'), '1') not in ('0', 'false')
-        s = s.base_style
+    import copy as _cp
 
-    # Apply bold langsung ke tiap run yang belum punya bold override
-    if eff_bold:
-        for r_el in para._p.findall(qn('w:r')):
-            rPr = r_el.find(qn('w:rPr'))
-            if rPr is None:
-                rPr = OxmlElement('w:rPr')
-                r_el.insert(0, rPr)
-            if rPr.find(qn('w:b')) is None:
-                rPr.append(OxmlElement('w:b'))
-                rPr.append(OxmlElement('w:bCs'))
-
-    # Ganti ke Normal — ini yang benar-benar mengeluarkan dari TOC
     try:
-        para.style = doc.styles['Normal']
-    except (KeyError, Exception):
+        orig_style = doc.styles[orig_style_name]
+    except KeyError:
+        return None
+
+    orig_id   = orig_style.element.get(qn('w:styleId'), orig_style_name.replace(' ', ''))
+    clone_id  = f'_Cover_{orig_id}'
+    clone_name = f'_Cover_{orig_style_name}'
+
+    # Sudah ada dari panggilan sebelumnya?
+    try:
+        return doc.styles[clone_name]
+    except KeyError:
         pass
 
-    # outlineLvl=9 sebagai safety net tambahan
+    # Deep-copy elemen XML style asli
+    clone_el = _cp.deepcopy(orig_style.element)
+
+    # Ganti styleId
+    clone_el.set(qn('w:styleId'), clone_id)
+
+    # Ganti w:name
+    name_el = clone_el.find(qn('w:name'))
+    if name_el is not None:
+        name_el.set(qn('w:val'), clone_name)
+    else:
+        n = OxmlElement('w:name')
+        n.set(qn('w:val'), clone_name)
+        clone_el.insert(0, n)
+
+    # basedOn → Normal (hindari warisan outlineLvl dari Heading)
+    based_el = clone_el.find(qn('w:basedOn'))
+    if based_el is not None:
+        based_el.set(qn('w:val'), 'Normal')
+
+    # Hapus referensi 'next style' dan gallery flags
+    for tag in (qn('w:next'), qn('w:qFormat'), qn('w:semiHidden'), qn('w:unhideWhenUsed')):
+        el = clone_el.find(tag)
+        if el is not None:
+            clone_el.remove(el)
+
+    # Pastikan outlineLvl=9 di pPr clone → tidak masuk TOC via \u
+    pPr = clone_el.find(qn('w:pPr'))
+    if pPr is None:
+        pPr = OxmlElement('w:pPr')
+        clone_el.append(pPr)
+    ol = pPr.find(qn('w:outlineLvl'))
+    if ol is not None:
+        pPr.remove(ol)
+    ol = OxmlElement('w:outlineLvl')
+    ol.set(qn('w:val'), '9')
+    pPr.append(ol)
+
+    # Sisipkan ke styles root dokumen
+    doc.styles.element.append(clone_el)
+
+    try:
+        return doc.styles[clone_name]
+    except KeyError:
+        return None
+
+
+def _demote_heading_to_normal(para, doc):
+    """
+    Ganti style Heading ke clone style yang identik secara visual tapi
+    tidak punya outline level — sehingga tidak masuk TOC field Word.
+    outlineLvl=9 saja tidak cukup karena Word scan berdasarkan style definition.
+    """
+    orig_style_name = para.style.name if para.style else ''
+
+    clone_style = _get_or_create_cover_style(doc, orig_style_name)
+    if clone_style is not None:
+        para.style = clone_style
+    else:
+        # Fallback: set outlineLvl=9 saja
+        pass
+
     _set_outline_excluded(para)
 
 
@@ -879,6 +926,10 @@ def _ensure_toc_style(doc, level, use_dots, font='Times New Roman', size_pt=12, 
         pf = style.paragraph_format
         pf.space_after  = Pt(0)
         pf.line_spacing = line_spacing
+
+        # Justify: rata kanan-kiri sesuai standar dokumen akademik Indonesia
+        from docx.enum.text import WD_ALIGN_PARAGRAPH
+        pf.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
 
         # Indentasi per level
         # TOC1: left=0
