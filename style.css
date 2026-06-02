@@ -751,7 +751,7 @@ html[data-theme="light"] .dropdown-divider { background: rgba(21,101,192,0.12); 
 
 /* ===================== HERO KIRI — update ===================== */
 .hero-left h1 {
-    font-size: 46px;
+    font-size: 56px;
     font-weight: 800;
     line-height: 1.2;
     margin: 0 0 18px;
@@ -762,7 +762,7 @@ html[data-theme="light"] .dropdown-divider { background: rgba(21,101,192,0.12); 
     color: #94a3b8;
     margin: 0 0 30px;
     line-height: 1.75;
-    font-size: 16px;
+    font-size: 18px;
 }
 
 /* ===================== SAAT GAMBAR KEBAWAH (wrap terjadi) ===================== */
@@ -995,7 +995,7 @@ html[data-theme="light"] .dropdown-divider { background: rgba(21,101,192,0.12); 
     }
 
     .hero-left h1 {
-        font-size: 32px;
+        font-size: 40px;
     }
 }
 
@@ -1008,7 +1008,7 @@ html[data-theme="light"] .dropdown-divider { background: rgba(21,101,192,0.12); 
     }
 
     .hero-left h1 {
-        font-size: 26px;
+        font-size: 32px;
     }
 
     .stats-row {
@@ -1285,16 +1285,16 @@ html[data-theme="light"] .dropdown-divider { background: rgba(21,101,192,0.12); 
 }
 
 .layanan-title {
-    font-size: 1.25rem;
+    font-size: 1.6rem;
     font-weight: 800;
     color: #e2e8f0;
-    margin: 0 0 4px;
+    margin: 0 0 6px;
 }
 
 .layanan-title span { color: #29B6F6; }
 
 .layanan-subtitle {
-    font-size: 0.92rem;
+    font-size: 1.05rem;
     color: #64748b;
     margin: 0;
 }
@@ -1416,7 +1416,7 @@ html[data-theme="light"] .dropdown-divider { background: rgba(21,101,192,0.12); 
 /* --- Selected label --- */
 .lay-selected-name {
     text-align: center;
-    font-size: 1rem;
+    font-size: 1.3rem;
     font-weight: 700;
     color: #29B6F6;
     margin: 12px 0 14px;
@@ -1461,7 +1461,7 @@ html[data-theme="light"] .dropdown-divider { background: rgba(21,101,192,0.12); 
 }
 
 .lay-detail-desc {
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     color: #94a3b8;
     line-height: 1.7;
     margin: 0;
@@ -1480,7 +1480,7 @@ html[data-theme="light"] .dropdown-divider { background: rgba(21,101,192,0.12); 
     display: flex;
     align-items: center;
     gap: 8px;
-    font-size: 1.3rem;
+    font-size: 1.1rem;
     color: #e2e8f0;
     font-weight: 600;
 }
@@ -1506,7 +1506,7 @@ html[data-theme="light"] .dropdown-divider { background: rgba(21,101,192,0.12); 
 
 /* --- Admin contact --- */
 .lay-admin-text {
-    font-size: 1.05rem;
+    font-size: 1.1rem;
     color: #64748b;
     margin: 0;
 }
@@ -1592,7 +1592,7 @@ html[data-theme="light"] .dropdown-divider { background: rgba(21,101,192,0.12); 
 
 /* --- Privacy note --- */
 .lay-privacy {
-    font-size: 1rem;
+    font-size: 1.1rem;
     color: #475569;
     line-height: 1.6;
     margin: 0;
@@ -1604,14 +1604,14 @@ html[data-theme="light"] .dropdown-divider { background: rgba(21,101,192,0.12); 
     .lay-detail-inner { flex-direction: column; gap: 16px; }
     .lay-detail-right { width: 100%; }
     .lay-steps { flex-wrap: nowrap; gap: 6px; margin: 20px 0; overflow-x: auto; padding-bottom: 4px; }
-    .lay-step { gap: 6px; font-size: 1rem; white-space: nowrap; }
+    .lay-step { gap: 6px; font-size: 1.05rem; white-space: nowrap; }
     .lay-step-num { width: 28px; height: 28px; font-size: 13px; flex-shrink: 0; }
-    .lay-step-arrow { font-size: 1rem; }
+    .lay-step-arrow { font-size: 1.05rem; }
     .lay-img-wrap { display: none; }
     .lay-detail-title { font-size: 1.5rem; }
     .lay-detail-desc { font-size: 1.05rem; }
-    .lay-admin-text { font-size: 0.98rem; }
-    .lay-privacy { font-size: 0.95rem; }
+    .lay-admin-text { font-size: 1.05rem; }
+    .lay-privacy { font-size: 1.05rem; }
     .layanan-section { padding: 0 16px 40px; }
 }
 
