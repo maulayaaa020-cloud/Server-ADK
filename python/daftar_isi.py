@@ -425,6 +425,47 @@ def _set_outline_excluded(para):
     ol.set(qn('w:val'), '9')
 
 
+def _demote_heading_to_normal(para, doc):
+    """
+    Ganti style Heading ke Normal agar paragraf tidak masuk TOC field.
+    outlineLvl=9 saja tidak cukup — Word tetap ikutkan paragraf ber-Heading
+    style ke TOC berdasarkan style definition, mengabaikan override outlineLvl.
+
+    Preserve bold dari Heading style sebagai direct run formatting agar
+    tampilan visual tetap konsisten.
+    """
+    # Baca bold efektif dari rantai style
+    eff_bold = None
+    s = para.style
+    while s:
+        rPr_el = s.element.find(qn('w:rPr'))
+        if rPr_el is not None and eff_bold is None:
+            b = rPr_el.find(qn('w:b'))
+            if b is not None:
+                eff_bold = b.get(qn('w:val'), '1') not in ('0', 'false')
+        s = s.base_style
+
+    # Apply bold langsung ke tiap run yang belum punya bold override
+    if eff_bold:
+        for r_el in para._p.findall(qn('w:r')):
+            rPr = r_el.find(qn('w:rPr'))
+            if rPr is None:
+                rPr = OxmlElement('w:rPr')
+                r_el.insert(0, rPr)
+            if rPr.find(qn('w:b')) is None:
+                rPr.append(OxmlElement('w:b'))
+                rPr.append(OxmlElement('w:bCs'))
+
+    # Ganti ke Normal — ini yang benar-benar mengeluarkan dari TOC
+    try:
+        para.style = doc.styles['Normal']
+    except (KeyError, Exception):
+        pass
+
+    # outlineLvl=9 sebagai safety net tambahan
+    _set_outline_excluded(para)
+
+
 def _find_first_bab_idx(paras):
     """Kembalikan index paragraf BAB pertama, atau None."""
     for i, p in enumerate(paras):
@@ -461,7 +502,7 @@ def _exclude_prefab_headings(doc):
                 continue
             style_name = para.style.name if para.style else ''
             if style_name.startswith('Heading ') or style_name in _ALL_HEADING_STYLES:
-                _set_outline_excluded(para)
+                _demote_heading_to_normal(para, doc)
         return
 
     for i in range(first_bab):
@@ -479,8 +520,8 @@ def _exclude_prefab_headings(doc):
         # Pertahankan judul section yang valid (KATA PENGANTAR, ABSTRAK, dll.)
         if _FRONT_MATTER_RE.match(text):
             continue
-        # Semua heading lain sebelum BAB I → exclude dari TOC
-        _set_outline_excluded(para)
+        # Semua heading lain sebelum BAB I → ganti ke Normal (exclude dari TOC)
+        _demote_heading_to_normal(para, doc)
 
 
 # ── Bold normalization untuk heading ─────────────────────────────────────────
@@ -975,7 +1016,7 @@ def _make_toc_field_para(max_level):
     r_instr = OxmlElement('w:r')
     instr = OxmlElement('w:instrText')
     instr.set('{http://www.w3.org/XML/1998/namespace}space', 'preserve')
-    instr.text = f' TOC \\o "1-{max_level}" \\z \\u '
+    instr.text = f' TOC \\z \\u '
     r_instr.append(instr)
     p.append(r_instr)
 
@@ -1309,11 +1350,10 @@ def main():
                 pass  # style H2/H3 tidak ada di dokumen ini
 
     # ── Terapkan outline level agar TOC field bisa mendeteksi semua heading ──
+    # Apply outlineLvl ke SEMUA heading (termasuk Heading-style) agar \u bisa mendeteksi
+    # dan outlineLvl=9 pada excluded headings benar-benar dikecualikan dari TOC field.
     for idx, lvl, _txt in headings:
-        para = doc.paragraphs[idx]
-        style_name = para.style.name if para.style else ''
-        if not style_name.startswith('Heading '):
-            apply_outline_level(para, lvl)
+        apply_outline_level(doc.paragraphs[idx], lvl)
 
     # ── Normalisasi list heading ke typed agar TOC rata di file campuran ────
     _normalize_list_headings(doc, headings)
