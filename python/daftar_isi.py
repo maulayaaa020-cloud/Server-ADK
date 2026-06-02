@@ -1090,7 +1090,7 @@ def _make_toc_field_para(max_level):
     r_instr = OxmlElement('w:r')
     instr = OxmlElement('w:instrText')
     instr.set('{http://www.w3.org/XML/1998/namespace}space', 'preserve')
-    instr.text = f' TOC \\z \\u '
+    instr.text = f' TOC \\h \\z \\u '
     r_instr.append(instr)
     p.append(r_instr)
 
