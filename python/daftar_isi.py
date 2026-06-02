@@ -153,6 +153,7 @@ _FRONT_MATTER_RE = re.compile(
     r'JUDUL|COVER|ORISINALITAS)|'
     r'PERNYATAAN\s+(KEASLIAN|ORISINALITAS)|'
     r'MOTTO|PERSEMBAHAN|REFERENCES?|BIBLIOGRAPHY|DAFTAR\s+PUSTAKA|'
+    r'LAMPIRAN|APPENDIX|APPENDICES|'
     r'HALAMAN\s+PERSETUJUAN\s+PEMBIMBING|HALAMAN\s+PERNYATAAN\s+KEASLIAN)$',
     re.IGNORECASE
 )
@@ -187,44 +188,24 @@ def get_para_level(para):
       2. Pola numbering: 1.1.1→H3 | 1.1→H2 | 1.→H1
          (termasuk variasi spasi: "3. 10 Judul" → di-normalize dulu)
       3. Pola huruf: A.1→H3 | I.A→H2 | A.→H2
-      4. Word numbering (numPr ilvl 1-2) → H2/H3
-         (hanya jika style juga merupakan style heading, bukan List Paragraph)
-      5. outlineLvl dari XML paragraf
-      5b. outlineLvl dari definisi style (naik ke parent) — tangani style kustom H1/H2/H3
-      6. Front matter keyword → H1
-      7. Heading style standar Word — hanya untuk teks pendek (≤80 char)
+      4. Front matter keyword (KATA PENGANTAR, ABSTRAK, DAFTAR ISI, dst.) → H1
 
-    TIDAK dideteksi:
-      - Teks panjang (> 150 char) → selalu diabaikan
-      - Font size / style name kustom / ALL CAPS tanpa pola → dihapus
-        (terlalu banyak false positive dari judul cover dan paragraf body)
+    Sengaja TIDAK mendeteksi berdasarkan Heading style, outlineLvl, atau numPr —
+    terlalu banyak false positive dari body text yang salah format.
+    Semua heading ber-Heading style yang tidak terdeteksi di sini akan di-exclude
+    dari TOC oleh _demote_undetected_headings() di main().
     """
-    # Paragraf yang sudah diberi outlineLvl=9 (dikecualikan secara eksplisit)
-    _pPr_check = para._p.find(qn('w:pPr'))
-    if _pPr_check is not None:
-        _ol_check = _pPr_check.find(qn('w:outlineLvl'))
-        if _ol_check is not None and _ol_check.get(qn('w:val')) == '9':
-            return None
-
     text = para.text.strip()
     if not text or len(text) > 150:
         return None
 
-    # Kecualikan label metadata cover (Dosen Pengampu:, Mata Kuliah:, dst.)
-    if _META_LABEL_RE.match(text):
-        return None
-
-    # Normalisasi penomoran dengan spasi ekstra setelah titik:
-    # "3. 10 Judul" → "3.10 Judul", "1. 4 Judul" → "1.4 Judul"
-    # Ini menangani kasus user mengetik nomor dengan spasi sebelum angka sub.
     text_norm = re.sub(r'^(\d+)\.\s+(\d)', r'\1.\2', text)
 
     # 1. Pola BAB → H1
     if re.match(r'^\s*BAB\s+[IVXivx\d]+\b', text, re.IGNORECASE):
         return 1
 
-    # 2. Pola numbering bertitik (wajib titik agar tidak false-positive)
-    #    Gunakan text_norm agar "3. 10 Judul" → "3.10" terdeteksi sebagai H2
+    # 2. Pola numbering bertitik
     if re.match(r'^\d+\.\d+\.\d+\.?\s+\S', text_norm):
         return 3
     if re.match(r'^\d+\.\d+\.?\s+\S', text_norm):
@@ -233,53 +214,16 @@ def get_para_level(para):
         return 1
 
     # 3. Pola huruf dan kombinasi
-    if re.match(r'^[A-Z]\.\d+\.?\s+\S', text):     # A.1 / B.2 → H3
+    if re.match(r'^[A-Z]\.\d+\.?\s+\S', text):
         return 3
-    if re.match(r'^[IVX]+\.[A-Z]\.?\s+\S', text):   # I.A / II.B → H2
+    if re.match(r'^[IVX]+\.[A-Z]\.?\s+\S', text):
         return 2
-    if re.match(r'^[A-Z]\.\s+\S', text):             # A. / B. → H2
+    if re.match(r'^[A-Z]\.\s+\S', text):
         return 2
 
-    # 4. Word multilevel numbering (numPr) ilvl 1→H2, 2→H3
-    #    Hanya berlaku jika style paragraf juga merupakan style heading,
-    #    bukan 'List Paragraph' / 'List Bullet' / 'List Number' (list biasa).
-    _LIST_STYLES = {'List Paragraph', 'List Bullet', 'List Number',
-                    'List Bullet 2', 'List Bullet 3',
-                    'List Number 2', 'List Number 3'}
-    num_lvl    = _get_num_level(para)
-    style_name = para.style.name if para.style else ''
-    if num_lvl is not None and 1 <= num_lvl <= 2:
-        if style_name not in _LIST_STYLES and len(text) <= 80:
-            return num_lvl + 1
-
-    # 5. outlineLvl dari XML paragraf
-    lvl = _get_outline_level_from_xml(para)
-    if lvl is not None:
-        return lvl
-
-    # 5b. outlineLvl dari definisi style (naik ke parent style).
-    #     Menangani style kustom seperti 'H1', 'H2', 'H3' yang tidak punya
-    #     outlineLvl di paragraf tetapi punya di definisi style-nya.
-    #     Batasi 80 char — paragraf panjang dengan Heading style kemungkinan
-    #     body text yang salah format (contoh: deskripsi bullet di-style Heading 2).
-    if len(text) <= 80:
-        lvl = _get_outline_level_from_style(para)
-        if lvl is not None:
-            return lvl
-
-    # 6. Front matter keyword (KATA PENGANTAR, ABSTRAK, DAFTAR ISI, dst.)
+    # 4. Front matter keyword (KATA PENGANTAR, ABSTRAK, DAFTAR ISI, dll.)
     if _FRONT_MATTER_RE.match(text):
         return 1
-
-    # 7. Heading style standar Word — HANYA teks pendek
-    #    Paragraf panjang ber-Heading (kecelakaan formatting) diabaikan.
-    #    Cover / judul skripsi biasanya pakai style Normal, bukan Heading → aman.
-    if len(text) <= 80:
-        if style_name.startswith('Heading '):
-            try:
-                return int(style_name.split()[-1])
-            except ValueError:
-                pass
 
     return None
 
@@ -347,8 +291,10 @@ def detect_headings(doc, max_level):
         if lvl is None or lvl > max_level:
             continue
 
-        # Zona sebelum BAB I: hanya judul section resmi yang lolos sebagai H1
-        if first_bab is not None and i < first_bab and lvl == 1:
+        # Zona sebelum BAB I: HANYA keyword front-matter yang lolos (apapun levelnya).
+        # Pola angka/huruf di cover atau front-matter zone diabaikan sepenuhnya —
+        # mencegah "1. Tujuan", "A. Pendahuluan" di halaman cover masuk TOC.
+        if first_bab is not None and i < first_bab:
             if not _FRONT_MATTER_RE.match(text):
                 continue
         # Jika H1 hanya berisi "BAB X" tanpa nama bab (dua paragraf terpisah),
@@ -1368,9 +1314,8 @@ def main():
 
     # ── Pra-proses struktur dokumen ──────────────────────────────────────────
     # Harus sebelum detect_headings agar hasil deteksi sudah bersih.
-    _fix_bab_line_breaks(doc)       # "BAB I\nPENDAHULUAN" → "BAB I PENDAHULUAN"
-    _merge_bab_name_paras(doc)      # "BAB II" + "LANDASAN TEORI" → satu paragraf
-    _exclude_prefab_headings(doc)   # zona pre-BAB: semua heading non-section → outlineLvl=9
+    _fix_bab_line_breaks(doc)   # "BAB I\nPENDAHULUAN" → "BAB I PENDAHULUAN"
+    _merge_bab_name_paras(doc)  # "BAB II" + "LANDASAN TEORI" → satu paragraf
 
     # ── Deteksi heading ──────────────────────────────────────────────────────
     headings = detect_headings(doc, max_level)
@@ -1378,8 +1323,19 @@ def main():
     if not headings:
         _fail("NO_HEADINGS_FOUND",
               "Tidak ditemukan heading di dokumen. Pastikan dokumen menggunakan "
-              "style Heading 1/2/3 dari Word, atau teks dengan pola penomoran "
-              "seperti '1.', '1.1', 'BAB I', atau teks ALL CAPS + bold.")
+              "pola penomoran seperti 'BAB I', '1.', '1.1', atau judul front matter "
+              "seperti 'KATA PENGANTAR', 'DAFTAR ISI'.")
+
+    # ── Demote semua Heading-styled paragraf yang tidak terdeteksi ────────────
+    # Heading yang tidak lolos deteksi (body text salah format, metadata cover,
+    # dll.) di-clone ke style non-Heading agar tidak masuk TOC field Word.
+    detected_idx = {idx for idx, _, _ in headings}
+    for i, para in enumerate(doc.paragraphs):
+        if i in detected_idx:
+            continue
+        sname = para.style.name if para.style else ''
+        if sname.startswith('Heading ') or sname in _ALL_HEADING_STYLES:
+            _demote_heading_to_normal(para, doc)
 
     # ── Terapkan outline level pada heading terdeteksi ──────────────────────
     # Hanya set outlineLvl (metadata tak terlihat) — tidak ada perubahan visual
