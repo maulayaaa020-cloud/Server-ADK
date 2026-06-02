@@ -17,6 +17,7 @@ from docx import Document
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 from docx.shared import Pt, Cm
+from utils import is_toc_entry, _has_toc_field, _fuzzy_match as _fuzzy_str
 
 
 # ── Konstanta ─────────────────────────────────────────────────────────────────
@@ -329,13 +330,24 @@ def detect_headings(doc, max_level):
     paras      = doc.paragraphs
     results    = []
     merged_idx = set()  # indeks paragraf yang sudah digabung ke BAB sebelumnya
+
+    # Pre-scan: cari BAB I untuk zone-based filtering
+    first_bab = _find_first_bab_idx(paras)
+
     for i, para in enumerate(paras):
         if i in merged_idx:
+            continue
+        text = para.text.strip()
+        if is_toc_entry(text):
             continue
         lvl = get_para_level(para)
         if lvl is None or lvl > max_level:
             continue
-        text = para.text.strip()
+
+        # Zona sebelum BAB I: hanya judul section resmi yang lolos sebagai H1
+        if first_bab is not None and i < first_bab and lvl == 1:
+            if not _FRONT_MATTER_RE.match(text):
+                continue
         # Jika H1 hanya berisi "BAB X" tanpa nama bab (dua paragraf terpisah),
         # gabungkan dengan paragraf ALL CAPS berikutnya sebagai nama bab,
         # lalu tandai paragraf tersebut agar tidak dideteksi ulang.
@@ -400,27 +412,75 @@ def _merge_bab_name_paras(doc):
             break
 
 
-def _exclude_metadata_headings(doc):
+def _set_outline_excluded(para):
+    """Set outlineLvl=9 pada paragraf agar tidak masuk TOC field Word."""
+    pPr = para._p.find(qn('w:pPr'))
+    if pPr is None:
+        pPr = OxmlElement('w:pPr')
+        para._p.insert(0, pPr)
+    ol = pPr.find(qn('w:outlineLvl'))
+    if ol is None:
+        ol = OxmlElement('w:outlineLvl')
+        pPr.append(ol)
+    ol.set(qn('w:val'), '9')
+
+
+def _find_first_bab_idx(paras):
+    """Kembalikan index paragraf BAB pertama, atau None."""
+    for i, p in enumerate(paras):
+        if re.match(r'^\s*BAB\s+[IVXivx\d]+\b', p.text.strip(), re.IGNORECASE):
+            return i
+    return None
+
+
+_ALL_HEADING_STYLES = (
+    _CUSTOM_H1_STYLES | _CUSTOM_H2_STYLES | _CUSTOM_H3_STYLES
+)
+
+
+def _exclude_prefab_headings(doc):
     """
-    Set outlineLvl=9 pada paragraf metadata (cover) ber-Heading style agar
-    tidak masuk TOC field saat Word update.
+    Sebelum BAB I: semua paragraf ber-Heading style yang BUKAN judul section
+    yang dikenal (KATA PENGANTAR, ABSTRAK, DAFTAR ISI, dll.) dikecualikan dari
+    TOC field dengan outlineLvl=9.
+
+    Logika: zona cover/front-matter hanya boleh berisi judul halaman resmi,
+    bukan label metadata (Dosen Pengampu, NIM, Program Studi, dll.) — apapun
+    style yang dipakai penulis.
+
+    Fallback jika tidak ada BAB: gunakan _META_LABEL_RE (perilaku lama).
     """
-    for para in doc.paragraphs:
-        text = para.text.strip()
-        if not text or not _META_LABEL_RE.match(text):
-            continue
+    paras = doc.paragraphs
+    first_bab = _find_first_bab_idx(paras)
+
+    if first_bab is None:
+        # Dokumen tanpa BAB — fallback ke blacklist metadata label
+        for para in paras:
+            text = para.text.strip()
+            if not text or not _META_LABEL_RE.match(text):
+                continue
+            style_name = para.style.name if para.style else ''
+            if style_name.startswith('Heading ') or style_name in _ALL_HEADING_STYLES:
+                _set_outline_excluded(para)
+        return
+
+    for i in range(first_bab):
+        para = paras[i]
         style_name = para.style.name if para.style else ''
-        if not style_name.startswith('Heading '):
+        is_heading = (
+            style_name.startswith('Heading ')
+            or style_name in _ALL_HEADING_STYLES
+        )
+        if not is_heading:
             continue
-        pPr = para._p.find(qn('w:pPr'))
-        if pPr is None:
-            pPr = OxmlElement('w:pPr')
-            para._p.insert(0, pPr)
-        ol = pPr.find(qn('w:outlineLvl'))
-        if ol is None:
-            ol = OxmlElement('w:outlineLvl')
-            pPr.append(ol)
-        ol.set(qn('w:val'), '9')
+        text = para.text.strip()
+        if not text:
+            continue
+        # Pertahankan judul section yang valid (KATA PENGANTAR, ABSTRAK, dll.)
+        if _FRONT_MATTER_RE.match(text):
+            continue
+        # Semua heading lain sebelum BAB I → exclude dari TOC
+        _set_outline_excluded(para)
 
 
 # ── Bold normalization untuk heading ─────────────────────────────────────────
@@ -1116,9 +1176,13 @@ def _make_page_break_para():
 # ── Cari posisi DAFTAR ISI ────────────────────────────────────────────────────
 
 def find_daftar_isi_idx(doc):
-    """Kembalikan index paragraf 'DAFTAR ISI', atau None jika tidak ada."""
+    """Kembalikan index paragraf 'DAFTAR ISI', atau None jika tidak ada.
+    Coba exact match dulu, fallback ke fuzzy untuk toleransi typo."""
     for i, para in enumerate(doc.paragraphs):
-        if re.match(r'^\s*daftar\s+isi\s*$', para.text.strip(), re.IGNORECASE):
+        text = para.text.strip()
+        if re.match(r'^\s*daftar\s+isi\s*$', text, re.IGNORECASE):
+            return i
+        if len(text) >= 4 and _fuzzy_str(text.lower(), 'daftar isi', threshold=0.85):
             return i
     return None
 
@@ -1188,7 +1252,7 @@ def main():
     # Harus sebelum detect_headings agar hasil deteksi sudah bersih.
     _fix_bab_line_breaks(doc)       # "BAB I\nPENDAHULUAN" → "BAB I PENDAHULUAN"
     _merge_bab_name_paras(doc)      # "BAB II" + "LANDASAN TEORI" → satu paragraf
-    _exclude_metadata_headings(doc) # "Dosen Pengampu:" → outlineLvl=9
+    _exclude_prefab_headings(doc)   # zona pre-BAB: semua heading non-section → outlineLvl=9
 
     # ── Deteksi heading ──────────────────────────────────────────────────────
     headings = detect_headings(doc, max_level)
@@ -1267,6 +1331,12 @@ def main():
     # ── Sisipkan setelah "DAFTAR ISI" ────────────────────────────────────────
     daftar_idx = find_daftar_isi_idx(doc)
     if daftar_idx is not None:
+        # Hapus TOC field lama jika ada (cegah duplikasi saat dokumen di-proses ulang)
+        for _j in range(daftar_idx + 1, min(daftar_idx + 5, len(doc.paragraphs))):
+            if _has_toc_field(doc.paragraphs[_j]._p):
+                doc.paragraphs[_j]._p.getparent().remove(doc.paragraphs[_j]._p)
+                break
+
         import copy as _copy
         daftar_para = doc.paragraphs[daftar_idx]
         had_pb = _has_inline_page_break(daftar_para)
