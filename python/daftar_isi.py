@@ -272,14 +272,27 @@ def _dedup_bab_clusters(results, max_gap=10):
     return [entry for i, entry in enumerate(results) if i not in to_remove]
 
 
+_ALPHA_H2_RE = re.compile(r'^[A-Z]\.\s+\S')  # A. Judul → H2 (model alfabet)
+_SINGLE_DIG_RE = re.compile(r'^\d+\.\s+\S')  # 1. Judul → H1 (numeric) atau H3 (alpha)
+
+
 def detect_headings(doc, max_level):
-    """Kembalikan list of (para_index, level, text) untuk semua heading ≤ max_level."""
+    """
+    Kembalikan list of (para_index, level, text) untuk semua heading ≤ max_level.
+
+    Mendukung dua model penomoran:
+      Model 1 (numerik) : 1.1 → H2 | 1.1.1 → H3
+      Model 2 (alfabet) : A. → H2 | 1. → H3 | B. → H2 | 1. → H3
+
+    Context tracker: setelah A./B./C. terdeteksi sebagai H2, angka 1./2. berikutnya
+    diperlakukan sebagai H3 (bukan H1). BAB baru atau H1 lain mereset konteks.
+    """
     paras      = doc.paragraphs
     results    = []
-    merged_idx = set()  # indeks paragraf yang sudah digabung ke BAB sebelumnya
+    merged_idx = set()
 
-    # Pre-scan: cari BAB I untuk zone-based filtering
-    first_bab = _find_first_bab_idx(paras)
+    first_bab       = _find_first_bab_idx(paras)
+    in_alpha_ctx    = False  # True setelah A./B./C. terdeteksi
 
     for i, para in enumerate(paras):
         if i in merged_idx:
@@ -287,19 +300,31 @@ def detect_headings(doc, max_level):
         text = para.text.strip()
         if is_toc_entry(text):
             continue
+
         lvl = get_para_level(para)
-        if lvl is None or lvl > max_level:
+        if lvl is None:
             continue
 
-        # Zona sebelum BAB I: HANYA keyword front-matter yang lolos (apapun levelnya).
-        # Pola angka/huruf di cover atau front-matter zone diabaikan sepenuhnya —
-        # mencegah "1. Tujuan", "A. Pendahuluan" di halaman cover masuk TOC.
+        # Zona sebelum BAB I: HANYA keyword front-matter yang lolos.
         if first_bab is not None and i < first_bab:
             if not _FRONT_MATTER_RE.match(text):
                 continue
-        # Jika H1 hanya berisi "BAB X" tanpa nama bab (dua paragraf terpisah),
-        # gabungkan dengan paragraf ALL CAPS berikutnya sebagai nama bab,
-        # lalu tandai paragraf tersebut agar tidak dideteksi ulang.
+
+        # ── Context tracker untuk model alfabet ─────────────────────────────
+        # Setelah A./B./C. (H2 alfabet), angka 1./2. diperlakukan sebagai H3.
+        if lvl == 2 and _ALPHA_H2_RE.match(text):
+            in_alpha_ctx = True          # masuk konteks alfabet
+        elif lvl == 1:
+            in_alpha_ctx = False         # BAB baru / H1 reset konteks
+
+        # Dalam konteks alfabet: 1./2. adalah H3, bukan H1
+        if in_alpha_ctx and lvl == 1 and _SINGLE_DIG_RE.match(text):
+            lvl = 3
+
+        if lvl > max_level:
+            continue
+
+        # BAB X tanpa nama → gabung dengan paragraf ALL CAPS berikutnya
         if lvl == 1 and re.match(r'^\s*BAB\s+[IVXivx\d]+\s*$', text, re.IGNORECASE):
             for j in range(i + 1, min(i + 3, len(paras))):
                 nt = paras[j].text.strip()
@@ -307,6 +332,7 @@ def detect_headings(doc, max_level):
                     text = text + ' ' + nt
                     merged_idx.add(j)
                     break
+
         results.append((i, lvl, text))
 
     results = _dedup_bab_clusters(results)
