@@ -398,17 +398,10 @@ def _merge_bab_name_paras(doc):
             if not nt or nt != nt.upper() or len(nt) <= 3:
                 continue
             # Tambah nama ke paragraf BAB
-            run = para.add_run(' ' + nt)
-            # Set outlineLvl=9 pada paragraf nama agar tidak masuk TOC field
-            name_pPr = paras[j]._p.find(qn('w:pPr'))
-            if name_pPr is None:
-                name_pPr = OxmlElement('w:pPr')
-                paras[j]._p.insert(0, name_pPr)
-            ol = name_pPr.find(qn('w:outlineLvl'))
-            if ol is None:
-                ol = OxmlElement('w:outlineLvl')
-                name_pPr.append(ol)
-            ol.set(qn('w:val'), '9')
+            para.add_run(' ' + nt)
+            # Clone style pada paragraf nama agar tidak masuk TOC field
+            # (outlineLvl=9 saja tidak cukup jika masih ber-Heading style)
+            _demote_heading_to_normal(paras[j], doc)
             break
 
 
@@ -887,6 +880,38 @@ def _fix_heading_char_styles(doc, font, size_pt):
         )
 
 
+def _get_text_width_twips(doc):
+    """
+    Baca lebar area teks (page_width - left_margin - right_margin) dalam twips
+    langsung dari XML sectPr — lebih robust dari python-docx Section API yang
+    bisa return None untuk dokumen dengan margin non-standar.
+    Fallback: 8505 twips (~15cm, A4 dengan margin 3cm kiri-kanan).
+    """
+    try:
+        body = doc.element.body
+        # sectPr bisa di body langsung atau di paragraf terakhir
+        sect = body.find(qn('w:sectPr'))
+        if sect is None:
+            for child in reversed(list(body)):
+                pPr = child.find(qn('w:pPr'))
+                if pPr is not None:
+                    sect = pPr.find(qn('w:sectPr'))
+                    if sect is not None:
+                        break
+        if sect is None:
+            return 8505
+        pgSz  = sect.find(qn('w:pgSz'))
+        pgMar = sect.find(qn('w:pgMar'))
+        if pgSz is None or pgMar is None:
+            return 8505
+        w     = int(pgSz .get(qn('w:w'),    '12240'))
+        left  = int(pgMar.get(qn('w:left'),  '1800'))
+        right = int(pgMar.get(qn('w:right'), '1800'))
+        return max(w - left - right, 4000)  # minimal 4000 twips sebagai guard
+    except Exception:
+        return 8505
+
+
 def _ensure_toc_style(doc, level, use_dots, font='Times New Roman', size_pt=12, line_spacing=1.0):
     """
     Pastikan style 'TOC X' ada dengan font/size/spasi seragam + tab stop kanan.
@@ -955,12 +980,10 @@ def _ensure_toc_style(doc, level, use_dots, font='Times New Roman', size_pt=12, 
         )
 
         # ── Tab stops ─────────────────────────────────────────────────────────
-        # Hitung posisi tab kanan (nomor halaman) dari margin dokumen
-        try:
-            sec = doc.sections[0]
-            right_tab = int((sec.page_width - sec.left_margin - sec.right_margin).twips)
-        except Exception:
-            right_tab = 7927  # fallback ~14cm
+        # Hitung posisi tab kanan (nomor halaman) dari margin dokumen.
+        # Baca langsung dari XML sectPr agar tidak gagal karena python-docx
+        # kadang kembalikan None untuk properti margin tertentu.
+        right_tab = _get_text_width_twips(doc)
 
         # TOC2: DUA tab stop — tab kiri 851t (alignment teks) + tab kanan (halaman)
         # TOC3: hanya tab kanan (alignment diatur oleh left+hanging indent)
@@ -1355,63 +1378,11 @@ def main():
               "style Heading 1/2/3 dari Word, atau teks dengan pola penomoran "
               "seperti '1.', '1.1', 'BAB I', atau teks ALL CAPS + bold.")
 
-    # ── Pastikan semua heading style (standard + custom) punya bold ───────────
-    # Sehingga setelah inline bold di-strip, body heading masih tampil bold.
-    _styles_to_bold = (
-        [f'Heading {i}' for i in range(1, max_level + 1)]
-        + list(_CUSTOM_H1_STYLES) + list(_CUSTOM_H2_STYLES) + list(_CUSTOM_H3_STYLES)
-    )
-    for sname in _styles_to_bold:
-        try:
-            style = doc.styles[sname]
-            style_el = style.element
-            rPr = style_el.find(qn('w:rPr'))
-            if rPr is None:
-                rPr = OxmlElement('w:rPr')
-                style_el.append(rPr)
-            for tag in (qn('w:b'), qn('w:bCs')):
-                el = rPr.find(tag)
-                if el is not None:
-                    rPr.remove(el)
-            rPr.append(OxmlElement('w:b'))
-            rPr.append(OxmlElement('w:bCs'))
-        except KeyError:
-            pass
-
-    # ── Pindahkan H2/H3 non-heading-style ke style H2/H3 ────────────────────
-    # Tujuan: agar bold di body berasal dari style (bukan inline run),
-    # sehingga TOC tidak mewarisi inline bold saat Word update field.
-    # H2/H3 style sudah ada di dokumen dengan font/size sama (TNR 12pt).
-    for idx, lvl, _txt in headings:
-        if lvl < 2:
-            continue
-        para = doc.paragraphs[idx]
-        style_name = para.style.name if para.style else ''
-        is_heading_style = (
-            style_name.startswith('Heading ')
-            or style_name in _CUSTOM_H1_STYLES
-            or style_name in _CUSTOM_H2_STYLES
-            or style_name in _CUSTOM_H3_STYLES
-        )
-        if not is_heading_style:
-            target = f'H{lvl}'
-            try:
-                para.style = doc.styles[target]
-            except KeyError:
-                pass  # style H2/H3 tidak ada di dokumen ini
-
-    # ── Terapkan outline level agar TOC field bisa mendeteksi semua heading ──
-    # Apply outlineLvl ke SEMUA heading (termasuk Heading-style) agar \u bisa mendeteksi
-    # dan outlineLvl=9 pada excluded headings benar-benar dikecualikan dari TOC field.
+    # ── Terapkan outline level pada heading terdeteksi ──────────────────────
+    # Hanya set outlineLvl (metadata tak terlihat) — tidak ada perubahan visual
+    # pada heading asli user. Bold, alignment, style heading dibiarkan apa adanya.
     for idx, lvl, _txt in headings:
         apply_outline_level(doc.paragraphs[idx], lvl)
-
-    # ── Normalisasi list heading ke typed agar TOC rata di file campuran ────
-    _normalize_list_headings(doc, headings)
-
-    # ── Normalisasi bold: body selalu bold, TOC hanya H1 bold ────────────────
-    for idx, lvl, _txt in headings:
-        _normalize_heading_bold(doc.paragraphs[idx], lvl)
 
     # ── Aktifkan auto-update agar Word langsung hitung nomor halaman ─────────
     enable_auto_update_fields(doc)
