@@ -360,10 +360,19 @@ def _fix_bab_line_breaks(doc):
 def _merge_bab_name_paras(doc):
     """
     Untuk paragraf 'BAB X' yang diikuti nama bab ALL CAPS di paragraf terpisah:
-    - Tambahkan nama ke teks paragraf BAB X sebagai run baru
-    - Set outlineLvl=9 pada paragraf nama agar tidak masuk TOC field
+    - Sisipkan soft return (w:br tanpa type = Shift+Enter) + salin runs nama
+    - Hapus paragraf nama dari dokumen
+
+    Di halaman: dua baris dalam satu paragraf — identik visual dengan aslinya
+                karena alignment (center) dan font runs ikut terbawa.
+    Di TOC   : satu entri 'BAB X NAMA' (Word mengabaikan soft return saat
+                membuat entri TOC dari outline level).
     """
+    import copy as _cp
+
     paras = doc.paragraphs
+    to_remove = []
+
     for i, para in enumerate(paras):
         text = para.text.strip()
         if not re.match(r'^\s*BAB\s+[IVXivx\d]+\s*$', text, re.IGNORECASE):
@@ -372,12 +381,22 @@ def _merge_bab_name_paras(doc):
             nt = paras[j].text.strip()
             if not nt or nt != nt.upper() or len(nt) <= 3:
                 continue
-            # Tambah nama ke paragraf BAB
-            para.add_run(' ' + nt)
-            # Clone style pada paragraf nama agar tidak masuk TOC field
-            # (outlineLvl=9 saja tidak cukup jika masih ber-Heading style)
-            _demote_heading_to_normal(paras[j], doc)
+            # Soft return (Shift+Enter) — bukan page break, bukan paragraph break
+            r_br = OxmlElement('w:r')
+            br_el = OxmlElement('w:br')   # tanpa w:type → line break dalam paragraf
+            r_br.append(br_el)
+            para._p.append(r_br)
+            # Salin semua runs nama ke paragraf BAB (font/size terjaga)
+            for r_el in paras[j]._p.findall(qn('w:r')):
+                para._p.append(_cp.deepcopy(r_el))
+            # Tandai paragraf nama untuk dihapus (tidak muncul di halaman lagi)
+            to_remove.append(paras[j]._p)
             break
+
+    for p_el in to_remove:
+        parent = p_el.getparent()
+        if parent is not None:
+            parent.remove(p_el)
 
 
 def _set_outline_excluded(para):
