@@ -160,6 +160,15 @@ _CUSTOM_H1_STYLES = {'H1', 'Heading Bab', 'Judul Bab', 'BAB', 'Bab', 'Judul'}
 _CUSTOM_H2_STYLES = {'H2', 'Heading Sub', 'Sub Judul', 'Sub Bab', 'Sub-Bab'}
 _CUSTOM_H3_STYLES = {'H3', 'Sub Sub Judul'}
 
+# Label metadata cover/front matter yang TIDAK boleh masuk daftar isi
+_META_LABEL_RE = re.compile(
+    r'^(DOSEN\s+PENGAMPU|MATA\s+KULIAH|KELOMPOK|KELAS\b|SEMESTER|PROGRAM\s+STUDI|'
+    r'JURUSAN|FAKULTAS|UNIVERSITAS|INSTITUTE|NIM\b|NPM\b|NIP\b|NIDN|NAMA\s+MAHASISWA|'
+    r'DISUSUN\s+OLEH|DISUSUN|NAMA\s+KELOMPOK|ANGGOTA\s+KELOMPOK|PENGAMPU|'
+    r'TAHUN\s+AJARAN|TAHUN\s+AKADEMIK|DOSEN\s+PEMBIMBING|PEMBIMBING)\s*:',
+    re.IGNORECASE
+)
+
 _STYLE_KW_H1 = re.compile(
     r'(judul\s*(bab|utama|1)?|^bab$|heading\s*1?|chapter|title)$', re.IGNORECASE)
 _STYLE_KW_H2 = re.compile(
@@ -191,6 +200,10 @@ def get_para_level(para):
     """
     text = para.text.strip()
     if not text or len(text) > 150:
+        return None
+
+    # Kecualikan label metadata cover (Dosen Pengampu:, Mata Kuliah:, dst.)
+    if _META_LABEL_RE.match(text):
         return None
 
     # Normalisasi penomoran dengan spasi ekstra setelah titik:
@@ -306,20 +319,25 @@ def _dedup_bab_clusters(results, max_gap=10):
 
 def detect_headings(doc, max_level):
     """Kembalikan list of (para_index, level, text) untuk semua heading ≤ max_level."""
-    paras   = doc.paragraphs
-    results = []
+    paras      = doc.paragraphs
+    results    = []
+    merged_idx = set()  # indeks paragraf yang sudah digabung ke BAB sebelumnya
     for i, para in enumerate(paras):
+        if i in merged_idx:
+            continue
         lvl = get_para_level(para)
         if lvl is None or lvl > max_level:
             continue
         text = para.text.strip()
         # Jika H1 hanya berisi "BAB X" tanpa nama bab (dua paragraf terpisah),
-        # gabungkan dengan paragraf ALL CAPS berikutnya sebagai nama bab.
+        # gabungkan dengan paragraf ALL CAPS berikutnya sebagai nama bab,
+        # lalu tandai paragraf tersebut agar tidak dideteksi ulang.
         if lvl == 1 and re.match(r'^\s*BAB\s+[IVXivx\d]+\s*$', text, re.IGNORECASE):
             for j in range(i + 1, min(i + 3, len(paras))):
                 nt = paras[j].text.strip()
                 if nt and nt == nt.upper() and len(nt) > 3:
                     text = text + ' ' + nt
+                    merged_idx.add(j)
                     break
         results.append((i, lvl, text))
 
@@ -548,7 +566,8 @@ def _apply_rPr_font_to_style_element(style_el, font, size_pt, bold, is_char_styl
         style_el.append(rPr)
 
     # Hapus tag yang bisa konflik
-    remove_tags = [qn('w:rFonts'), qn('w:sz'), qn('w:szCs'), qn('w:b'), qn('w:bCs')]
+    remove_tags = [qn('w:rFonts'), qn('w:sz'), qn('w:szCs'),
+                   qn('w:b'), qn('w:bCs'), qn('w:i'), qn('w:iCs')]
     if is_char_style:
         # Untuk char style, hapus juga color/kern/ligatures agar tidak
         # ada efek visual dari Heading Char yang ikut masuk ke TOC entry
@@ -586,6 +605,13 @@ def _apply_rPr_font_to_style_element(style_el, font, size_pt, bold, is_char_styl
     if not bold:
         bCs.set(qn('w:val'), '0')
     rPr.append(bCs)
+    # Italic: selalu nonaktifkan di TOC / heading char style
+    i_el = OxmlElement('w:i')
+    i_el.set(qn('w:val'), '0')
+    rPr.append(i_el)
+    i_cs = OxmlElement('w:iCs')
+    i_cs.set(qn('w:val'), '0')
+    rPr.append(i_cs)
 
 
 def _fix_heading_char_styles(doc, font, size_pt):
@@ -675,14 +701,14 @@ def _ensure_toc_style(doc, level, use_dots, font='Times New Roman', size_pt=12, 
         pf.space_after  = Pt(0)
         pf.line_spacing = line_spacing
 
-        # Indentasi per level (dari analisis referensi)
+        # Indentasi per level
         # TOC1: left=0
-        # TOC2: left=284t, tidak ada hanging
-        # TOC3: left=1560t, hanging=709t (teks mulai di 1560-709=851t, sama dgn TOC2)
+        # TOC2: left=851t, hanging=567t → baris pertama di 284t (angka), baris lanjut di 851t (teks)
+        # TOC3: left=1560t, hanging=709t (teks mulai di 1560-709=851t)
         from docx.shared import Twips as _Twips
         IND = {
             1: (0,    0),
-            2: (284,  0),
+            2: (851, 567),
             3: (1560, 709),
         }
         left_t, hang_t = IND.get(level, (284 * (level - 1), 0))
@@ -758,6 +784,12 @@ def _make_run(text, bold=False, font='Times New Roman', size_pt=12):
     rPr.append(szCs)
     if bold:
         rPr.append(OxmlElement('w:b'))
+    i_el = OxmlElement('w:i')
+    i_el.set(qn('w:val'), '0')
+    rPr.append(i_el)
+    i_cs = OxmlElement('w:iCs')
+    i_cs.set(qn('w:val'), '0')
+    rPr.append(i_cs)
     r.append(rPr)
     t = OxmlElement('w:t')
     t.set('{http://www.w3.org/XML/1998/namespace}space', 'preserve')
@@ -860,6 +892,12 @@ def _build_run_rPr(font, size_pt, bold):
     if not bold:
         bCs.set(qn('w:val'), '0')
     rPr.append(bCs)
+    i_el = OxmlElement('w:i')
+    i_el.set(qn('w:val'), '0')
+    rPr.append(i_el)
+    i_cs = OxmlElement('w:iCs')
+    i_cs.set(qn('w:val'), '0')
+    rPr.append(i_cs)
     return rPr
 
 
@@ -889,7 +927,7 @@ def _make_static_toc_para(text, level, bk_name, font, size_pt, use_dots, right_t
     spacing.set(qn('w:lineRule'), 'auto')
     pPr.append(spacing)
 
-    IND = {1: (0, 0), 2: (284, 0), 3: (1560, 709)}
+    IND = {1: (0, 0), 2: (851, 567), 3: (1560, 709)}
     left_t, hang_t = IND.get(level, (284 * (level - 1), 0))
     if left_t or hang_t:
         ind = OxmlElement('w:ind')
@@ -1145,16 +1183,38 @@ def main():
     # ── Sisipkan setelah "DAFTAR ISI" ────────────────────────────────────────
     daftar_idx = find_daftar_isi_idx(doc)
     if daftar_idx is not None:
+        import copy as _copy
         daftar_para = doc.paragraphs[daftar_idx]
         had_pb = _has_inline_page_break(daftar_para)
         if had_pb:
             _remove_inline_page_break(daftar_para)
 
+        # Jika paragraf DAFTAR ISI menyimpan sectPr (section break di akhirnya),
+        # pindahkan ke SETELAH TOC agar TOC masuk ke seksi yang sama dengan judul.
+        saved_sectPr = None
+        daftar_pPr = daftar_para._p.find(qn('w:pPr'))
+        if daftar_pPr is not None:
+            sect_pr = daftar_pPr.find(qn('w:sectPr'))
+            if sect_pr is not None:
+                saved_sectPr = _copy.deepcopy(sect_pr)
+                daftar_pPr.remove(sect_pr)
+
         for new_p in reversed(toc_paras):
             insert_element_after(doc, daftar_idx, new_p)
 
+        last_inserted = toc_paras[-1]
+
+        # Re-sisipkan sectPr setelah TOC, dalam paragraf kosong baru
+        if saved_sectPr is not None:
+            sect_para = OxmlElement('w:p')
+            sp_pPr = OxmlElement('w:pPr')
+            sp_pPr.append(saved_sectPr)
+            sect_para.append(sp_pPr)
+            last_inserted.addnext(sect_para)
+            last_inserted = sect_para
+
         if had_pb:
-            toc_paras[-1].addnext(_make_page_break_para())
+            last_inserted.addnext(_make_page_break_para())
 
         insert_pos_desc = f'setelah paragraf "DAFTAR ISI" (index {daftar_idx})'
     else:
