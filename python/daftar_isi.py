@@ -249,7 +249,7 @@ def get_para_level(para):
     num_lvl    = _get_num_level(para)
     style_name = para.style.name if para.style else ''
     if num_lvl is not None and 1 <= num_lvl <= 2:
-        if style_name not in _LIST_STYLES:
+        if style_name not in _LIST_STYLES and len(text) <= 80:
             return num_lvl + 1
 
     # 5. outlineLvl dari XML paragraf
@@ -260,9 +260,12 @@ def get_para_level(para):
     # 5b. outlineLvl dari definisi style (naik ke parent style).
     #     Menangani style kustom seperti 'H1', 'H2', 'H3' yang tidak punya
     #     outlineLvl di paragraf tetapi punya di definisi style-nya.
-    lvl = _get_outline_level_from_style(para)
-    if lvl is not None:
-        return lvl
+    #     Batasi 80 char — paragraf panjang dengan Heading style kemungkinan
+    #     body text yang salah format (contoh: deskripsi bullet di-style Heading 2).
+    if len(text) <= 80:
+        lvl = _get_outline_level_from_style(para)
+        if lvl is not None:
+            return lvl
 
     # 6. Front matter keyword (KATA PENGANTAR, ABSTRAK, DAFTAR ISI, dst.)
     if _FRONT_MATTER_RE.match(text):
