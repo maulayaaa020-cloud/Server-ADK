@@ -193,7 +193,7 @@ if (!empty($orders)) {
         .phone-divider { width: 1px; height: 14px; background: rgba(255,255,255,0.2); }
 
         .history-phone-chip a {
-            font-size: 12px;
+            font-size: 15px;
             color: #a78bfa;
             text-decoration: none;
             font-weight: 600;
@@ -241,11 +241,11 @@ if (!empty($orders)) {
             text-overflow: ellipsis;
         }
 
-        .card-service { font-size: 11px; color: #a78bfa; margin-bottom: 10px; }
+        .card-service { font-size: 14px; color: #a78bfa; margin-bottom: 10px; }
 
         .card-status-badge {
             display: inline-block;
-            font-size: 11px;
+            font-size: 13px;
             font-weight: 700;
             padding: 3px 10px;
             border-radius: 20px;
@@ -257,7 +257,7 @@ if (!empty($orders)) {
         .badge-failed  { color: #f87171; background: rgba(239,68,68,0.1); }
 
         .card-timer {
-            font-size: 11px;
+            font-size: 13px;
             color: #fbbf24;
             font-weight: 600;
             margin-bottom: 12px;
@@ -273,7 +273,7 @@ if (!empty($orders)) {
             color: white;
             border: 1px solid rgba(255,255,255,0.18);
             border-radius: 9px;
-            font-size: 11px;
+            font-size: 14px;
             font-weight: 700;
             letter-spacing: 0.8px;
             cursor: pointer;
@@ -291,7 +291,7 @@ if (!empty($orders)) {
         .card-mid { flex: 1; min-width: 180px; }
 
         .ket-label {
-            font-size: 10px;
+            font-size: 13px;
             font-weight: 700;
             color: #6b7280;
             text-transform: uppercase;
@@ -299,7 +299,7 @@ if (!empty($orders)) {
             margin-bottom: 5px;
         }
 
-        .ket-paket { font-size: 13px; font-weight: 700; color: white; margin-bottom: 8px; }
+        .ket-paket { font-size: 15px; font-weight: 700; color: white; margin-bottom: 8px; }
 
         .ket-list {
             list-style: none;
@@ -307,7 +307,7 @@ if (!empty($orders)) {
             display: flex; flex-direction: column; gap: 4px;
         }
 
-        .ket-list li { font-size: 12px; color: #d1d5db; display: flex; gap: 5px; }
+        .ket-list li { font-size: 14px; color: #d1d5db; display: flex; gap: 5px; }
         .ket-list li::before { content: '•'; color: #7c3aed; flex-shrink: 0; }
         .ket-key { color: #e5e7eb; font-weight: 600; min-width: 66px; }
 
@@ -320,10 +320,10 @@ if (!empty($orders)) {
             gap: 10px;
         }
 
-        .card-date { font-size: 11px; color: #6b7280; text-align: right; }
+        .card-date { font-size: 13px; color: #6b7280; text-align: right; }
 
         .sk-link {
-            font-size: 10px;
+            font-size: 13px;
             font-weight: 600;
             color: #f87171;
             text-decoration: none;
@@ -362,13 +362,13 @@ if (!empty($orders)) {
             width: 100%;
         }
 
-        .download-row span { font-size: 11px; color: #6b7280; flex-shrink: 0; }
+        .download-row span { font-size: 13px; color: #6b7280; flex-shrink: 0; }
 
         .btn-dl {
             flex: 1;
             padding: 7px 4px;
             border-radius: 8px;
-            font-size: 11px;
+            font-size: 13px;
             font-weight: 600;
             border: 1px solid;
             text-align: center;
@@ -485,7 +485,7 @@ if (!empty($orders)) {
         }
 
         .guest-hint {
-            font-size: 13px;
+            font-size: 15px;
             font-weight: 600;
             color: #fbbf24;
             letter-spacing: 0.2px;
@@ -560,7 +560,7 @@ if (!empty($orders)) {
         .btn-guest-submit:disabled { opacity: 0.6; cursor: not-allowed; }
 
         .guest-login-error {
-            font-size: 12px;
+            font-size: 14px;
             color: #f87171;
             margin-top: 6px;
             min-height: 16px;
@@ -700,7 +700,7 @@ if (!empty($orders)) {
         }
 
         .pv-footer-note {
-            font-size: 11px; color: #6b7280; line-height: 1.4;
+            font-size: 13px; color: #6b7280; line-height: 1.4;
         }
 
         .btn-bayar-pv {
@@ -768,7 +768,7 @@ if (!empty($orders)) {
         }
 
         .bug-sub {
-            font-size: 12px; color: #6b7280; margin: 0 0 20px;
+            font-size: 14px; color: #6b7280; margin: 0 0 20px;
         }
 
         .bug-options { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
@@ -865,7 +865,7 @@ if (!empty($orders)) {
         }
 
         .reminder-desc {
-            font-size: 12px;
+            font-size: 15px;
             color: #9ca3af;
             margin: 0 0 26px;
             line-height: 1.6;

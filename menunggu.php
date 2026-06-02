@@ -50,11 +50,11 @@ if (!$jobId) {
             margin: 0 auto 24px;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
-        h2 { font-size: 1.3rem; color: #e5e7eb; margin-bottom: 10px; }
-        p  { color: #9ca3af; font-size: 0.95rem; line-height: 1.6; }
+        h2 { font-size: 1.5rem; color: #e5e7eb; margin-bottom: 10px; }
+        p  { color: #9ca3af; font-size: 1.05rem; line-height: 1.6; }
         .step {
             margin-top: 24px;
-            font-size: 0.88rem;
+            font-size: 1rem;
             color: #6b7280;
         }
         .step span { color: #a78bfa; font-weight: 600; }
@@ -67,7 +67,7 @@ if (!$jobId) {
             border-radius: 10px;
             padding: 14px 16px;
             color: #fca5a5;
-            font-size: 0.9rem;
+            font-size: 1rem;
             line-height: 1.6;
             margin: 16px 0;
         }
@@ -80,7 +80,7 @@ if (!$jobId) {
             border-radius: 10px;
             color: #a78bfa;
             text-decoration: none;
-            font-size: 0.9rem;
+            font-size: 1rem;
             transition: 0.2s;
         }
         .btn-back:hover { background: rgba(124,58,237,0.35); }
@@ -93,7 +93,7 @@ if (!$jobId) {
             color: #fbbf24;
             border-radius: 8px;
             padding: 6px 16px;
-            font-size: 0.85rem;
+            font-size: 1rem;
             margin-bottom: 12px;
         }
 

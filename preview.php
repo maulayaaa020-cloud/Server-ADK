@@ -60,7 +60,7 @@ $chipText  = $isPaid ? 'Lunas' : ($order['status'] === 'failed' ? 'Gagal' : 'Men
         }
 
         .preview-info p {
-            font-size: 12px;
+            font-size: 15px;
             color: #a78bfa;
             margin: 0;
         }
@@ -73,7 +73,7 @@ $chipText  = $isPaid ? 'Lunas' : ($order['status'] === 'failed' ? 'Gagal' : 'Men
             gap: 6px;
             padding: 9px 16px;
             border-radius: 10px;
-            font-size: 12px;
+            font-size: 15px;
             font-weight: 700;
             text-decoration: none;
             cursor: pointer;
@@ -114,7 +114,7 @@ $chipText  = $isPaid ? 'Lunas' : ($order['status'] === 'failed' ? 'Gagal' : 'Men
 
         .status-chip {
             display: inline-block;
-            font-size: 10px;
+            font-size: 13px;
             font-weight: 700;
             padding: 2px 8px;
             border-radius: 20px;
@@ -157,7 +157,7 @@ $chipText  = $isPaid ? 'Lunas' : ($order['status'] === 'failed' ? 'Gagal' : 'Men
 
         .info-icon { font-size: 44px; margin-bottom: 14px; }
         .info-title { font-size: 18px; font-weight: 800; color: white; margin-bottom: 8px; }
-        .info-sub { font-size: 13px; color: #9ca3af; line-height: 1.6; margin-bottom: 24px; }
+        .info-sub { font-size: 16px; color: #9ca3af; line-height: 1.6; margin-bottom: 24px; }
 
         .btn-bayar-now {
             display: inline-block;
@@ -165,7 +165,7 @@ $chipText  = $isPaid ? 'Lunas' : ($order['status'] === 'failed' ? 'Gagal' : 'Men
             background: #ef4444;
             color: white;
             border-radius: 12px;
-            font-size: 14px;
+            font-size: 16px;
             font-weight: 700;
             text-decoration: none;
             transition: 0.2s;

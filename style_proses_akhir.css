@@ -32,7 +32,7 @@ body {
 }
 
 .logo span {
-    font-size: 24px;
+    font-size: 32px;
     font-weight: bold;
     color: #ffffff;
 }
@@ -100,7 +100,7 @@ a.btn-nav, button.btn-nav {
 
 .stats span {
     color: #aaa;
-    font-size: 14px;
+    font-size: 16px;
 }
 
 /* BUTTON */
@@ -151,7 +151,7 @@ a.btn-nav, button.btn-nav {
 }
 
 .upload-box span {
-    font-size: 12px;
+    font-size: 15px;
     color: #888;
 }
 
@@ -194,7 +194,7 @@ a.btn-nav, button.btn-nav {
 }
 
 .paket p {
-    font-size: 14px;
+    font-size: 16px;
     margin-bottom: 10px;
 }
 
@@ -275,7 +275,7 @@ a.btn-nav, button.btn-nav {
         0 0 0 2px rgba(124, 58, 237, 0.2);
 
     color: #111;
-    font-size: 12px;
+    font-size: 15px;
 
     opacity: 0;
     transform: translateX(20px);
@@ -341,7 +341,7 @@ a.btn-nav, button.btn-nav {
 .kategori {
     margin-top: 20px;
     margin-bottom: 10px;
-    font-size: 14px;
+    font-size: 16px;
     color: #555;
 }
 

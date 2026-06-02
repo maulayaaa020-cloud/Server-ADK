@@ -51,7 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         .login-title {
-            font-size: 20px;
+            font-size: 24px;
             font-weight: 800;
             color: white;
             margin: 0 0 6px;
@@ -59,14 +59,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         .login-sub {
-            font-size: 13px;
+            font-size: 15px;
             color: #a78bfa;
             text-align: center;
             margin-bottom: 28px;
         }
 
         .login-label {
-            font-size: 12px;
+            font-size: 15px;
             font-weight: 600;
             color: #9ca3af;
             text-transform: uppercase;
@@ -97,7 +97,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         .login-error {
             color: #f87171;
-            font-size: 12px;
+            font-size: 14px;
             margin-top: 8px;
         }
 
@@ -226,8 +226,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
            onmouseout="this.style.background='rgba(251,191,36,0.08)'">
             <span style="font-size:18px">👤</span>
             <div>
-                <div style="font-size:13px;font-weight:700;color:#fbbf24">Anda memiliki order sebagai Tamu</div>
-                <div style="font-size:11px;color:#d97706;margin-top:2px">Klik untuk melihat riwayat order tamu →</div>
+                <div style="font-size:15px;font-weight:700;color:#fbbf24">Anda memiliki order sebagai Tamu</div>
+                <div style="font-size:13px;color:#d97706;margin-top:2px">Klik untuk melihat riwayat order tamu →</div>
             </div>
         </a>
     </div>
