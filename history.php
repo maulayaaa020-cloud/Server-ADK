@@ -34,6 +34,27 @@ try {
     $orders = $stmt->fetchAll();
 } catch (Exception $e) { $orders = []; }
 
+// Tambah daftar_isi orders
+try {
+    if (!isset($db)) $db = getDB();
+    if ($isAdmin) {
+        $stmt2 = $db->query("SELECT * FROM daftar_isi_orders ORDER BY created_at DESC");
+    } elseif ($isGuest) {
+        $stmt2 = $db->prepare("SELECT * FROM daftar_isi_orders WHERE guest_token = :gt ORDER BY created_at DESC");
+        $stmt2->execute([':gt' => $guestToken]);
+    } else {
+        $stmt2 = $db->prepare("SELECT * FROM daftar_isi_orders WHERE phone = :phone ORDER BY created_at DESC");
+        $stmt2->execute([':phone' => $email]);
+    }
+    $ordersDI = $stmt2->fetchAll();
+    foreach ($orders as &$o) { $o['_type'] = 'penomoran'; }
+    unset($o);
+    foreach ($ordersDI as &$o) { $o['_type'] = 'daftar_isi'; }
+    unset($o);
+    $orders = array_merge($orders, $ordersDI);
+    usort($orders, fn($a, $b) => strtotime($b['created_at']) - strtotime($a['created_at']));
+} catch (Exception $e) {}
+
 function namaPaket($p) {
     if ($p === 'paket1') return 'FULL ANGKA';
     if ($p === 'paket4') return 'ROMAWI DAN ANGKA (CUSTOM)';
@@ -74,6 +95,18 @@ function keteranganList($row) {
     return $items;
 }
 
+function keteranganListDI($row) {
+    $fmtLabel = [
+        'titik'          => 'Titik-titik',
+        'tab'            => 'Tab',
+        'kecualikan_bab' => 'Kecualikan Bab',
+    ];
+    return [
+        ['Kedalaman', $row['kedalaman']    ?? '-'],
+        ['Format',    $fmtLabel[$row['format_titik'] ?? ''] ?? ($row['format_titik'] ?? '-')],
+    ];
+}
+
 function maskEmail($e) {
     $parts = explode('@', $e, 2);
     if (count($parts) !== 2) return $e;
@@ -93,7 +126,7 @@ function tglIndo($dt) {
 // Siapkan data pending untuk JS timer
 $pendingJS = [];
 foreach ($orders as $o) {
-    if ($o['status'] === 'pending') {
+    if (($o['_type'] ?? 'penomoran') === 'penomoran' && $o['status'] === 'pending') {
         $expiry = strtotime($o['created_at']) + 1800;
         $pendingJS[] = ['id' => (int)$o['id'], 'expiry' => $expiry];
     }
@@ -1026,16 +1059,24 @@ if (!empty($orders)) {
         <?php else: ?>
             <?php foreach ($orders as $o): ?>
             <?php
-                $status    = $o['status'];
-                $isPaid    = $status === 'paid';
-                $isFailed  = $status === 'failed';
-                $isPending = $status === 'pending';
+                $otype       = $o['_type'] ?? 'penomoran';
+                $isDaftarIsi = $otype === 'daftar_isi';
+                $status      = $o['status'];
+                $isPaid      = $status === 'paid' || ($isDaftarIsi && $status === 'selesai');
+                $isFailed    = $status === 'failed';
+                $isPending   = $status === 'pending';
                 $rawName   = preg_replace('/^\d+_/', '', $o['file_input']);
                 $fnBase    = pathinfo($rawName, PATHINFO_FILENAME);
                 $fnExt     = pathinfo($rawName, PATHINFO_EXTENSION);
                 $namaFile  = (mb_strlen($fnBase) > 12 ? mb_substr($fnBase, 0, 12) . '...' : $fnBase) . '.' . $fnExt;
                 $expiry    = strtotime($o['created_at']) + 1800;
-                $keterangan = keteranganList($o);
+                $keterangan   = $isDaftarIsi ? keteranganListDI($o) : keteranganList($o);
+                $serviceLabel = $isDaftarIsi ? 'Daftar Isi Otomatis' : 'Penomoran Halaman';
+                $paketLabel   = $isDaftarIsi ? ($o['kedalaman'] ?? 'Daftar Isi') : namaPaket($o['paket'] ?? '');
+                $statusLabel  = $isPaid ? 'Sukses' : ($isFailed ? 'Failed' : ($isDaftarIsi ? 'Memproses' : 'Waiting Payment'));
+                $downloadUrl  = $isDaftarIsi
+                    ? (BASE_PATH . '/download_daftar_isi.php?id=' . $o['id'])
+                    : (BASE_PATH . '/download.php?id=' . $o['id']);
             ?>
             <div class="card-wrap">
             <div class="order-card <?= $isPaid ? 'paid' : ($isFailed ? 'failed' : '') ?>"
@@ -1046,12 +1087,12 @@ if (!empty($orders)) {
                     <div class="card-file" title="<?= htmlspecialchars($namaFile) ?>">
                         <?= htmlspecialchars($namaFile) ?>
                     </div>
-                    <div class="card-service">Penomoran Halaman</div>
+                    <div class="card-service"><?= htmlspecialchars($serviceLabel) ?></div>
                     <div class="card-status-badge <?= $isPaid ? 'badge-sukses' : ($isFailed ? 'badge-failed' : 'badge-pending') ?>"
                          id="badge-<?= $o['id'] ?>">
-                        <?= $isPaid ? 'Sukses' : ($isFailed ? 'Failed' : 'Waiting Payment') ?>
+                        <?= htmlspecialchars($statusLabel) ?>
                     </div>
-                    <?php if (!empty($o['file_output']) && !$isFailed && !$isPaid): ?>
+                    <?php if (!$isDaftarIsi && !empty($o['file_output']) && !$isFailed && !$isPaid): ?>
                     <button class="btn-preview" onclick="openPreview(
                         '<?= addslashes(htmlspecialchars($namaFile)) ?>',
                         <?= $isPending ? 'true' : 'false' ?>,
@@ -1060,12 +1101,12 @@ if (!empty($orders)) {
                         <?= (int)$o['harga'] ?>
                     )">PREVIEW HASIL</button>
                     <?php endif; ?>
-                    <?php if (!empty($o['file_output'])): ?>
+                    <?php if (!$isDaftarIsi && !empty($o['file_output'])): ?>
                     <?php if (!in_array($o['order_id'], $reportedOrderIds)): ?>
                     <button class="btn-bug" id="bugBtn-<?= $o['id'] ?>" onclick="openBugReport(
                         '<?= addslashes(htmlspecialchars($namaFile)) ?>',
                         '<?= addslashes($o['order_id']) ?>',
-                        '<?= addslashes(htmlspecialchars(namaPaket($o['paket']))) ?>',
+                        '<?= addslashes(htmlspecialchars(namaPaket($o['paket'] ?? ''))) ?>',
                         <?= $o['id'] ?>
                     )">Laporkan Bug</button>
                     <?php endif; ?>
@@ -1075,7 +1116,7 @@ if (!empty($orders)) {
                 <!-- TENGAH -->
                 <div class="card-mid">
                     <div class="ket-label">Keterangan</div>
-                    <div class="ket-paket"><?= namaPaket($o['paket']) ?></div>
+                    <div class="ket-paket"><?= htmlspecialchars($paketLabel) ?></div>
                     <ul class="ket-list">
                         <?php foreach ($keterangan as $row): ?>
                         <li>
@@ -1090,7 +1131,7 @@ if (!empty($orders)) {
                 <div class="card-right">
                     <div class="card-date"><?= tglIndo($o['created_at']) ?></div>
 
-                    <?php if ($isPending): ?>
+                    <?php if ($isPending && !$isDaftarIsi): ?>
                     <a href="sk.html" target="_blank" class="sk-link">S&amp;K berlaku</a>
                     <?php
                         $existingPayUrl = '';
@@ -1108,7 +1149,7 @@ if (!empty($orders)) {
                     <div class="download-row">
                         <span>Download:</span>
                         <?php if ($isPaid && $o['file_output']): ?>
-                        <a href="<?= BASE_PATH ?>/download.php?id=<?= $o['id'] ?>"
+                        <a href="<?= $downloadUrl ?>"
                            class="btn-dl active" download>Docx</a>
                         <?php else: ?>
                         <span class="btn-dl locked">Docx</span>

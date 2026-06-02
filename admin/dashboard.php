@@ -3,14 +3,15 @@ date_default_timezone_set('Asia/Jakarta');
 require_once __DIR__ . '/_guard.php';
 
 // ── Per-service maintenance toggle ───────────────────────────────────────────
-$serviceKeys  = ['penomoran', 'daftar_isi', 'daftar_tabel', 'daftar_gambar', 'daftar_lampiran', 'ketik'];
+$serviceKeys  = ['penomoran', 'daftar_isi', 'daftar_tabel', 'daftar_gambar', 'daftar_lampiran', 'lamaran_cv', 'ketik_surat'];
 $serviceNames = [
     'penomoran'        => 'Penomoran Halaman',
     'daftar_isi'       => 'Daftar Isi Otomatis',
     'daftar_tabel'     => 'Daftar Tabel Otomatis',
     'daftar_gambar'    => 'Daftar Gambar Otomatis',
     'daftar_lampiran'  => 'Daftar Lampiran Otomatis',
-    'ketik'            => 'Ketik / Lamaran / CV',
+    'lamaran_cv'       => 'Lamaran / CV',
+    'ketik_surat'      => 'Ketik Surat',
 ];
 $serviceIcons = [
     'penomoran'        => '📄',
@@ -18,7 +19,8 @@ $serviceIcons = [
     'daftar_tabel'     => '📊',
     'daftar_gambar'    => '🖼️',
     'daftar_lampiran'  => '📎',
-    'ketik'            => '✍️',
+    'lamaran_cv'       => '📋',
+    'ketik_surat'      => '⌨️',
 ];
 $serviceStatus = [];
 foreach ($serviceKeys as $k) {
@@ -103,13 +105,18 @@ if ($filterDate === 'today') {
     $where[] = "created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)";
 }
 
-$sql = "SELECT * FROM orders";
-if ($where) $sql .= " WHERE " . implode(" AND ", $where);
-$sql .= " ORDER BY created_at DESC";
+$whereClause = $where ? "WHERE " . implode(" AND ", $where) : "";
 
-$stmt = $db->prepare($sql);
-$stmt->execute($params);
-$orders = $stmt->fetchAll();
+$stmt1 = $db->prepare("SELECT *, 'penomoran' AS layanan FROM orders $whereClause ORDER BY created_at DESC");
+$stmt1->execute($params);
+$rows1 = $stmt1->fetchAll();
+
+$stmt2 = $db->prepare("SELECT *, kedalaman AS paket, '' AS file_output_pdf, 'daftar_isi' AS layanan FROM daftar_isi_orders $whereClause ORDER BY created_at DESC");
+$stmt2->execute($params);
+$rows2 = $stmt2->fetchAll();
+
+$orders = array_merge($rows1, $rows2);
+usort($orders, fn($a, $b) => strtotime($b['created_at']) - strtotime($a['created_at']));
 
 // ── Bug Reports ────────────────────────────────────────────────────────────
 $bugs = $db->query("SELECT * FROM bug_reports ORDER BY created_at DESC")->fetchAll();
@@ -828,6 +835,7 @@ function tglAdmin(string $dt): string {
                         <th>#</th>
                         <th>ID Transaksi</th>
                         <th>Phone / Tamu</th>
+                        <th>Layanan</th>
                         <th>Paket</th>
                         <th>Harga</th>
                         <th>Status</th>
@@ -837,24 +845,34 @@ function tglAdmin(string $dt): string {
                 </thead>
                 <tbody>
                 <?php if (empty($orders)): ?>
-                    <tr><td colspan="8" class="table-empty">Tidak ada data untuk filter ini.</td></tr>
+                    <tr><td colspan="9" class="table-empty">Tidak ada data untuk filter ini.</td></tr>
                 <?php else: ?>
                     <?php foreach ($orders as $i => $o):
                         $isGuest = !empty($o['guest_token']) && empty($o['phone']);
+                        $layanan = $o['layanan'] ?? 'penomoran';
+                        $layananLabel = match($layanan) {
+                            'penomoran' => ['label' => 'Penomoran', 'color' => '#29B6F6'],
+                            'daftar_isi' => ['label' => 'Daftar Isi', 'color' => '#a78bfa'],
+                            default => ['label' => htmlspecialchars($layanan), 'color' => '#9ca3af'],
+                        };
                         $paketLabel = match($o['paket'] ?? '') {
                             'paket1' => 'Paket 1',
                             'paket2' => 'Paket 2',
                             'paket3' => 'Paket 3',
                             'paket4' => 'Paket 4 (Custom)',
+                            'H1' => 'H1',
+                            'H1+H2' => 'H1+H2',
+                            'H1+H2+H3' => 'H1+H2+H3',
                             default  => htmlspecialchars($o['paket'] ?? '-')
                         };
                         $badgeClass = match($o['status']) {
-                            'paid'    => 'badge-paid',
-                            'pending' => 'badge-pending',
-                            default   => 'badge-failed'
+                            'paid', 'selesai' => 'badge-paid',
+                            'pending'         => 'badge-pending',
+                            default           => 'badge-failed'
                         };
                         $badgeLabel = match($o['status']) {
                             'paid'    => 'Paid',
+                            'selesai' => 'Selesai',
                             'pending' => 'Pending',
                             default   => 'Failed'
                         };
@@ -876,6 +894,7 @@ function tglAdmin(string $dt): string {
                                 <?= htmlspecialchars($o['phone']) ?>
                             <?php endif; ?>
                         </td>
+                        <td><span style="font-size:11px;font-weight:700;color:<?= $layananLabel['color'] ?>"><?= $layananLabel['label'] ?></span></td>
                         <td><?= $paketLabel ?></td>
                         <td><?= fmtRupiah((float)$o['harga']) ?></td>
                         <td><span class="badge <?= $badgeClass ?>"><?= $badgeLabel ?></span></td>

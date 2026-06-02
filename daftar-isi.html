@@ -78,7 +78,19 @@
     </style>
 </head>
 
-<body>
+<body style="visibility:hidden">
+    <script>
+    fetch('api/maintenance_status.php?_=' + Date.now(), { cache: 'no-store' })
+        .then(function(r){ return r.json(); })
+        .then(function(d){
+            if (d.services && d.services.daftar_isi && !d.isAdmin) {
+                window.location.replace('maintenance.php');
+            } else {
+                document.body.style.visibility = '';
+            }
+        })
+        .catch(function(){ document.body.style.visibility = ''; });
+    </script>
 
     <!-- NAVBAR -->
     <div class="navbar">

@@ -4,8 +4,9 @@ require_once __DIR__ . '/../includes/config.php';
 require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/../includes/log.php';
 
-if (file_exists(__DIR__ . '/../config/maintenance.flag') && empty($_SESSION['adk_admin'])) {
-    header('Location: ../maintenance.php');
+if (file_exists(__DIR__ . '/../config/maintenance_penomoran.flag') && empty($_SESSION['adk_admin'])) {
+    header('Content-Type: application/json');
+    echo json_encode(['error' => true, 'message' => 'Layanan Penomoran Halaman sedang maintenance. Coba lagi nanti.']);
     exit;
 }
 

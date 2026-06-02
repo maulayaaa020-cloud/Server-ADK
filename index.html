@@ -125,29 +125,33 @@
                     Jasa ADK <span class="dropdown-arrow">▾</span>
                 </a>
                 <div class="dropdown-menu">
-                    <a href="jasa.html">
+                    <a href="jasa.html" data-sid="penomoran">
                         <div class="dropdown-item-icon">📄</div>
                         <div class="dropdown-item-title">Penomoran Halaman</div>
                     </a>
-                    <a href="#layanan" onclick="selectLayanan(1)">
+                    <a href="daftar-isi.html" data-sid="daftar_isi">
                         <div class="dropdown-item-icon" style="background:rgba(139,92,246,0.15);">📑</div>
                         <div class="dropdown-item-title">Daftar Isi Otomatis</div>
                     </a>
-                    <a href="#layanan" onclick="selectLayanan(2)">
+                    <a href="#layanan" onclick="selectLayanan(2)" data-sid="daftar_tabel">
                         <div class="dropdown-item-icon" style="background:rgba(139,92,246,0.15);">📊</div>
                         <div class="dropdown-item-title">Daftar Tabel Otomatis</div>
                     </a>
-                    <a href="#layanan" onclick="selectLayanan(3)">
+                    <a href="#layanan" onclick="selectLayanan(3)" data-sid="daftar_gambar">
                         <div class="dropdown-item-icon" style="background:rgba(139,92,246,0.15);">🖼️</div>
                         <div class="dropdown-item-title">Daftar Gambar Otomatis</div>
                     </a>
-                    <a href="#layanan" onclick="selectLayanan(4)">
+                    <a href="#layanan" onclick="selectLayanan(4)" data-sid="daftar_lampiran">
                         <div class="dropdown-item-icon" style="background:rgba(139,92,246,0.15);">📎</div>
                         <div class="dropdown-item-title">Daftar Lampiran Otomatis</div>
                     </a>
-                    <a href="#layanan" onclick="selectLayanan(5)">
-                        <div class="dropdown-item-icon" style="background:rgba(139,92,246,0.15);">✍️</div>
-                        <div class="dropdown-item-title">Ketik / Lamaran / CV</div>
+                    <a href="#layanan" onclick="selectLayanan(5)" data-sid="lamaran_cv">
+                        <div class="dropdown-item-icon" style="background:rgba(96,165,250,0.15);">📋</div>
+                        <div class="dropdown-item-title">Lamaran / CV</div>
+                    </a>
+                    <a href="#layanan" onclick="selectLayanan(6)" data-sid="ketik_surat">
+                        <div class="dropdown-item-icon" style="background:rgba(139,92,246,0.15);">⌨️</div>
+                        <div class="dropdown-item-title">Ketik Surat</div>
                     </a>
                 </div>
             </div>
@@ -243,7 +247,10 @@
             <h1>Solusi Cepat layanan Dokumen dan Tugas Kamu...</h1>
 
             <p>
-                Lamaran/CV ,Penomoran halaman, daftar isi / tabel / gambar / lampiran otomatis, hingga undangan digital premium.
+                Selesaikan dokumen skripsi, laporan, dan administrasi lebih cepat bersama kami.
+                Penomoran halaman otomatis, daftar isi&nbsp;/ tabel&nbsp;/ gambar&nbsp;/ lampiran instan,
+                CV &amp; lamaran kerja profesional, hingga pengetikan surat —
+                semua dikerjakan cepat, rapi, dan sesuai standar.
             </p>
 
         </div>
@@ -349,7 +356,7 @@
                         Layanan apa saja yang tersedia di ADK Photocopy?
                         <span class="faq-icon"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></span>
                     </button>
-                    <div class="faq-a">Tersedia berbagai layanan: <strong>Penomoran Halaman</strong>, Daftar Isi Otomatis, Daftar Tabel Otomatis, Daftar Gambar Otomatis, Daftar Lampiran Otomatis, dan Ketik / Lamaran / CV.</div>
+                    <div class="faq-a">Tersedia berbagai layanan: <strong>Penomoran Halaman</strong>, Daftar Isi Otomatis, Daftar Tabel Otomatis, Daftar Gambar Otomatis, Daftar Lampiran Otomatis, Lamaran / CV, dan Ketik Surat.</div>
                 </div>
                 <div class="faq-item">
                     <button class="faq-q" onclick="toggleFaq(this)">
@@ -420,7 +427,8 @@
                 <a href="#layanan" style="opacity:0.5" onclick="selectLayanan(2)">Daftar Tabel Otomatis</a>
                 <a href="#layanan" style="opacity:0.5" onclick="selectLayanan(3)">Daftar Gambar Otomatis</a>
                 <a href="#layanan" style="opacity:0.5" onclick="selectLayanan(4)">Daftar Lampiran Otomatis</a>
-                <a href="#layanan" style="opacity:0.5" onclick="selectLayanan(5)">Ketik / Lamaran / CV</a>
+                <a href="#layanan" style="opacity:0.5" onclick="selectLayanan(5)">Lamaran / CV</a>
+                <a href="#layanan" style="opacity:0.5" onclick="selectLayanan(6)">Ketik Surat</a>
             </div>
             <div class="footer-col">
                 <h4>Bantuan</h4>
@@ -460,11 +468,12 @@
     <script>
     var LAYANAN = [
         { id:'penomoran',       name:'Penomoran Halaman',        icon:'📄', title:'Penomoran Halaman Otomatis, Cepat & Akurat',      desc:'Solusi praktis penomoran halaman sesuai pedoman kampus, tanpa ribet, tanpa software tambahan.',        link:'jasa.html' },
-        { id:'daftar_isi',      name:'Daftar Isi Otomatis',      icon:'📑', title:'Daftar Isi Otomatis, Rapi & Terstruktur',         desc:'Generate daftar isi dokumen secara otomatis sesuai format penulisan ilmiah kampus.',                 link:'#' },
+        { id:'daftar_isi',      name:'Daftar Isi Otomatis',      icon:'📑', title:'Daftar Isi Otomatis, Rapi & Terstruktur',         desc:'Generate daftar isi dokumen secara otomatis sesuai format penulisan ilmiah kampus.',                 link:'daftar-isi.html' },
         { id:'daftar_tabel',    name:'Daftar Tabel Otomatis',    icon:'📊', title:'Daftar Tabel Otomatis, Lengkap & Akurat',         desc:'Buat daftar tabel lengkap secara otomatis untuk skripsi dan laporan kampus.',                         link:'#' },
         { id:'daftar_gambar',   name:'Daftar Gambar Otomatis',   icon:'🖼️', title:'Daftar Gambar Otomatis, Lengkap & Rapi',          desc:'Generate daftar gambar dokumen secara otomatis sesuai standar penulisan kampus.',                     link:'#' },
         { id:'daftar_lampiran', name:'Daftar Lampiran Otomatis', icon:'📎', title:'Daftar Lampiran Otomatis, Teratur & Akurat',      desc:'Buat daftar lampiran lengkap dan terstruktur secara otomatis untuk dokumen akademik.',                 link:'#' },
-        { id:'ketik',           name:'Ketik / Lamaran / CV',     icon:'✍️', title:'Ketik Dokumen, Lamaran & CV Profesional',         desc:'Layanan pengetikan dokumen, surat lamaran kerja, dan CV profesional siap kirim.',                     link:'#' }
+        { id:'lamaran_cv',      name:'Lamaran / CV',             icon:'📋', title:'Lamaran Kerja & CV Profesional',                  desc:'Layanan pembuatan surat lamaran kerja dan CV profesional yang menarik, rapi, dan siap kirim.',          link:'#' },
+        { id:'ketik_surat',     name:'Ketik Surat',              icon:'⌨️', title:'Ketik Surat & Dokumen Cepat',                     desc:'Layanan pengetikan surat dan dokumen apapun dengan cepat, rapi, dan siap pakai.',                         link:'#' }
     ];
 
     /* ── Ilustrasi SVG per layanan ─────────────────────────────────────── */
@@ -514,51 +523,80 @@
             '<circle cx="152" cy="119" r="5" fill="rgba(167,139,250,0.7)"/>' +
             '</svg>',
 
-        /* Daftar Tabel — grid 3x4 bersih dengan header berwarna */
+        /* Daftar Tabel — list style, warna hijau */
         daftar_tabel:
             '<svg width="100%" height="100%" viewBox="0 0 200 160" xmlns="http://www.w3.org/2000/svg">' +
-            '<circle cx="100" cy="80" r="62" fill="rgba(52,211,153,0.06)"/>' +
-            '<rect x="30" y="30" width="140" height="100" rx="10" fill="rgba(8,13,48,0.9)" stroke="rgba(52,211,153,0.4)" stroke-width="2"/>' +
-            '<rect x="30" y="30" width="140" height="24" rx="10" fill="rgba(4,100,70,0.7)"/>' +
-            '<rect x="30" y="46" width="140" height="8" fill="rgba(4,100,70,0.7)"/>' +
-            '<rect x="36" y="37" width="32" height="5" rx="2.5" fill="rgba(52,211,153,0.7)"/>' +
-            '<rect x="80" y="37" width="38" height="5" rx="2.5" fill="rgba(52,211,153,0.7)"/>' +
-            '<rect x="130" y="37" width="32" height="5" rx="2.5" fill="rgba(52,211,153,0.7)"/>' +
-            '<line x1="77" y1="54" x2="77" y2="130" stroke="rgba(52,211,153,0.25)" stroke-width="1"/>' +
-            '<line x1="127" y1="54" x2="127" y2="130" stroke="rgba(52,211,153,0.25)" stroke-width="1"/>' +
-            '<line x1="30" y1="76" x2="170" y2="76" stroke="rgba(52,211,153,0.2)" stroke-width="1"/>' +
-            '<line x1="30" y1="98" x2="170" y2="98" stroke="rgba(52,211,153,0.2)" stroke-width="1"/>' +
-            '<line x1="30" y1="114" x2="170" y2="114" stroke="rgba(52,211,153,0.2)" stroke-width="1"/>' +
+            '<circle cx="100" cy="80" r="62" fill="rgba(52,211,153,0.07)"/>' +
+            '<rect x="38" y="38" width="8" height="8" rx="2" fill="rgba(52,211,153,0.8)"/>' +
+            '<rect x="52" y="39" width="80" height="6" rx="3" fill="rgba(255,255,255,0.85)"/>' +
+            '<circle cx="152" cy="42" r="5" fill="rgba(52,211,153,0.7)"/>' +
+            '<rect x="46" y="55" width="4" height="4" rx="1" fill="rgba(52,211,153,0.5)"/>' +
+            '<rect x="56" y="56" width="60" height="4" rx="2" fill="rgba(255,255,255,0.35)"/>' +
+            '<circle cx="140" cy="58" r="4" fill="rgba(52,211,153,0.4)"/>' +
+            '<rect x="46" y="68" width="4" height="4" rx="1" fill="rgba(52,211,153,0.5)"/>' +
+            '<rect x="56" y="69" width="68" height="4" rx="2" fill="rgba(255,255,255,0.35)"/>' +
+            '<circle cx="140" cy="71" r="4" fill="rgba(52,211,153,0.4)"/>' +
+            '<rect x="38" y="83" width="8" height="8" rx="2" fill="rgba(52,211,153,0.8)"/>' +
+            '<rect x="52" y="84" width="72" height="6" rx="3" fill="rgba(255,255,255,0.85)"/>' +
+            '<circle cx="152" cy="87" r="5" fill="rgba(52,211,153,0.7)"/>' +
+            '<rect x="46" y="100" width="4" height="4" rx="1" fill="rgba(52,211,153,0.5)"/>' +
+            '<rect x="56" y="101" width="56" height="4" rx="2" fill="rgba(255,255,255,0.35)"/>' +
+            '<circle cx="140" cy="103" r="4" fill="rgba(52,211,153,0.4)"/>' +
+            '<rect x="38" y="115" width="8" height="8" rx="2" fill="rgba(52,211,153,0.8)"/>' +
+            '<rect x="52" y="116" width="76" height="6" rx="3" fill="rgba(255,255,255,0.85)"/>' +
+            '<circle cx="152" cy="119" r="5" fill="rgba(52,211,153,0.7)"/>' +
             '</svg>',
 
-        /* Daftar Gambar — frame foto dengan lanskap */
+        /* Daftar Gambar — list style, warna kuning/amber */
         daftar_gambar:
             '<svg width="100%" height="100%" viewBox="0 0 200 160" xmlns="http://www.w3.org/2000/svg">' +
-            '<circle cx="100" cy="80" r="62" fill="rgba(251,191,36,0.06)"/>' +
-            '<rect x="30" y="22" width="140" height="108" rx="10" fill="rgba(8,13,48,0.9)" stroke="rgba(251,191,36,0.4)" stroke-width="2"/>' +
-            '<rect x="42" y="34" width="116" height="78" rx="6" fill="rgba(251,191,36,0.08)" stroke="rgba(251,191,36,0.3)" stroke-width="1.5"/>' +
-            '<circle cx="68" cy="52" r="10" fill="rgba(251,191,36,0.35)"/>' +
-            '<circle cx="68" cy="52" r="5" fill="rgba(251,191,36,0.6)"/>' +
-            '<polygon points="42,112 75,72 98,90 120,68 158,112" fill="rgba(251,191,36,0.18)"/>' +
-            '<polygon points="42,112 75,72 98,90 120,68 158,112" fill="none" stroke="rgba(251,191,36,0.4)" stroke-width="1.5" stroke-linejoin="round"/>' +
-            '<rect x="42" y="118" width="116" height="4" rx="2" fill="rgba(255,255,255,0.2)"/>' +
-            '<rect x="42" y="125" width="80" height="3" rx="1.5" fill="rgba(255,255,255,0.12)"/>' +
+            '<circle cx="100" cy="80" r="62" fill="rgba(251,191,36,0.07)"/>' +
+            '<rect x="38" y="38" width="8" height="8" rx="2" fill="rgba(251,191,36,0.8)"/>' +
+            '<rect x="52" y="39" width="80" height="6" rx="3" fill="rgba(255,255,255,0.85)"/>' +
+            '<circle cx="152" cy="42" r="5" fill="rgba(251,191,36,0.7)"/>' +
+            '<rect x="46" y="55" width="4" height="4" rx="1" fill="rgba(251,191,36,0.5)"/>' +
+            '<rect x="56" y="56" width="60" height="4" rx="2" fill="rgba(255,255,255,0.35)"/>' +
+            '<circle cx="140" cy="58" r="4" fill="rgba(251,191,36,0.4)"/>' +
+            '<rect x="46" y="68" width="4" height="4" rx="1" fill="rgba(251,191,36,0.5)"/>' +
+            '<rect x="56" y="69" width="68" height="4" rx="2" fill="rgba(255,255,255,0.35)"/>' +
+            '<circle cx="140" cy="71" r="4" fill="rgba(251,191,36,0.4)"/>' +
+            '<rect x="38" y="83" width="8" height="8" rx="2" fill="rgba(251,191,36,0.8)"/>' +
+            '<rect x="52" y="84" width="72" height="6" rx="3" fill="rgba(255,255,255,0.85)"/>' +
+            '<circle cx="152" cy="87" r="5" fill="rgba(251,191,36,0.7)"/>' +
+            '<rect x="46" y="100" width="4" height="4" rx="1" fill="rgba(251,191,36,0.5)"/>' +
+            '<rect x="56" y="101" width="56" height="4" rx="2" fill="rgba(255,255,255,0.35)"/>' +
+            '<circle cx="140" cy="103" r="4" fill="rgba(251,191,36,0.4)"/>' +
+            '<rect x="38" y="115" width="8" height="8" rx="2" fill="rgba(251,191,36,0.8)"/>' +
+            '<rect x="52" y="116" width="76" height="6" rx="3" fill="rgba(255,255,255,0.85)"/>' +
+            '<circle cx="152" cy="119" r="5" fill="rgba(251,191,36,0.7)"/>' +
             '</svg>',
 
-        /* Daftar Lampiran — paperclip besar terpusat */
+        /* Daftar Lampiran — list style, warna pink */
         daftar_lampiran:
             '<svg width="100%" height="100%" viewBox="0 0 200 160" xmlns="http://www.w3.org/2000/svg">' +
-            '<circle cx="100" cy="80" r="62" fill="rgba(244,114,182,0.06)"/>' +
-            '<rect x="55" y="26" width="60" height="90" rx="10" fill="rgba(8,13,48,0.85)" stroke="rgba(244,114,182,0.3)" stroke-width="1.5"/>' +
-            '<rect x="63" y="36" width="44" height="4" rx="2" fill="rgba(255,255,255,0.18)"/>' +
-            '<rect x="63" y="46" width="36" height="3" rx="1.5" fill="rgba(255,255,255,0.12)"/>' +
-            '<rect x="63" y="54" width="40" height="3" rx="1.5" fill="rgba(255,255,255,0.12)"/>' +
-            '<rect x="63" y="62" width="32" height="3" rx="1.5" fill="rgba(255,255,255,0.10)"/>' +
-            '<path d="M130 118 C130 96 112 80 92 80 C72 80 58 96 58 116 L58 52 C58 36 70 26 84 26 C98 26 108 36 108 52 L108 108 C108 116 103 122 96 122 C89 122 84 116 84 108 L84 60" stroke="rgba(244,114,182,0.75)" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>' +
+            '<circle cx="100" cy="80" r="62" fill="rgba(244,114,182,0.07)"/>' +
+            '<rect x="38" y="38" width="8" height="8" rx="2" fill="rgba(244,114,182,0.8)"/>' +
+            '<rect x="52" y="39" width="80" height="6" rx="3" fill="rgba(255,255,255,0.85)"/>' +
+            '<circle cx="152" cy="42" r="5" fill="rgba(244,114,182,0.7)"/>' +
+            '<rect x="46" y="55" width="4" height="4" rx="1" fill="rgba(244,114,182,0.5)"/>' +
+            '<rect x="56" y="56" width="60" height="4" rx="2" fill="rgba(255,255,255,0.35)"/>' +
+            '<circle cx="140" cy="58" r="4" fill="rgba(244,114,182,0.4)"/>' +
+            '<rect x="46" y="68" width="4" height="4" rx="1" fill="rgba(244,114,182,0.5)"/>' +
+            '<rect x="56" y="69" width="68" height="4" rx="2" fill="rgba(255,255,255,0.35)"/>' +
+            '<circle cx="140" cy="71" r="4" fill="rgba(244,114,182,0.4)"/>' +
+            '<rect x="38" y="83" width="8" height="8" rx="2" fill="rgba(244,114,182,0.8)"/>' +
+            '<rect x="52" y="84" width="72" height="6" rx="3" fill="rgba(255,255,255,0.85)"/>' +
+            '<circle cx="152" cy="87" r="5" fill="rgba(244,114,182,0.7)"/>' +
+            '<rect x="46" y="100" width="4" height="4" rx="1" fill="rgba(244,114,182,0.5)"/>' +
+            '<rect x="56" y="101" width="56" height="4" rx="2" fill="rgba(255,255,255,0.35)"/>' +
+            '<circle cx="140" cy="103" r="4" fill="rgba(244,114,182,0.4)"/>' +
+            '<rect x="38" y="115" width="8" height="8" rx="2" fill="rgba(244,114,182,0.8)"/>' +
+            '<rect x="52" y="116" width="76" height="6" rx="3" fill="rgba(255,255,255,0.85)"/>' +
+            '<circle cx="152" cy="119" r="5" fill="rgba(244,114,182,0.7)"/>' +
             '</svg>',
 
-        /* Ketik/CV — profil orang + baris konten */
-        ketik:
+        /* Lamaran/CV — profil orang + baris konten */
+        lamaran_cv:
             '<svg width="100%" height="100%" viewBox="0 0 200 160" xmlns="http://www.w3.org/2000/svg">' +
             '<circle cx="100" cy="80" r="62" fill="rgba(96,165,250,0.06)"/>' +
             '<rect x="26" y="20" width="148" height="120" rx="10" fill="rgba(8,13,48,0.9)" stroke="rgba(96,165,250,0.4)" stroke-width="2"/>' +
@@ -573,6 +611,38 @@
             '<rect x="36" y="110" width="128" height="4" rx="2" fill="rgba(255,255,255,0.14)"/>' +
             '<rect x="36" y="120" width="110" height="4" rx="2" fill="rgba(255,255,255,0.10)"/>' +
             '<path d="M36 133 Q55 126 78 130 Q98 126 118 130" stroke="rgba(96,165,250,0.45)" stroke-width="2" fill="none" stroke-linecap="round"/>' +
+            '</svg>',
+
+        /* Ketik Surat — keyboard + surat melayang */
+        ketik_surat:
+            '<svg width="100%" height="100%" viewBox="0 0 200 160" xmlns="http://www.w3.org/2000/svg">' +
+            '<circle cx="100" cy="80" r="62" fill="rgba(167,139,250,0.07)"/>' +
+            '<rect x="55" y="10" width="90" height="76" rx="6" fill="rgba(8,13,48,0.92)" stroke="rgba(167,139,250,0.5)" stroke-width="2"/>' +
+            '<path d="M125 10 L145 30 L125 30 Z" fill="rgba(167,139,250,0.22)"/>' +
+            '<rect x="65" y="24" width="48" height="5" rx="2.5" fill="rgba(167,139,250,0.7)"/>' +
+            '<rect x="65" y="35" width="60" height="4" rx="2" fill="rgba(255,255,255,0.22)"/>' +
+            '<rect x="65" y="44" width="52" height="4" rx="2" fill="rgba(255,255,255,0.16)"/>' +
+            '<rect x="65" y="53" width="56" height="4" rx="2" fill="rgba(255,255,255,0.16)"/>' +
+            '<rect x="65" y="62" width="42" height="4" rx="2" fill="rgba(255,255,255,0.12)"/>' +
+            '<rect x="65" y="74" width="2" height="8" rx="1" fill="rgba(167,139,250,0.85)"/>' +
+            '<rect x="20" y="100" width="160" height="50" rx="9" fill="rgba(8,13,48,0.93)" stroke="rgba(167,139,250,0.3)" stroke-width="1.5"/>' +
+            '<rect x="27" y="107" width="11" height="9" rx="2.5" fill="rgba(167,139,250,0.3)"/>' +
+            '<rect x="42" y="107" width="11" height="9" rx="2.5" fill="rgba(167,139,250,0.3)"/>' +
+            '<rect x="57" y="107" width="11" height="9" rx="2.5" fill="rgba(167,139,250,0.3)"/>' +
+            '<rect x="72" y="107" width="11" height="9" rx="2.5" fill="rgba(167,139,250,0.3)"/>' +
+            '<rect x="87" y="107" width="11" height="9" rx="2.5" fill="rgba(167,139,250,0.3)"/>' +
+            '<rect x="102" y="107" width="11" height="9" rx="2.5" fill="rgba(167,139,250,0.3)"/>' +
+            '<rect x="117" y="107" width="11" height="9" rx="2.5" fill="rgba(167,139,250,0.3)"/>' +
+            '<rect x="132" y="107" width="11" height="9" rx="2.5" fill="rgba(167,139,250,0.3)"/>' +
+            '<rect x="147" y="107" width="16" height="9" rx="2.5" fill="rgba(167,139,250,0.2)"/>' +
+            '<rect x="27" y="120" width="11" height="9" rx="2.5" fill="rgba(255,255,255,0.14)"/>' +
+            '<rect x="42" y="120" width="11" height="9" rx="2.5" fill="rgba(255,255,255,0.14)"/>' +
+            '<rect x="57" y="120" width="11" height="9" rx="2.5" fill="rgba(255,255,255,0.14)"/>' +
+            '<rect x="72" y="120" width="11" height="9" rx="2.5" fill="rgba(255,255,255,0.14)"/>' +
+            '<rect x="87" y="120" width="11" height="9" rx="2.5" fill="rgba(255,255,255,0.14)"/>' +
+            '<rect x="102" y="120" width="11" height="9" rx="2.5" fill="rgba(255,255,255,0.14)"/>' +
+            '<rect x="117" y="120" width="11" height="9" rx="2.5" fill="rgba(255,255,255,0.14)"/>' +
+            '<rect x="60" y="133" width="80" height="8" rx="3" fill="rgba(167,139,250,0.35)"/>' +
             '</svg>'
     };
 
@@ -602,7 +672,7 @@
         var isMaint = _maintStatus[s.id] === true;
         var panel = document.getElementById('layDetail');
         var btnHtml = isMaint
-            ? '<button class="lay-btn-main lay-btn-maint" disabled>🔧 Maintenance</button>'
+            ? '<button class="lay-btn-main lay-btn-full lay-btn-maint" disabled>🔧 Maintenance</button>'
             : '<a href="' + s.link + '" class="lay-btn-main lay-btn-full">Buat Sekarang</a>';
         var illus = SERVICE_ILLUS[s.id] || '';
         panel.innerHTML =
@@ -613,12 +683,16 @@
                     '<div class="lay-steps">' +
                         '<div class="lay-step"><span class="lay-step-num">1</span><span>Upload File</span></div>' +
                         '<div class="lay-step-arrow">→</div>' +
-                        '<div class="lay-step"><span class="lay-step-num">2</span><span>Lihat Hasil</span></div>' +
+                        '<div class="lay-step"><span class="lay-step-num">2</span><span>Preview Hasil</span></div>' +
                         '<div class="lay-step-arrow">→</div>' +
                         '<div class="lay-step"><span class="lay-step-num">3</span><span>Bayar</span></div>' +
+                        '<div class="lay-step-arrow">→</div>' +
+                        '<div class="lay-step"><span class="lay-step-num">4</span><span>Unduh File</span></div>' +
                     '</div>' +
-                    '<p class="lay-admin-text">Minta bantuan admin : <a href="https://wa.me/6281228790091" target="_blank" rel="noopener" class="lay-admin-link">Hubungi Admin</a></p>' +
-                    '<p class="lay-privacy">Kami sangat menjaga kerahasiaan setiap dokumen pelanggan. File hanya digunakan untuk proses layanan dan tidak disimpan permanen.</p>' +
+                    '<div class="lay-bottom-info">' +
+                        '<p class="lay-admin-text">Minta bantuan admin : <a href="https://wa.me/6281228790091" target="_blank" rel="noopener" class="lay-admin-link">Hubungi Admin</a></p>' +
+                        '<p class="lay-privacy"><span style="color:#ef4444;font-weight:700;margin-right:4px;">!</span>Kami sangat menjaga kerahasiaan setiap dokumen pelanggan. File hanya digunakan untuk proses layanan dan tidak disimpan permanen.</p>' +
+                    '</div>' +
                 '</div>' +
                 '<div class="lay-detail-right">' +
                     '<div class="lay-img-wrap">' + illus + '</div>' +
@@ -647,9 +721,23 @@
     renderCarousel();
     renderDetail();
 
-    fetch('api/maintenance_status.php')
+    fetch('api/maintenance_status.php?_=' + Date.now(), { cache: 'no-store' })
         .then(function(r){ return r.json(); })
-        .then(function(d){ _maintStatus = d.services || {}; renderDetail(); })
+        .then(function(d){
+            _maintStatus = d.services || {};
+            renderDetail();
+            document.querySelectorAll('.dropdown-menu a[data-sid]').forEach(function(el) {
+                var sid = el.getAttribute('data-sid');
+                if (_maintStatus[sid] === true) {
+                    el.removeAttribute('href');
+                    el.removeAttribute('onclick');
+                    el.style.pointerEvents = 'none';
+                    el.style.cursor = 'default';
+                    var iconEl = el.querySelector('.dropdown-item-icon');
+                    if (iconEl) iconEl.insertAdjacentHTML('beforeend', '<span class="dropdown-maint-badge">!</span>');
+                }
+            });
+        })
         .catch(function(){});
     </script>
 
