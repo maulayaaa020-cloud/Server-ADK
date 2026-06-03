@@ -324,16 +324,35 @@ def detect_headings(doc, max_level):
             if not _FRONT_MATTER_RE.match(text):
                 continue
 
-        # ── Context tracker untuk model alfabet ─────────────────────────────
-        # Setelah A./B./C. (H2 alfabet), angka 1./2. diperlakukan sebagai H3.
-        if lvl == 2 and _ALPHA_H2_RE.match(text):
-            in_alpha_ctx = True          # masuk konteks alfabet
-        elif lvl == 1:
-            in_alpha_ctx = False         # BAB baru / H1 reset konteks
-
-        # Dalam konteks alfabet: 1./2. adalah H3, bukan H1
+        # Dalam konteks alfabet: 1./2. adalah H3, bukan H1 — cek SEBELUM update context
         if in_alpha_ctx and lvl == 1 and _SINGLE_DIG_RE.match(text):
             lvl = 3
+
+        # Dalam dokumen BAB-structure: 1./2./3. tanpa Heading style → bukan heading.
+        # Paragraph Normal yang cocok digit-dot setelah BAB I adalah sub-item/label,
+        # bukan judul bab baru (bab baru pakai BAB prefix).
+        if (lvl == 1
+                and _SINGLE_DIG_RE.match(text)
+                and not _FRONT_MATTER_RE.match(text)
+                and not re.match(r'^\s*BAB\s+', text, re.IGNORECASE)
+                and first_bab is not None
+                and i > first_bab):
+            _style = para.style
+            _has_hdg = False
+            while _style:
+                _sname = _style.name or ''
+                if _sname.startswith('Heading ') or _sname in _ALL_HEADING_STYLES:
+                    _has_hdg = True
+                    break
+                _style = _style.base_style
+            if not _has_hdg:
+                continue
+
+        # ── Context tracker update ────────────────────────────────────────────
+        if lvl == 2 and _ALPHA_H2_RE.match(text):
+            in_alpha_ctx = True
+        elif lvl == 1:
+            in_alpha_ctx = False
 
         if lvl > max_level:
             continue
