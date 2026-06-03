@@ -1082,39 +1082,44 @@ def _make_entry_pPr(level, use_dots):
 
 def _make_toc_field_para(max_level):
     """
-    Buat TOC field dengan dirty=true.
-    Word otomatis hitung nomor halaman saat file dibuka (popup → klik Yes → selesai).
-    Setelah user simpan file (Ctrl+S), popup tidak muncul lagi.
+    Buat TOC field struktur standar Word (2 paragraf):
+      Para 1: fldChar begin + instrText + fldChar separate
+      Para 2: fldChar end  (paragraf terpisah, placeholder sebelum Word update)
+    Struktur 2-para mencegah Word memindahkan fldChar end ke tempat yang salah
+    (misalnya setelah page break) saat TOC di-update.
     """
-    p = OxmlElement('w:p')
+    # Para 1: begin + instrText + separate
+    p1 = OxmlElement('w:p')
 
     r_begin = OxmlElement('w:r')
     fc = OxmlElement('w:fldChar')
     fc.set(qn('w:fldCharType'), 'begin')
     fc.set(qn('w:dirty'), 'true')
     r_begin.append(fc)
-    p.append(r_begin)
+    p1.append(r_begin)
 
     r_instr = OxmlElement('w:r')
     instr = OxmlElement('w:instrText')
     instr.set('{http://www.w3.org/XML/1998/namespace}space', 'preserve')
     instr.text = f' TOC \\h \\z \\u '
     r_instr.append(instr)
-    p.append(r_instr)
+    p1.append(r_instr)
 
     r_sep = OxmlElement('w:r')
     fc_sep = OxmlElement('w:fldChar')
     fc_sep.set(qn('w:fldCharType'), 'separate')
     r_sep.append(fc_sep)
-    p.append(r_sep)
+    p1.append(r_sep)
 
+    # Para 2: end (paragraf terpisah)
+    p2 = OxmlElement('w:p')
     r_end = OxmlElement('w:r')
     fc_end = OxmlElement('w:fldChar')
     fc_end.set(qn('w:fldCharType'), 'end')
     r_end.append(fc_end)
-    p.append(r_end)
+    p2.append(r_end)
 
-    return p
+    return [p1, p2]
 
 
 # ── Static TOC (tanpa field) ──────────────────────────────────────────────────
@@ -1294,6 +1299,55 @@ def _make_page_break_para():
     r.append(br)
     p.append(r)
     return p
+
+
+def _find_sdt_after_daftar(body, daftar_p_elem):
+    """
+    Cari SDT yang langsung setelah paragraf DAFTAR ISI di body children.
+    Kembalikan (sdt_element, has_toc_content) atau (None, False).
+    has_toc_content=True jika SDT sudah berisi TOC field/konten.
+    """
+    children = list(body)
+    daftar_child_idx = None
+    for i, child in enumerate(children):
+        if child is daftar_p_elem:
+            daftar_child_idx = i
+            break
+    if daftar_child_idx is None:
+        return None, False
+    next_idx = daftar_child_idx + 1
+    if next_idx >= len(children):
+        return None, False
+    next_child = children[next_idx]
+    if next_child.tag != qn('w:sdt'):
+        return None, False
+    has_toc = bool(next_child.findall(f'.//{qn("w:instrText")}'))
+    return next_child, has_toc
+
+
+def _populate_sdt_with_toc(sdt, toc_paras):
+    """
+    Isi sdtContent SDT dengan TOCHeading + TOC field paragraphs.
+    Konten lama dihapus dulu.
+    """
+    sdtContent = sdt.find(qn('w:sdtContent'))
+    if sdtContent is None:
+        sdtContent = OxmlElement('w:sdtContent')
+        sdt.append(sdtContent)
+    for child in list(sdtContent):
+        sdtContent.remove(child)
+
+    # Tambahkan TOCHeading paragraph (header row kosong)
+    p_heading = OxmlElement('w:p')
+    pPr_h = OxmlElement('w:pPr')
+    pStyle_h = OxmlElement('w:pStyle')
+    pStyle_h.set(qn('w:val'), 'TOCHeading')
+    pPr_h.append(pStyle_h)
+    p_heading.append(pPr_h)
+    sdtContent.append(p_heading)
+
+    for p in toc_paras:
+        sdtContent.append(p)
 
 
 def _remove_old_toc_block(doc, daftar_idx):
@@ -1515,12 +1569,12 @@ def main():
     enable_auto_update_fields(doc)
 
     # ── Buat TOC field ───────────────────────────────────────────────────────
-    toc_paras = [_make_toc_field_para(max_level)]
+    toc_paras = _make_toc_field_para(max_level)  # returns [p_begin, p_end]
 
     # ── Sisipkan setelah "DAFTAR ISI" ────────────────────────────────────────
     daftar_idx = find_daftar_isi_idx(doc)
     if daftar_idx is not None:
-        # Hapus seluruh TOC field lama (begin → end) jika ada
+        # Hapus seluruh TOC field lama (begin → end) di paragraf langsung jika ada
         _remove_old_toc_block(doc, daftar_idx)
 
         import copy as _copy
@@ -1539,49 +1593,71 @@ def main():
                 saved_sectPr = _copy.deepcopy(sect_pr)
                 daftar_pPr.remove(sect_pr)
 
-        for new_p in reversed(toc_paras):
-            insert_element_after(doc, daftar_idx, new_p)
+        # Cari SDT placeholder langsung setelah DAFTAR ISI heading
+        sdt_elem, sdt_has_content = _find_sdt_after_daftar(
+            doc.element.body, daftar_para._p
+        )
 
-        last_inserted = toc_paras[-1]
+        if sdt_elem is not None:
+            # Masukkan TOC ke dalam SDT yang sudah ada — ikuti struktur Word native
+            _populate_sdt_with_toc(sdt_elem, toc_paras)
+            last_inserted = sdt_elem
 
-        # Re-sisipkan sectPr setelah TOC, dalam paragraf kosong baru
-        if saved_sectPr is not None:
-            sect_para = OxmlElement('w:p')
-            sp_pPr = OxmlElement('w:pPr')
-            sp_pPr.append(saved_sectPr)
-            sect_para.append(sp_pPr)
-            last_inserted.addnext(sect_para)
-            last_inserted = sect_para
+            # Re-sisipkan sectPr setelah SDT jika perlu
+            if saved_sectPr is not None:
+                sect_para = OxmlElement('w:p')
+                sp_pPr = OxmlElement('w:pPr')
+                sp_pPr.append(saved_sectPr)
+                sect_para.append(sp_pPr)
+                last_inserted.addnext(sect_para)
+                last_inserted = sect_para
 
-        # Cek apakah sudah ada section break (non-continuous) yang membuat halaman baru.
-        # Jika ya, skip page break agar tidak double.
-        def _sectPr_is_page_breaking(sp):
-            type_el = sp.find(qn('w:type'))
-            val = type_el.get(qn('w:val'), 'nextPage') if type_el is not None else 'nextPage'
-            return val not in ('continuous',)
+            # Heading setelah SDT sudah punya page-break-before dari style —
+            # tidak perlu page break eksplisit agar tidak double.
+        else:
+            # Fallback: tidak ada SDT — sisipkan sebagai paragraf biasa
+            for new_p in reversed(toc_paras):
+                insert_element_after(doc, daftar_idx, new_p)
 
-        _needs_pb = True
-        if saved_sectPr is not None and _sectPr_is_page_breaking(saved_sectPr):
-            _needs_pb = False
-        if _needs_pb:
-            nxt = last_inserted.getnext()
-            while nxt is not None and nxt.tag.endswith('}p'):
-                pPr = nxt.find(qn('w:pPr'))
-                if pPr is not None:
-                    sp = pPr.find(qn('w:sectPr'))
-                    if sp is not None:
-                        if _sectPr_is_page_breaking(sp):
-                            _needs_pb = False
+            last_inserted = toc_paras[-1]
+
+            # Re-sisipkan sectPr setelah TOC, dalam paragraf kosong baru
+            if saved_sectPr is not None:
+                sect_para = OxmlElement('w:p')
+                sp_pPr = OxmlElement('w:pPr')
+                sp_pPr.append(saved_sectPr)
+                sect_para.append(sp_pPr)
+                last_inserted.addnext(sect_para)
+                last_inserted = sect_para
+
+            # Cek apakah sudah ada section break (non-continuous) yang membuat halaman baru.
+            def _sectPr_is_page_breaking(sp):
+                type_el = sp.find(qn('w:type'))
+                val = type_el.get(qn('w:val'), 'nextPage') if type_el is not None else 'nextPage'
+                return val not in ('continuous',)
+
+            _needs_pb = True
+            if saved_sectPr is not None and _sectPr_is_page_breaking(saved_sectPr):
+                _needs_pb = False
+            if _needs_pb:
+                nxt = last_inserted.getnext()
+                while nxt is not None and nxt.tag.endswith('}p'):
+                    pPr = nxt.find(qn('w:pPr'))
+                    if pPr is not None:
+                        sp = pPr.find(qn('w:sectPr'))
+                        if sp is not None:
+                            if _sectPr_is_page_breaking(sp):
+                                _needs_pb = False
+                            break
+                    text = ''.join(t.text or '' for t in nxt.findall(f'.//{qn("w:t")}')).strip()
+                    if text:
                         break
-                text = ''.join(t.text or '' for t in nxt.findall(f'.//{qn("w:t")}')).strip()
-                if text:
-                    break
-                nxt = nxt.getnext()
+                    nxt = nxt.getnext()
 
-        if _needs_pb:
-            pb = _make_page_break_para()
-            last_inserted.addnext(pb)
-            _remove_trailing_empty_paras(pb)
+            if _needs_pb:
+                pb = _make_page_break_para()
+                last_inserted.addnext(pb)
+                _remove_trailing_empty_paras(pb)
 
         insert_pos_desc = f'setelah paragraf "DAFTAR ISI" (index {daftar_idx})'
     else:
