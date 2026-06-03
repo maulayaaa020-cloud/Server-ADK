@@ -9,73 +9,60 @@
     <script>(function(){var t=localStorage.getItem('adkTheme')||'light';document.documentElement.setAttribute('data-theme',t);})();</script>
     <link rel="stylesheet" href="style.css?v=4">
     <style>
-        .page-wrap {
-            max-width: 760px;
-            margin: 0 auto;
-            padding: 60px 24px 80px;
-        }
-        .page-wrap h1 {
-            font-size: 28px;
-            font-weight: 800;
-            color: white;
-            margin-bottom: 8px;
-        }
-        .page-wrap .sub {
-            color: #a78bfa;
-            font-size: 14px;
-            margin-bottom: 40px;
-        }
-        .section {
-            background: rgba(255,255,255,0.04);
-            border: 1px solid rgba(124,58,237,0.2);
-            border-radius: 16px;
-            padding: 28px 32px;
-            margin-bottom: 20px;
-        }
-        .section h2 {
-            font-size: 17px;
-            font-weight: 700;
-            color: #a78bfa;
-            margin: 0 0 12px;
-        }
-        .section p, .section li {
-            font-size: 14px;
-            color: #d1d5db;
-            line-height: 1.8;
-            margin: 0 0 8px;
-        }
+        .page-wrap { max-width: 860px; margin: 0 auto; padding: 60px 24px 80px; }
+        .page-wrap h1 { font-size: 32px; font-weight: 800; color: white; margin-bottom: 8px; }
+        .page-wrap .sub { color: #a78bfa; font-size: 15px; margin-bottom: 40px; }
+        .section { background: rgba(255,255,255,0.04); border: 1px solid rgba(124,58,237,0.2); border-radius: 16px; padding: 28px 32px; margin-bottom: 20px; }
+        .section h2 { font-size: 18px; font-weight: 700; color: #a78bfa; margin: 0 0 14px; }
+        .section p, .section li { font-size: 15px; color: #d1d5db; line-height: 1.8; margin: 0 0 8px; }
         .section ul { padding-left: 20px; margin: 0; }
-        .contact-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 14px;
-            margin-top: 12px;
-        }
-        .contact-item {
-            background: rgba(124,58,237,0.1);
-            border: 1px solid rgba(124,58,237,0.25);
-            border-radius: 10px;
-            padding: 14px 16px;
-        }
+
+        /* Service grid */
+        .service-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; margin-top: 4px; }
+        .service-item { background: rgba(41,182,246,0.06); border: 1px solid rgba(41,182,246,0.18); border-radius: 12px; padding: 16px 18px; display: flex; flex-direction: column; gap: 6px; }
+        .service-icon { font-size: 24px; }
+        .service-name { font-size: 15px; font-weight: 700; color: #e2e8f0; }
+        .service-desc { font-size: 13px; color: #94a3b8; line-height: 1.5; }
+
+        /* Benefit grid */
+        .benefit-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; margin-top: 4px; }
+        .benefit-item { background: rgba(124,58,237,0.08); border: 1px solid rgba(124,58,237,0.2); border-radius: 12px; padding: 18px; text-align: center; }
+        .benefit-icon { font-size: 28px; margin-bottom: 8px; }
+        .benefit-title { font-size: 15px; font-weight: 700; color: white; margin-bottom: 6px; }
+        .benefit-desc { font-size: 13px; color: #94a3b8; line-height: 1.5; }
+
+        /* Step flow */
+        .step-flow { display: flex; align-items: flex-start; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+        .step-flow-item { flex: 1; min-width: 140px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px; }
+        .step-flow-num { width: 40px; height: 40px; border-radius: 50%; background: #1565C0; color: white; font-size: 18px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .step-flow-text { font-size: 14px; color: #d1d5db; line-height: 1.6; }
+        .step-flow-text strong { color: white; display: block; margin-bottom: 2px; }
+        .step-flow-arrow { font-size: 22px; color: #29B6F6; margin-top: 10px; flex-shrink: 0; }
+
+        /* Contact grid */
+        .contact-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-top: 12px; }
+        .contact-item { background: rgba(124,58,237,0.1); border: 1px solid rgba(124,58,237,0.25); border-radius: 10px; padding: 14px 16px; }
         .contact-item .label { font-size: 11px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
         .contact-item .val { font-size: 14px; color: white; font-weight: 600; }
+
+        /* Light mode */
         html[data-theme="light"] .page-wrap h1 { color: #1a2332; }
         html[data-theme="light"] .page-wrap .sub { color: #6d28d9; }
-        html[data-theme="light"] .section {
-            background: #ffffff;
-            border-color: #e2e8f0;
-        }
+        html[data-theme="light"] .section { background: #ffffff; border-color: #e2e8f0; }
         html[data-theme="light"] .section h2 { color: #4f46e5; }
-        html[data-theme="light"] .section p,
-        html[data-theme="light"] .section li { color: #374151; }
-        html[data-theme="light"] strong[style*="color:white"],
-        html[data-theme="light"] strong[style*="color: white"] { color: #1a2332 !important; }
-        html[data-theme="light"] .contact-item {
-            background: #f1f5f9;
-            border-color: #e2e8f0;
-        }
+        html[data-theme="light"] .section p, html[data-theme="light"] .section li { color: #374151; }
+        html[data-theme="light"] .service-item { background: #f8fafc; border-color: rgba(21,101,192,0.2); }
+        html[data-theme="light"] .service-name { color: #1a2332; }
+        html[data-theme="light"] .service-desc { color: #64748b; }
+        html[data-theme="light"] .benefit-item { background: #f1f5f9; border-color: #e2e8f0; }
+        html[data-theme="light"] .benefit-title { color: #1a2332; }
+        html[data-theme="light"] .benefit-desc { color: #64748b; }
+        html[data-theme="light"] .step-flow-text { color: #374151; }
+        html[data-theme="light"] .step-flow-text strong { color: #1a2332; }
+        html[data-theme="light"] .contact-item { background: #f1f5f9; border-color: #e2e8f0; }
         html[data-theme="light"] .contact-item .val { color: #1a2332; }
         html[data-theme="light"] .contact-item .label { color: #64748b; }
+        html[data-theme="light"] strong[style*="color:white"] { color: #1a2332 !important; }
     </style>
 </head>
 <body>
@@ -87,10 +74,48 @@
         <div class="menu">
             <a href="index.html">Home</a>
             <a href="tutorial.html">Tutorial</a>
-            <a href="jasa.html">Jasa</a>
+            <div class="dropdown">
+                <a href="#" class="dropdown-toggle">Jasa ADK <span class="dropdown-arrow">▾</span></a>
+                <div class="dropdown-menu">
+                    <a href="jasa.html"><div class="dropdown-item-icon">📄</div><div class="dropdown-item-title">Penomoran Halaman</div></a>
+                    <a href="daftar-isi.html"><div class="dropdown-item-icon" style="background:rgba(139,92,246,0.15);">📑</div><div class="dropdown-item-title">Daftar Isi Otomatis</div></a>
+                    <a href="index.html"><div class="dropdown-item-icon" style="background:rgba(139,92,246,0.15);">📊</div><div class="dropdown-item-title">Daftar Tabel Otomatis</div></a>
+                    <a href="index.html"><div class="dropdown-item-icon" style="background:rgba(139,92,246,0.15);">🖼️</div><div class="dropdown-item-title">Daftar Gambar Otomatis</div></a>
+                    <a href="index.html"><div class="dropdown-item-icon" style="background:rgba(139,92,246,0.15);">📎</div><div class="dropdown-item-title">Daftar Lampiran Otomatis</div></a>
+                    <a href="index.html"><div class="dropdown-item-icon" style="background:rgba(96,165,250,0.15);">📋</div><div class="dropdown-item-title">Lamaran / CV</div></a>
+                    <a href="index.html"><div class="dropdown-item-icon" style="background:rgba(139,92,246,0.15);">⌨️</div><div class="dropdown-item-title">Ketik Surat</div></a>
+                </div>
+            </div>
+            <div class="dropdown">
+                <a href="#" class="dropdown-toggle">Contact Us <span class="dropdown-arrow">▾</span></a>
+                <div class="dropdown-menu">
+                    <div class="dropdown-group-label">Hubungi Kami</div>
+                    <a href="https://wa.me/6281228790091" target="_blank" rel="noopener"><div class="dropdown-item-icon" style="background:rgba(37,211,102,0.15);">💬</div><div class="dropdown-item-title">WA Admin</div></a>
+                    <a href="https://wa.me/6287700277748" target="_blank" rel="noopener"><div class="dropdown-item-icon" style="background:rgba(37,211,102,0.15);">🏪</div><div class="dropdown-item-title">WA Toko (Cepiring)</div></a>
+                    <a href="https://wa.me/62895341996647" target="_blank" rel="noopener"><div class="dropdown-item-icon" style="background:rgba(37,211,102,0.15);">🏪</div><div class="dropdown-item-title">WA Toko (Rowosari)</div></a>
+                    <div class="dropdown-divider"></div>
+                    <div class="dropdown-group-label">Sosial Media</div>
+                    <a href="https://www.instagram.com/adkivia" target="_blank" rel="noopener"><div class="dropdown-item-icon" style="background:rgba(225,48,108,0.15);">📸</div><div class="dropdown-item-title">Instagram</div></a>
+                    <a href="https://www.tiktok.com/@adkivia" target="_blank" rel="noopener"><div class="dropdown-item-icon" style="background:rgba(0,0,0,0.12);">🎵</div><div class="dropdown-item-title">TikTok</div></a>
+                </div>
+            </div>
         </div>
         <div class="nav-right">
             <button class="theme-toggle" onclick="toggleTheme()" title="Mode Siang">☀️</button>
+            <a href="cek_pembelian.php" class="btn-nav">Cek Pembelian</a>
+        </div>
+        <div class="mobile-jasa-drop" id="jasaDrop">
+            <button class="mobile-jasa-link" onclick="toggleJasaDrop()">Contact <span class="mobile-jasa-arrow">▾</span></button>
+            <div class="mobile-jasa-menu">
+                <div class="dropdown-group-label">Hubungi Kami</div>
+                <a href="https://wa.me/6281228790091" target="_blank" rel="noopener">💬 WA Admin</a>
+                <a href="https://wa.me/6287700277748" target="_blank" rel="noopener">🏪 WA Toko (Cepiring)</a>
+                <a href="https://wa.me/62895341996647" target="_blank" rel="noopener">🏪 WA Toko (Rowosari)</a>
+                <div class="dropdown-divider"></div>
+                <div class="dropdown-group-label">Sosial Media</div>
+                <a href="https://www.instagram.com/adkivia" target="_blank" rel="noopener">📸 Instagram</a>
+                <a href="https://www.tiktok.com/@adkivia" target="_blank" rel="noopener">🎵 TikTok</a>
+            </div>
         </div>
         <button class="theme-toggle theme-toggle-mob" onclick="toggleTheme()" title="Mode Siang">☀️</button>
         <button class="hamburger" onclick="openMobileMenu()"><span></span><span></span><span></span></button>
@@ -111,6 +136,12 @@
             <a href="index.html">Home</a>
             <a href="tutorial.html">Tutorial</a>
             <a href="jasa.html">Jasa ADK</a>
+            <div class="mobile-nav-section-title">Contact Us</div>
+            <a href="https://wa.me/6281228790091" target="_blank" rel="noopener" class="mobile-nav-contact">💬 WA Admin</a>
+            <a href="https://wa.me/6287700277748" target="_blank" rel="noopener" class="mobile-nav-contact">🏪 WA Toko (Cepiring)</a>
+            <a href="https://wa.me/62895341996647" target="_blank" rel="noopener" class="mobile-nav-contact">🏪 WA Toko (Rowosari)</a>
+            <a href="https://www.instagram.com/adkivia" target="_blank" rel="noopener" class="mobile-nav-contact">📸 Instagram</a>
+            <a href="https://www.tiktok.com/@adkivia" target="_blank" rel="noopener" class="mobile-nav-contact">🎵 TikTok</a>
         </div>
         <div class="mobile-nav-footer">
             <a href="cek_pembelian.php" class="btn-nav">Cek Pembelian</a>
@@ -119,6 +150,8 @@
     <script>
         function openMobileMenu()  { document.getElementById('mobileNav').classList.add('open'); document.body.style.overflow='hidden'; }
         function closeMobileMenu() { document.getElementById('mobileNav').classList.remove('open'); document.body.style.overflow=''; }
+        function toggleJasaDrop()  { document.getElementById('jasaDrop').classList.toggle('open'); }
+        document.addEventListener('click', function(e) { var d = document.getElementById('jasaDrop'); if (d && !d.contains(e.target)) d.classList.remove('open'); });
     </script>
 
     <div class="page-wrap">
@@ -127,45 +160,116 @@
 
         <div class="section">
             <h2>Siapa Kami</h2>
-            <p>ADK Photocopy adalah layanan digital penomoran halaman dokumen yang dirancang khusus untuk mahasiswa dan pelajar Indonesia. Kami membantu proses pengerjaan dokumen akademik seperti skripsi, tesis, dan laporan menjadi lebih cepat, rapi, dan sesuai pedoman kampus.</p>
+            <p>ADK Photocopy adalah platform layanan digital dokumen yang melayani mahasiswa, pelajar, dan masyarakat umum Indonesia. Kami hadir untuk membantu proses pengerjaan dokumen akademik maupun profesional — mulai dari penomoran halaman, daftar isi, hingga pembuatan lamaran kerja — menjadi lebih cepat, rapi, dan sesuai standar.</p>
+            <p>Beroperasi secara online melalui <strong>adkivia.com</strong>, kami dapat melayani seluruh wilayah Indonesia kapan saja dan di mana saja. Fisik toko kami berlokasi di <strong>Kendal, Jawa Tengah</strong>.</p>
         </div>
 
         <div class="section">
             <h2>Layanan Kami</h2>
-            <ul>
-                <li>Penomoran halaman otomatis untuk dokumen Word/DOCX</li>
-                <li>Dukungan format penomoran angka (1, 2, 3) dan romawi (i, ii, iii)</li>
-                <li>Berbagai pilihan posisi nomor halaman (tengah bawah, kanan atas, dll)</li>
-                <li>Hasil dokumen siap cetak dalam format DOCX dan PDF</li>
-                <li>Proses cepat — selesai dalam hitungan menit</li>
-            </ul>
+            <p>Tersedia tujuh jenis layanan digital dokumen:</p>
+            <div class="service-grid">
+                <div class="service-item"><div class="service-icon">📄</div><div class="service-name">Penomoran Halaman</div><div class="service-desc">Otomatis, angka &amp; romawi, berbagai posisi — selesai &lt; 5 menit</div></div>
+                <div class="service-item"><div class="service-icon">📑</div><div class="service-name">Daftar Isi Otomatis</div><div class="service-desc">Dibuat otomatis sesuai struktur bab &amp; sub-bab dokumen</div></div>
+                <div class="service-item"><div class="service-icon">📊</div><div class="service-name">Daftar Tabel Otomatis</div><div class="service-desc">Rekap otomatis seluruh tabel beserta nomor halamannya</div></div>
+                <div class="service-item"><div class="service-icon">🖼️</div><div class="service-name">Daftar Gambar Otomatis</div><div class="service-desc">Rekap otomatis seluruh gambar beserta nomor halamannya</div></div>
+                <div class="service-item"><div class="service-icon">📎</div><div class="service-name">Daftar Lampiran Otomatis</div><div class="service-desc">Rekap otomatis seluruh lampiran beserta halamannya</div></div>
+                <div class="service-item"><div class="service-icon">📋</div><div class="service-name">Lamaran / CV</div><div class="service-desc">Pembuatan surat lamaran &amp; CV profesional siap kirim</div></div>
+                <div class="service-item"><div class="service-icon">⌨️</div><div class="service-name">Ketik Surat</div><div class="service-desc">Pengetikan surat resmi &amp; dokumen administrasi lainnya</div></div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Kenapa Pilih ADK?</h2>
+            <div class="benefit-grid">
+                <div class="benefit-item"><div class="benefit-icon">⚡</div><div class="benefit-title">Cepat</div><div class="benefit-desc">Penomoran halaman selesai dalam hitungan menit, bukan jam</div></div>
+                <div class="benefit-item"><div class="benefit-icon">💰</div><div class="benefit-title">Terjangkau</div><div class="benefit-desc">Harga transparan dan bersahabat untuk kantong mahasiswa</div></div>
+                <div class="benefit-item"><div class="benefit-icon">👁️</div><div class="benefit-title">Lihat Dulu, Bayar Kemudian</div><div class="benefit-desc">Preview hasil tersedia sebelum kamu membayar</div></div>
+                <div class="benefit-item"><div class="benefit-icon">🌐</div><div class="benefit-title">Online 24 Jam</div><div class="benefit-desc">Tidak perlu datang ke toko — order dari mana saja</div></div>
+                <div class="benefit-item"><div class="benefit-icon">🔒</div><div class="benefit-title">Aman &amp; Rahasia</div><div class="benefit-desc">File tidak disimpan permanen dan tidak dibagikan ke siapapun</div></div>
+                <div class="benefit-item"><div class="benefit-icon">💬</div><div class="benefit-title">Siap Bantu</div><div class="benefit-desc">Admin siap membantu via WhatsApp jika ada kendala</div></div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Cara Kerja (Penomoran Halaman)</h2>
+            <div class="step-flow">
+                <div class="step-flow-item"><div class="step-flow-num">1</div><div class="step-flow-text"><strong>Upload File</strong>Pilih layanan &amp; upload dokumen .docx kamu</div></div>
+                <div class="step-flow-arrow">→</div>
+                <div class="step-flow-item"><div class="step-flow-num">2</div><div class="step-flow-text"><strong>Sistem Proses</strong>Hasil siap dalam &lt; 5 menit secara otomatis</div></div>
+                <div class="step-flow-arrow">→</div>
+                <div class="step-flow-item"><div class="step-flow-num">3</div><div class="step-flow-text"><strong>Preview Hasil</strong>Cek dulu hasilnya sebelum membayar</div></div>
+                <div class="step-flow-arrow">→</div>
+                <div class="step-flow-item"><div class="step-flow-num">4</div><div class="step-flow-text"><strong>Bayar &amp; Unduh</strong>Bayar lalu unduh file final tanpa watermark</div></div>
+            </div>
         </div>
 
         <div class="section">
             <h2>Visi &amp; Misi</h2>
-            <p><strong style="color:white">Visi:</strong> Menjadi solusi penomoran dokumen akademik terpercaya bagi mahasiswa Indonesia.</p>
-            <p><strong style="color:white">Misi:</strong> Menyediakan layanan yang mudah diakses, terjangkau, dan menghasilkan dokumen berkualitas tinggi sesuai standar akademik.</p>
+            <p><strong style="color:white">Visi:</strong> Menjadi solusi dokumen digital terpercaya bagi mahasiswa dan masyarakat Indonesia.</p>
+            <p><strong style="color:white">Misi:</strong></p>
+            <ul>
+                <li>Menyediakan layanan dokumen yang mudah diakses oleh siapa saja</li>
+                <li>Menghadirkan hasil dokumen berkualitas sesuai standar akademik &amp; profesional</li>
+                <li>Memberikan harga yang terjangkau tanpa mengorbankan kualitas</li>
+                <li>Terus mengembangkan jenis layanan sesuai kebutuhan pengguna</li>
+            </ul>
         </div>
 
         <div class="section">
             <h2>Hubungi Kami</h2>
             <p>Kami siap membantu pertanyaan dan kendala yang kamu hadapi.</p>
             <div class="contact-grid">
-                <div class="contact-item">
-                    <div class="label">Email</div>
-                    <div class="val">mauiszotunkhasanah@gmail.com</div>
-                </div>
-                <div class="contact-item">
-                    <div class="label">WhatsApp</div>
-                    <div class="val">+62 812-2879-0091</div>
-                </div>
-                <div class="contact-item">
-                    <div class="label">Website</div>
-                    <div class="val">adkivia.com</div>
-                </div>
+                <div class="contact-item"><div class="label">WA Admin</div><div class="val">+62 812-2879-0091</div></div>
+                <div class="contact-item"><div class="label">WA Toko (Cepiring)</div><div class="val">+62 877-0027-7748</div></div>
+                <div class="contact-item"><div class="label">WA Toko (Rowosari)</div><div class="val">+62 895-3419-96647</div></div>
+                <div class="contact-item"><div class="label">Instagram</div><div class="val">@adkivia</div></div>
+                <div class="contact-item"><div class="label">TikTok</div><div class="val">@adkivia</div></div>
+                <div class="contact-item"><div class="label">Website</div><div class="val">adkivia.com</div></div>
             </div>
         </div>
     </div>
+    <footer class="site-footer">
+        <div class="footer-inner">
+            <div class="footer-brand">
+                <div class="footer-logo-wrap">
+                    <img src="LOGO ADK.png" alt="ADK Logo" style="width:36px;height:26px;object-fit:contain;flex-shrink:0;">
+                    <span>ADK PHOTOCOPY</span>
+                </div>
+                <p>© 2025 ADK PHOTOCOPY<br>All Rights Reserved.</p>
+            </div>
+            <div class="footer-col">
+                <h4>Jasa</h4>
+                <a href="jasa.html">Penomoran Halaman</a>
+                <a href="daftar-isi.html">Daftar Isi Otomatis</a>
+                <a href="index.html">Daftar Tabel Otomatis</a>
+                <a href="index.html">Daftar Gambar Otomatis</a>
+                <a href="index.html">Daftar Lampiran Otomatis</a>
+                <a href="index.html">Lamaran / CV</a>
+                <a href="index.html">Ketik Surat</a>
+            </div>
+            <div class="footer-col">
+                <h4>Bantuan</h4>
+                <a href="tutorial.html">Tutorial</a>
+                <a href="sk.html">Syarat &amp; Ketentuan</a>
+                <a href="tentang-kami.html">Tentang Kami</a>
+                <a href="kebijakan-privasi.html">Kebijakan Privasi</a>
+            </div>
+            <div class="footer-col">
+                <h4>Kontak</h4>
+                <a href="https://wa.me/6287700277748" target="_blank" rel="noopener">WA Toko<br>(Cepiring, Kendal)</a>
+                <a href="https://wa.me/62895341996647" target="_blank" rel="noopener">WA Toko<br>(Rowosari, Kendal)</a>
+                <a href="https://wa.me/6281228790091" target="_blank" rel="noopener">WA Admin</a>
+            </div>
+            <div class="footer-col">
+                <h4>Ikuti Kami</h4>
+                <a href="https://www.tiktok.com/@adkivia" target="_blank" rel="noopener">TikTok</a>
+                <a href="https://www.instagram.com/adkivia" target="_blank" rel="noopener">Instagram</a>
+            </div>
+        </div>
+        <hr class="footer-divider">
+        <p class="footer-bottom">© 2025 ADK PHOTOCOPY · All Rights Reserved.</p>
+    </footer>
+    <script src="nocopy.js"></script>
     <script src="theme.js?v=1"></script>
 </body>
 </html>

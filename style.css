@@ -16,7 +16,7 @@ body {
     justify-content: space-between;
     align-items: center;
     /* Centered dengan background full-width */
-    padding: 24px max(40px, calc((100% - 1200px) / 2 + 40px));
+    padding: 24px max(40px, calc((100% - 1600px) / 2 + 40px));
     position: sticky;
     top: 0;
     z-index: 100;
@@ -95,11 +95,12 @@ body {
     grid-template-areas:
         "left  right"
         "carousel carousel";
-    column-gap: 60px;
+    column-gap: 100px;
     row-gap: 20px;
-    padding: 72px 60px 24px;
-    max-width: 1200px;
+    padding: 80px 60px 60px;
+    max-width: 1600px;
     margin: 0 auto;
+    row-gap: 72px;
     box-sizing: border-box;
 }
 
@@ -112,7 +113,7 @@ body {
 /* KANAN */
 .hero-right {
     grid-area: right;
-    align-self: start;
+    align-self: center;
 }
 
 /* CAROUSEL ROW — full width */
@@ -596,13 +597,13 @@ html[data-theme="light"] .dropdown-divider { background: rgba(21,101,192,0.12); 
 }
 
 .stat-label {
-    font-size: clamp(10px, 1.4vw, 14px);
+    font-size: clamp(13px, 1.4vw, 17px);
     color: #29B6F6;
     font-weight: 500;
 }
 
 .stat-num {
-    font-size: clamp(16px, 3vw, 30px);
+    font-size: clamp(28px, 3.5vw, 48px);
     font-weight: 800;
     color: white;
     line-height: 1.1;
@@ -617,8 +618,8 @@ html[data-theme="light"] .dropdown-divider { background: rgba(21,101,192,0.12); 
 
 .hero-card-outer {
     position: relative;
-    width: 400px;
-    height: 320px;
+    width: 520px;
+    height: 420px;
     overflow: visible;
     padding-left: 20px;
     box-sizing: border-box;
@@ -629,10 +630,10 @@ html[data-theme="light"] .dropdown-divider { background: rgba(21,101,192,0.12); 
     position: absolute;
     top: 0;
     right: 30px;
-    width: 230px;
+    width: 300px;
     background: white;
     border-radius: 14px;
-    padding: 16px 16px 20px;
+    padding: 20px 20px 24px;
     box-shadow: 0 10px 40px rgba(0,0,0,0.3);
     border: 2px solid rgba(41,182,246,0.40);
     overflow: visible;
@@ -653,12 +654,12 @@ html[data-theme="light"] .dropdown-divider { background: rgba(21,101,192,0.12); 
 /* Kartu depan */
 .hc-front {
     position: absolute;
-    top: 50px;
+    top: 65px;
     left: 20px;
-    width: 195px;
+    width: 255px;
     background: white;
     border-radius: 14px;
-    padding: 14px 14px 12px;
+    padding: 18px 18px 16px;
     box-shadow: 0 10px 40px rgba(0,0,0,0.35);
     z-index: 2;
 }
@@ -751,18 +752,18 @@ html[data-theme="light"] .dropdown-divider { background: rgba(21,101,192,0.12); 
 
 /* ===================== HERO KIRI — update ===================== */
 .hero-left h1 {
-    font-size: 56px;
+    font-size: clamp(48px, 5.5vw, 86px);
     font-weight: 800;
-    line-height: 1.2;
-    margin: 0 0 18px;
+    line-height: 1.15;
+    margin: 0 0 24px;
     color: #29B6F6;
 }
 
 .hero-left p {
     color: #94a3b8;
-    margin: 0 0 30px;
-    line-height: 1.75;
-    font-size: 18px;
+    margin: 0 0 0;
+    line-height: 1.8;
+    font-size: clamp(16px, 1.5vw, 22px);
 }
 
 /* ===================== SAAT GAMBAR KEBAWAH (wrap terjadi) ===================== */
@@ -981,13 +982,14 @@ html[data-theme="light"] .dropdown-divider { background: rgba(21,101,192,0.12); 
     font-size: 15px;
 }
 
-/* ===================== TABLET: hero single column (≤900px) ===================== */
-@media (max-width: 900px) {
+/* ===================== TABLET: hero single column (≤1250px) ===================== */
+@media (max-width: 1250px) {
     .hero {
         display: flex;
         flex-direction: column;
-        padding: 48px 32px 8px;
-        gap: 16px;
+        padding: 56px 48px 40px;
+        gap: 32px;
+        row-gap: 48px;
     }
 
     .hero-right {
@@ -995,24 +997,66 @@ html[data-theme="light"] .dropdown-divider { background: rgba(21,101,192,0.12); 
     }
 
     .hero-left h1 {
-        font-size: 40px;
+        font-size: clamp(36px, 6vw, 56px);
+    }
+
+    .hero-left p {
+        font-size: clamp(15px, 2vw, 19px);
     }
 }
 
 /* ===================== MOBILE: navbar & font (≤640px) ===================== */
 @media (max-width: 640px) {
     .hero {
-        padding: 36px 20px 8px;
-        gap: 12px;
+        padding: 36px 20px 32px;
+        gap: 20px;
         text-align: center;
+        row-gap: 40px;
     }
 
     .hero-left h1 {
-        font-size: 32px;
+        font-size: 36px;
+        margin-bottom: 16px;
+    }
+
+    .hero-left p {
+        font-size: 16px;
+        line-height: 1.7;
     }
 
     .stats-row {
         justify-content: center;
+        gap: 32px;
+    }
+
+    .stat-label {
+        font-size: 13px;
+    }
+
+    .stat-num {
+        font-size: 32px;
+    }
+
+    .layanan-title { font-size: 1.4rem; }
+    .layanan-subtitle { font-size: 1rem; }
+
+    .lay-card {
+        min-width: 130px;
+        padding: 14px 14px;
+        gap: 10px;
+    }
+
+    .lay-card-icon {
+        width: 48px;
+        height: 48px;
+    }
+
+    .lay-card-icon-emoji {
+        font-size: 26px;
+    }
+
+    .lay-card-name {
+        font-size: 14px;
     }
 
     .menu { display: none; }
@@ -1027,10 +1071,11 @@ html[data-theme="light"] .dropdown-divider { background: rgba(21,101,192,0.12); 
     .logo span { font-size: 22px; }
     .logo img  { width: 46px; height: 46px; }
 }
+
 /* ===== FAQ SECTION ===== */
 .faq-section {
     padding: 80px 60px 64px;
-    max-width: 1200px;
+    max-width: 1400px;
     margin: 0 auto;
     box-sizing: border-box;
 }
@@ -1153,7 +1198,7 @@ html[data-theme="light"] .dropdown-divider { background: rgba(21,101,192,0.12); 
     padding: 48px 20px 28px;
 }
 .footer-inner {
-    max-width: 1100px;
+    max-width: 1300px;
     margin: 0 auto;
     display: flex;
     flex-wrap: wrap;
@@ -1206,13 +1251,13 @@ html[data-theme="light"] .dropdown-divider { background: rgba(21,101,192,0.12); 
 }
 .footer-col a:hover { color: #29B6F6; }
 .footer-divider {
-    max-width: 1100px;
+    max-width: 1300px;
     margin: 28px auto 0;
     border: none;
     border-top: 1px solid rgba(41,182,246,0.10);
 }
 .footer-bottom {
-    max-width: 1100px;
+    max-width: 1300px;
     margin: 14px auto 0;
     font-size: 13px;
     color: #475569;
@@ -1275,7 +1320,7 @@ html[data-theme="light"] .dropdown-divider { background: rgba(21,101,192,0.12); 
 /* ===== LAYANAN KAMI SECTION ===== */
 .layanan-section {
     padding: 0 60px 80px;
-    max-width: 1200px;
+    max-width: 1600px;
     margin: 0 auto;
     box-sizing: border-box;
 }
@@ -1331,14 +1376,14 @@ html[data-theme="light"] .dropdown-divider { background: rgba(21,101,192,0.12); 
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 10px;
-    padding: 14px 16px;
+    gap: 12px;
+    padding: 18px 20px;
     background: rgba(255,255,255,0.04);
     border: 1px solid rgba(41,182,246,0.15);
     border-radius: 16px;
     cursor: pointer;
     flex-shrink: 0;
-    min-width: 130px;
+    min-width: 160px;
     transition: border-color 0.2s, background 0.2s, transform 0.15s;
     user-select: none;
 }
@@ -1360,9 +1405,9 @@ html[data-theme="light"] .dropdown-divider { background: rgba(21,101,192,0.12); 
 }
 
 .lay-card-icon {
-    width: 52px;
-    height: 52px;
-    border-radius: 12px;
+    width: 64px;
+    height: 64px;
+    border-radius: 14px;
     overflow: hidden;
     background: rgba(255,255,255,0.08);
     display: flex;
@@ -1377,7 +1422,7 @@ html[data-theme="light"] .dropdown-divider { background: rgba(21,101,192,0.12); 
 }
 
 .lay-card-icon-emoji {
-    font-size: 28px;
+    font-size: 34px;
     width: 100%;
     height: 100%;
     align-items: center;
@@ -1385,7 +1430,7 @@ html[data-theme="light"] .dropdown-divider { background: rgba(21,101,192,0.12); 
 }
 
 .lay-card-name {
-    font-size: 15px;
+    font-size: 17px;
     font-weight: 700;
     color: #cbd5e1;
     text-align: center;
@@ -1601,21 +1646,47 @@ html[data-theme="light"] .dropdown-divider { background: rgba(21,101,192,0.12); 
     margin: 0;
 }
 
+/* --- Gambar hilang + layout menyesuaikan --- */
+@media (max-width: 1000px) {
+    .lay-img-wrap { display: none; }
+    .lay-detail-inner { flex-direction: column; gap: 20px; }
+    .lay-detail-right { width: 100%; }
+    .lay-btn-full { max-width: 320px; margin-left: auto; margin-right: auto; }
+}
+
 /* --- Responsive --- */
 @media (max-width: 768px) {
     .lay-detail { padding: 24px 20px; }
     .lay-detail-inner { flex-direction: column; gap: 16px; }
     .lay-detail-right { width: 100%; }
-    .lay-steps { flex-wrap: nowrap; gap: 6px; margin: 20px 0; overflow-x: auto; padding-bottom: 4px; }
-    .lay-step { gap: 6px; font-size: 1.05rem; white-space: nowrap; }
-    .lay-step-num { width: 28px; height: 28px; font-size: 13px; flex-shrink: 0; }
-    .lay-step-arrow { font-size: 1.05rem; }
-    .lay-img-wrap { display: none; }
-    .lay-detail-title { font-size: 1.5rem; }
-    .lay-detail-desc { font-size: 1.05rem; }
-    .lay-admin-text { font-size: 1.05rem; }
+    .lay-steps { flex-wrap: nowrap; gap: clamp(2px, 1vw, 6px); margin: 20px 0; overflow: visible; padding-bottom: 0; }
+    .lay-step { gap: clamp(2px, 1vw, 6px); font-size: clamp(8px, 2vw, 15px); white-space: nowrap; }
+    .lay-step-num { width: clamp(18px, 4.5vw, 28px); height: clamp(18px, 4.5vw, 28px); font-size: clamp(8px, 1.8vw, 13px); flex-shrink: 0; }
+    .lay-step-arrow { font-size: clamp(8px, 2vw, 15px); }
+    .lay-detail-title { font-size: 1.6rem; }
+    .lay-detail-desc { font-size: 1.1rem; }
+    .lay-admin-text { font-size: 1.1rem; }
     .lay-privacy { font-size: 1.05rem; }
     .layanan-section { padding: 0 16px 40px; }
+    .lay-card { min-width: 140px; padding: 16px 16px; }
+    .lay-card-icon { width: 54px; height: 54px; }
+    .lay-card-icon-emoji { font-size: 30px; }
+    .lay-card-name { font-size: 15px; }
+    .layanan-title { font-size: 1.5rem; }
+    .layanan-subtitle { font-size: 1.05rem; }
+}
+
+@media (max-width: 480px) {
+    .lay-steps {
+        overflow: visible !important;
+        justify-content: center;
+        gap: 10px;
+        padding-bottom: 0;
+    }
+    .lay-step span:not(.lay-step-num) { display: none; }
+    .lay-step { gap: 0; }
+    .lay-step-num { width: 36px; height: 36px; font-size: 16px; }
+    .lay-step-arrow { font-size: 1.2rem; }
 }
 
 /* ===== LIGHT MODE — LAYANAN KAMI ===== */

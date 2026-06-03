@@ -846,6 +846,51 @@
     .opts-placeholder { display: none; }
 }
 
+@media (max-width: 640px) {
+    .page-title { font-size: 22px; }
+
+    /* Input nomor HP */
+    .phone-label      { font-size: 14px; }
+    .phone-input      { font-size: 15px; padding: 10px 12px; }
+    .phone-hint       { font-size: 12px; }
+    .phone-optional-badge { font-size: 10px; }
+
+    /* Upload area */
+    .upload-area p    { font-size: 15px; }
+    .upload-area span { font-size: 13px; }
+    .file-display     { font-size: 13px; }
+
+    /* Pilih paket */
+    .pilih-paket-label { font-size: 14px; }
+    .paket-card-name   { font-size: 14px; }
+    .paket-card-sub    { font-size: 12px; }
+
+    /* Opsi */
+    .opts-row-label   { font-size: 13px; }
+    .opts-sel-text    { font-size: 15px; }
+    .opt-sel-item     { font-size: 13px; }
+    .opt-btn          { font-size: 12px; padding: 6px 10px; }
+
+    /* Kanan — benefits, warning, preview */
+    .benefits-title   { font-size: 16px; }
+    .benefits-list li { font-size: 15px; }
+    .warning-box      { font-size: 14px; }
+
+    /* Preview panel */
+    .preview-paket-name     { font-size: 17px; }
+    .preview-label          { font-size: 13px; }
+    .preview-paket-sub      { font-size: 13px; }
+    .preview-detail-list li { font-size: 13px; }
+    .validation-msg         { font-size: 13px; }
+
+    /* Opts grid jadi 1 kolom di HP kecil */
+    .opts-grid   { grid-template-columns: 1fr 1fr; }
+    .opts-grid-4 { grid-template-columns: 1fr 1fr; }
+
+    /* Wrapper lebih compact */
+    .order-wrapper { padding: 16px 12px 40px; gap: 12px; }
+}
+
 /* ===== LIGHT MODE OVERRIDES ===== */
 html[data-theme="light"] .page-title { color: #1a2332; }
 html[data-theme="light"] .page-header { border-bottom-color: rgba(21,101,192,0.15); }
