@@ -549,13 +549,13 @@
             <div class="dropdown">
                 <a href="#" class="dropdown-toggle">Jasa ADK <span class="dropdown-arrow">▾</span></a>
                 <div class="dropdown-menu">
-                    <a href="jasa.html"><div class="dropdown-item-icon">📄</div><div class="dropdown-item-title">Penomoran Halaman</div></a>
-                    <a href="daftar-isi.html"><div class="dropdown-item-icon" style="background:rgba(139,92,246,0.15);">📑</div><div class="dropdown-item-title">Daftar Isi Otomatis</div></a>
-                    <a href="index.html"><div class="dropdown-item-icon" style="background:rgba(139,92,246,0.15);">📊</div><div class="dropdown-item-title">Daftar Tabel Otomatis</div></a>
-                    <a href="index.html"><div class="dropdown-item-icon" style="background:rgba(139,92,246,0.15);">🖼️</div><div class="dropdown-item-title">Daftar Gambar Otomatis</div></a>
-                    <a href="index.html"><div class="dropdown-item-icon" style="background:rgba(139,92,246,0.15);">📎</div><div class="dropdown-item-title">Daftar Lampiran Otomatis</div></a>
-                    <a href="index.html"><div class="dropdown-item-icon" style="background:rgba(96,165,250,0.15);">📋</div><div class="dropdown-item-title">Lamaran / CV</div></a>
-                    <a href="index.html"><div class="dropdown-item-icon" style="background:rgba(139,92,246,0.15);">⌨️</div><div class="dropdown-item-title">Ketik Surat</div></a>
+                    <a href="jasa.html" data-sid="penomoran"><div class="dropdown-item-icon">📄</div><div class="dropdown-item-title">Penomoran Halaman</div></a>
+                    <a href="daftar-isi.html" data-sid="daftar_isi"><div class="dropdown-item-icon" style="background:rgba(139,92,246,0.15);">📑</div><div class="dropdown-item-title">Daftar Isi Otomatis</div></a>
+                    <a href="index.html" data-sid="daftar_tabel"><div class="dropdown-item-icon" style="background:rgba(139,92,246,0.15);">📊</div><div class="dropdown-item-title">Daftar Tabel Otomatis</div></a>
+                    <a href="index.html" data-sid="daftar_gambar"><div class="dropdown-item-icon" style="background:rgba(139,92,246,0.15);">🖼️</div><div class="dropdown-item-title">Daftar Gambar Otomatis</div></a>
+                    <a href="index.html" data-sid="daftar_lampiran"><div class="dropdown-item-icon" style="background:rgba(139,92,246,0.15);">📎</div><div class="dropdown-item-title">Daftar Lampiran Otomatis</div></a>
+                    <a href="index.html" data-sid="lamaran_cv"><div class="dropdown-item-icon" style="background:rgba(96,165,250,0.15);">📋</div><div class="dropdown-item-title">Lamaran / CV</div></a>
+                    <a href="index.html" data-sid="ketik_surat"><div class="dropdown-item-icon" style="background:rgba(139,92,246,0.15);">⌨️</div><div class="dropdown-item-title">Ketik Surat</div></a>
                 </div>
             </div>
 
@@ -927,6 +927,24 @@
         <hr class="footer-divider">
         <p class="footer-bottom">© 2025 ADK PHOTOCOPY · All Rights Reserved.</p>
     </footer>
+    <script>
+        fetch('api/maintenance_status.php?_=' + Date.now(), { cache: 'no-store' })
+            .then(function(r){ return r.json(); })
+            .then(function(d){
+                var s = d.services || {};
+                document.querySelectorAll('.dropdown-menu a[data-sid]').forEach(function(el) {
+                    var sid = el.getAttribute('data-sid');
+                    if (s[sid] === true) {
+                        el.removeAttribute('href');
+                        el.style.pointerEvents = 'none';
+                        el.style.cursor = 'default';
+                        var iconEl = el.querySelector('.dropdown-item-icon');
+                        if (iconEl) iconEl.insertAdjacentHTML('beforeend', '<span class="dropdown-maint-badge">!</span>');
+                    }
+                });
+            })
+            .catch(function(){});
+    </script>
     <script src="nocopy.js"></script>
     <script src="theme.js?v=1"></script>
 </body>

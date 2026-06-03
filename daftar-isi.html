@@ -95,8 +95,8 @@
     <!-- NAVBAR -->
     <div class="navbar">
         <a href="index.html" class="logo">
-            <img src="LOGO ADK.png" alt="ADK Logo" style="width:36px;height:26px;object-fit:contain;flex-shrink:0;">
-            <span>ADK PHOTOCOPY</span>
+            <img src="Favicon Adkivia.png" alt="ADK Logo" style="width:52px;height:52px;object-fit:contain;flex-shrink:0;">
+            <span><span style="color:#1565C0">ADK</span><span style="color:#29B6F6">IVIA</span></span>
         </a>
         <div class="menu">
             <a href="index.html">Home</a>
@@ -104,37 +104,83 @@
             <div class="dropdown">
                 <a href="#" class="dropdown-toggle">Jasa ADK <span class="dropdown-arrow">▾</span></a>
                 <div class="dropdown-menu">
-                    <a href="jasa.html">
+                    <a href="jasa.html" data-sid="penomoran">
                         <div class="dropdown-item-icon">📄</div>
                         <div class="dropdown-item-title">Penomoran Halaman</div>
                     </a>
-                    <a href="daftar-isi.html">
-                        <div class="dropdown-item-icon">📋</div>
+                    <a href="daftar-isi.html" data-sid="daftar_isi">
+                        <div class="dropdown-item-icon" style="background:rgba(139,92,246,0.15);">📑</div>
                         <div class="dropdown-item-title">Daftar Isi Otomatis</div>
+                    </a>
+                    <a href="index.html" data-sid="daftar_tabel">
+                        <div class="dropdown-item-icon" style="background:rgba(139,92,246,0.15);">📊</div>
+                        <div class="dropdown-item-title">Daftar Tabel Otomatis</div>
+                    </a>
+                    <a href="index.html" data-sid="daftar_gambar">
+                        <div class="dropdown-item-icon" style="background:rgba(139,92,246,0.15);">🖼️</div>
+                        <div class="dropdown-item-title">Daftar Gambar Otomatis</div>
+                    </a>
+                    <a href="index.html" data-sid="daftar_lampiran">
+                        <div class="dropdown-item-icon" style="background:rgba(139,92,246,0.15);">📎</div>
+                        <div class="dropdown-item-title">Daftar Lampiran Otomatis</div>
+                    </a>
+                    <a href="index.html" data-sid="lamaran_cv">
+                        <div class="dropdown-item-icon" style="background:rgba(96,165,250,0.15);">📋</div>
+                        <div class="dropdown-item-title">Lamaran / CV</div>
+                    </a>
+                    <a href="index.html" data-sid="ketik_surat">
+                        <div class="dropdown-item-icon" style="background:rgba(139,92,246,0.15);">⌨️</div>
+                        <div class="dropdown-item-title">Ketik Surat</div>
                     </a>
                 </div>
             </div>
             <div class="dropdown">
                 <a href="#" class="dropdown-toggle">Contact Us <span class="dropdown-arrow">▾</span></a>
                 <div class="dropdown-menu">
-                    <a href="https://www.tiktok.com/@adk_rowosari" target="_blank" rel="noopener"><div class="dropdown-item-icon">🎵</div><div class="dropdown-item-title">TikTok</div></a>
-                    <a href="https://www.instagram.com/adk_rowosari?igsh=MXV4OXdwbnQycGp5cg==" target="_blank" rel="noopener"><div class="dropdown-item-icon">📸</div><div class="dropdown-item-title">Instagram</div></a>
-                    <a href="https://wa.me/6287700277748" target="_blank" rel="noopener"><div class="dropdown-item-icon">🏪</div><div class="dropdown-item-title">WA Toko<br>(Cepiring, Kendal)</div></a>
-                    <a href="https://wa.me/62895341996647" target="_blank" rel="noopener"><div class="dropdown-item-icon">🏪</div><div class="dropdown-item-title">WA Toko<br>(Rowosari, Kendal)</div></a>
-                    <a href="https://wa.me/6281228790091" target="_blank" rel="noopener"><div class="dropdown-item-icon">💬</div><div class="dropdown-item-title">WA Admin</div></a>
+                    <div class="dropdown-group-label">Hubungi Kami</div>
+                    <a href="https://wa.me/6281228790091" target="_blank" rel="noopener">
+                        <div class="dropdown-item-icon" style="background:rgba(37,211,102,0.15);">💬</div>
+                        <div class="dropdown-item-title">WA Admin</div>
+                    </a>
+                    <a href="https://wa.me/6287700277748" target="_blank" rel="noopener">
+                        <div class="dropdown-item-icon" style="background:rgba(37,211,102,0.15);">🏪</div>
+                        <div class="dropdown-item-title">WA Toko (Cepiring)</div>
+                    </a>
+                    <a href="https://wa.me/62895341996647" target="_blank" rel="noopener">
+                        <div class="dropdown-item-icon" style="background:rgba(37,211,102,0.15);">🏪</div>
+                        <div class="dropdown-item-title">WA Toko (Rowosari)</div>
+                    </a>
+                    <div class="dropdown-divider"></div>
+                    <div class="dropdown-group-label">Sosial Media</div>
+                    <a href="https://www.instagram.com/adkivia" target="_blank" rel="noopener">
+                        <div class="dropdown-item-icon" style="background:rgba(225,48,108,0.15);">📸</div>
+                        <div class="dropdown-item-title">Instagram</div>
+                    </a>
+                    <a href="https://www.tiktok.com/@adkivia" target="_blank" rel="noopener">
+                        <div class="dropdown-item-icon" style="background:rgba(0,0,0,0.12);">🎵</div>
+                        <div class="dropdown-item-title">TikTok</div>
+                    </a>
                 </div>
             </div>
         </div>
         <div class="nav-right">
+            <button class="theme-toggle" onclick="toggleTheme()" title="Mode Siang">☀️</button>
             <a href="cek_pembelian.php" class="btn-nav">Cek Pembelian</a>
         </div>
         <div class="mobile-jasa-drop" id="jasaDrop">
-            <button class="mobile-jasa-link" onclick="toggleJasaDrop()">Jasa ADK <span class="mobile-jasa-arrow">▾</span></button>
+            <button class="mobile-jasa-link" onclick="toggleJasaDrop()">Contact <span class="mobile-jasa-arrow">▾</span></button>
             <div class="mobile-jasa-menu">
-                <a href="jasa.html">📄 Penomoran Halaman</a>
-                <a href="daftar-isi.html">📋 Daftar Isi Otomatis</a>
+                <div class="dropdown-group-label">Hubungi Kami</div>
+                <a href="https://wa.me/6281228790091" target="_blank" rel="noopener">💬 WA Admin</a>
+                <a href="https://wa.me/6287700277748" target="_blank" rel="noopener">🏪 WA Toko (Cepiring)</a>
+                <a href="https://wa.me/62895341996647" target="_blank" rel="noopener">🏪 WA Toko (Rowosari)</a>
+                <div class="dropdown-divider"></div>
+                <div class="dropdown-group-label">Sosial Media</div>
+                <a href="https://www.instagram.com/adkivia" target="_blank" rel="noopener">📸 Instagram</a>
+                <a href="https://www.tiktok.com/@adkivia" target="_blank" rel="noopener">🎵 TikTok</a>
             </div>
         </div>
+        <button class="theme-toggle theme-toggle-mob" onclick="toggleTheme()" title="Mode Siang">☀️</button>
         <button class="hamburger" onclick="openMobileMenu()">
             <span></span><span></span><span></span>
         </button>
@@ -143,21 +189,24 @@
     <div class="mobile-nav" id="mobileNav">
         <div class="mobile-nav-header">
             <a href="index.html" class="logo">
-                <img src="LOGO ADK.png" alt="ADK Logo" style="width:36px;height:26px;object-fit:contain;flex-shrink:0;">
-                <span>ADK PHOTOCOPY</span>
+                <img src="Favicon Adkivia.png" alt="ADK Logo" style="width:52px;height:52px;object-fit:contain;flex-shrink:0;">
+                <span><span style="color:#1565C0">ADK</span><span style="color:#29B6F6">IVIA</span></span>
             </a>
-            <button class="mobile-nav-close" onclick="closeMobileMenu()">✕</button>
+            <div style="display:flex;align-items:center;gap:8px;">
+                <button class="theme-toggle" onclick="toggleTheme()" title="Mode Siang">☀️</button>
+                <button class="mobile-nav-close" onclick="closeMobileMenu()">✕</button>
+            </div>
         </div>
         <div class="mobile-nav-links">
             <a href="index.html">Home</a>
             <a href="tutorial.html">Tutorial</a>
             <a href="jasa.html">Jasa ADK</a>
             <div class="mobile-nav-section-title">Contact Us</div>
-            <a href="https://www.tiktok.com/@adk_rowosari" target="_blank" rel="noopener" class="mobile-nav-contact">🎵 TikTok</a>
-            <a href="https://www.instagram.com/adk_rowosari?igsh=MXV4OXdwbnQycGp5cg==" target="_blank" rel="noopener" class="mobile-nav-contact">📸 Instagram</a>
-            <a href="https://wa.me/6287700277748" target="_blank" rel="noopener" class="mobile-nav-contact">🏪 WA Toko<br>(Cepiring, Kendal)</a>
-            <a href="https://wa.me/62895341996647" target="_blank" rel="noopener" class="mobile-nav-contact">🏪 WA Toko<br>(Rowosari, Kendal)</a>
             <a href="https://wa.me/6281228790091" target="_blank" rel="noopener" class="mobile-nav-contact">💬 WA Admin</a>
+            <a href="https://wa.me/6287700277748" target="_blank" rel="noopener" class="mobile-nav-contact">🏪 WA Toko (Cepiring)</a>
+            <a href="https://wa.me/62895341996647" target="_blank" rel="noopener" class="mobile-nav-contact">🏪 WA Toko (Rowosari)</a>
+            <a href="https://www.instagram.com/adkivia" target="_blank" rel="noopener" class="mobile-nav-contact">📸 Instagram</a>
+            <a href="https://www.tiktok.com/@adkivia" target="_blank" rel="noopener" class="mobile-nav-contact">🎵 TikTok</a>
         </div>
         <div class="mobile-nav-footer">
             <a href="cek_pembelian.php" class="btn-nav">Cek Pembelian</a>
@@ -580,6 +629,24 @@
             if ((e.ctrlKey || e.metaKey) && ['c','a','u','s'].includes(e.key.toLowerCase()))
                 e.preventDefault();
         });
+    </script>
+    <script>
+        fetch('api/maintenance_status.php?_=' + Date.now(), { cache: 'no-store' })
+            .then(function(r){ return r.json(); })
+            .then(function(d){
+                var s = d.services || {};
+                document.querySelectorAll('.dropdown-menu a[data-sid]').forEach(function(el) {
+                    var sid = el.getAttribute('data-sid');
+                    if (s[sid] === true) {
+                        el.removeAttribute('href');
+                        el.style.pointerEvents = 'none';
+                        el.style.cursor = 'default';
+                        var iconEl = el.querySelector('.dropdown-item-icon');
+                        if (iconEl) iconEl.insertAdjacentHTML('beforeend', '<span class="dropdown-maint-badge">!</span>');
+                    }
+                });
+            })
+            .catch(function(){});
     </script>
     <script src="nocopy.js"></script>
 </body>

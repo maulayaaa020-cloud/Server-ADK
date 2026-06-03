@@ -21,15 +21,85 @@
         </a>
         <div class="menu">
             <a href="index.html">Home</a>
-            <a href="#"></a>
             <a href="tutorial.html">Tutorial</a>
-            <a href="#"></a>
-            <a href="jasa.html">Jasa</a>
+            <div class="dropdown">
+                <a href="#" class="dropdown-toggle">Jasa ADK <span class="dropdown-arrow">▾</span></a>
+                <div class="dropdown-menu">
+                    <a href="jasa.html" data-sid="penomoran">
+                        <div class="dropdown-item-icon">📄</div>
+                        <div class="dropdown-item-title">Penomoran Halaman</div>
+                    </a>
+                    <a href="daftar-isi.html" data-sid="daftar_isi">
+                        <div class="dropdown-item-icon" style="background:rgba(139,92,246,0.15);">📑</div>
+                        <div class="dropdown-item-title">Daftar Isi Otomatis</div>
+                    </a>
+                    <a href="index.html" data-sid="daftar_tabel">
+                        <div class="dropdown-item-icon" style="background:rgba(139,92,246,0.15);">📊</div>
+                        <div class="dropdown-item-title">Daftar Tabel Otomatis</div>
+                    </a>
+                    <a href="index.html" data-sid="daftar_gambar">
+                        <div class="dropdown-item-icon" style="background:rgba(139,92,246,0.15);">🖼️</div>
+                        <div class="dropdown-item-title">Daftar Gambar Otomatis</div>
+                    </a>
+                    <a href="index.html" data-sid="daftar_lampiran">
+                        <div class="dropdown-item-icon" style="background:rgba(139,92,246,0.15);">📎</div>
+                        <div class="dropdown-item-title">Daftar Lampiran Otomatis</div>
+                    </a>
+                    <a href="index.html" data-sid="lamaran_cv">
+                        <div class="dropdown-item-icon" style="background:rgba(96,165,250,0.15);">📋</div>
+                        <div class="dropdown-item-title">Lamaran / CV</div>
+                    </a>
+                    <a href="index.html" data-sid="ketik_surat">
+                        <div class="dropdown-item-icon" style="background:rgba(139,92,246,0.15);">⌨️</div>
+                        <div class="dropdown-item-title">Ketik Surat</div>
+                    </a>
+                </div>
+            </div>
+            <div class="dropdown">
+                <a href="#" class="dropdown-toggle">Contact Us <span class="dropdown-arrow">▾</span></a>
+                <div class="dropdown-menu">
+                    <div class="dropdown-group-label">Hubungi Kami</div>
+                    <a href="https://wa.me/6281228790091" target="_blank" rel="noopener">
+                        <div class="dropdown-item-icon" style="background:rgba(37,211,102,0.15);">💬</div>
+                        <div class="dropdown-item-title">WA Admin</div>
+                    </a>
+                    <a href="https://wa.me/6287700277748" target="_blank" rel="noopener">
+                        <div class="dropdown-item-icon" style="background:rgba(37,211,102,0.15);">🏪</div>
+                        <div class="dropdown-item-title">WA Toko (Cepiring)</div>
+                    </a>
+                    <a href="https://wa.me/62895341996647" target="_blank" rel="noopener">
+                        <div class="dropdown-item-icon" style="background:rgba(37,211,102,0.15);">🏪</div>
+                        <div class="dropdown-item-title">WA Toko (Rowosari)</div>
+                    </a>
+                    <div class="dropdown-divider"></div>
+                    <div class="dropdown-group-label">Sosial Media</div>
+                    <a href="https://www.instagram.com/adkivia" target="_blank" rel="noopener">
+                        <div class="dropdown-item-icon" style="background:rgba(225,48,108,0.15);">📸</div>
+                        <div class="dropdown-item-title">Instagram</div>
+                    </a>
+                    <a href="https://www.tiktok.com/@adkivia" target="_blank" rel="noopener">
+                        <div class="dropdown-item-icon" style="background:rgba(0,0,0,0.12);">🎵</div>
+                        <div class="dropdown-item-title">TikTok</div>
+                    </a>
+                </div>
+            </div>
         </div>
-
         <div class="nav-right">
             <button class="theme-toggle" onclick="toggleTheme()" title="Mode Siang">☀️</button>
-            <button class="btn-nav">Cek Pembelian</button>
+            <a href="cek_pembelian.php" class="btn-nav">Cek Pembelian</a>
+        </div>
+        <div class="mobile-jasa-drop" id="jasaDrop">
+            <button class="mobile-jasa-link" onclick="toggleJasaDrop()">Contact <span class="mobile-jasa-arrow">▾</span></button>
+            <div class="mobile-jasa-menu">
+                <div class="dropdown-group-label">Hubungi Kami</div>
+                <a href="https://wa.me/6281228790091" target="_blank" rel="noopener">💬 WA Admin</a>
+                <a href="https://wa.me/6287700277748" target="_blank" rel="noopener">🏪 WA Toko (Cepiring)</a>
+                <a href="https://wa.me/62895341996647" target="_blank" rel="noopener">🏪 WA Toko (Rowosari)</a>
+                <div class="dropdown-divider"></div>
+                <div class="dropdown-group-label">Sosial Media</div>
+                <a href="https://www.instagram.com/adkivia" target="_blank" rel="noopener">📸 Instagram</a>
+                <a href="https://www.tiktok.com/@adkivia" target="_blank" rel="noopener">🎵 TikTok</a>
+            </div>
         </div>
         <button class="theme-toggle theme-toggle-mob" onclick="toggleTheme()" title="Mode Siang">☀️</button>
         <button class="hamburger" onclick="openMobileMenu()"><span></span><span></span><span></span></button>
@@ -50,6 +120,12 @@
             <a href="index.html">Home</a>
             <a href="tutorial.html">Tutorial</a>
             <a href="jasa.html">Jasa ADK</a>
+            <div class="mobile-nav-section-title">Contact Us</div>
+            <a href="https://wa.me/6281228790091" target="_blank" rel="noopener" class="mobile-nav-contact">💬 WA Admin</a>
+            <a href="https://wa.me/6287700277748" target="_blank" rel="noopener" class="mobile-nav-contact">🏪 WA Toko (Cepiring)</a>
+            <a href="https://wa.me/62895341996647" target="_blank" rel="noopener" class="mobile-nav-contact">🏪 WA Toko (Rowosari)</a>
+            <a href="https://www.instagram.com/adkivia" target="_blank" rel="noopener" class="mobile-nav-contact">📸 Instagram</a>
+            <a href="https://www.tiktok.com/@adkivia" target="_blank" rel="noopener" class="mobile-nav-contact">🎵 TikTok</a>
         </div>
         <div class="mobile-nav-footer">
             <a href="cek_pembelian.php" class="btn-nav">Cek Pembelian</a>
@@ -58,6 +134,8 @@
     <script>
         function openMobileMenu()  { document.getElementById('mobileNav').classList.add('open'); document.body.style.overflow='hidden'; }
         function closeMobileMenu() { document.getElementById('mobileNav').classList.remove('open'); document.body.style.overflow=''; }
+        function toggleJasaDrop()  { document.getElementById('jasaDrop').classList.toggle('open'); }
+        document.addEventListener('click', function(e) { var d = document.getElementById('jasaDrop'); if (d && !d.contains(e.target)) d.classList.remove('open'); });
     </script>
 
     <!-- HERO -->
