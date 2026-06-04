@@ -38,16 +38,7 @@ try {
     $stmt->execute([$phone]);
     $penomoran = $stmt->fetchAll();
 
-    // Ambil 5 order daftar isi terakhir
-    $stmt2 = $db->prepare("
-        SELECT order_id, kedalaman, harga, status, created_at
-        FROM daftar_isi_orders
-        WHERE phone = ?
-        ORDER BY created_at DESC
-        LIMIT 5
-    ");
-    $stmt2->execute([$phone]);
-    $daftarIsi = $stmt2->fetchAll();
+    $daftarIsi = [];
 
     $total = count($penomoran) + count($daftarIsi);
 
