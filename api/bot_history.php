@@ -13,16 +13,14 @@ if ($apiKey !== 'adkivia-bot-2026') {
     exit;
 }
 
-$waNumber = trim($_GET['wa'] ?? '');
-if (empty($waNumber)) {
+$email = trim($_GET['email'] ?? '');
+if (empty($email)) {
     http_response_code(400);
-    echo json_encode(['error' => 'Parameter wa dibutuhkan']);
+    echo json_encode(['error' => 'Parameter email dibutuhkan']);
     exit;
 }
 
-// Bersihkan format WhatsApp (@c.us, @lid, dll)
-$phone = preg_replace('/@.*$/', '', $waNumber);
-$phone = preg_replace('/[^0-9]/', '', $phone);
+$phone = $email;
 
 try {
     $db = getDB();
@@ -43,12 +41,11 @@ try {
     $total = count($penomoran) + count($daftarIsi);
 
     echo json_encode([
-        'success'   => true,
-        'wa_number' => $waNumber,
-        'phone'     => $phone,
-        'total'     => $total,
-        'penomoran' => $penomoran,
-        'daftar_isi'=> $daftarIsi,
+        'success'    => true,
+        'email'      => $email,
+        'total'      => $total,
+        'penomoran'  => $penomoran,
+        'daftar_isi' => $daftarIsi,
     ]);
 
 } catch (Exception $e) {
