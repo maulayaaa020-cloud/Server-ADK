@@ -115,8 +115,72 @@ if ($exitCode !== 0 || !file_exists($outputPath)) {
 
 adk_log('processing', 'Bot process selesai', ['phone' => $phone, 'output' => $outputName]);
 
+// Buat order di tabel orders
+$hargaMap  = ['paket1'=>5000,'paket2'=>10000,'paket3'=>10000,'paket4'=>15000];
+$paketKey  = $order['paket'] ?? 'paket3';
+$harga     = $hargaMap[$paketKey] ?? 10000;
+$email     = $order['email'] ?? $phone;
+$orderId   = 'ADK-BOT-' . date('YmdHis') . '-' . strtoupper(bin2hex(random_bytes(3)));
+$outputRel = 'uploads/bot/hasil/' . $outputName;
+
+$extraData = json_encode([
+    'pos_bab'      => $order['pos_bab']    ?? 'Tengah Bawah',
+    'pos_isi_bab'  => $order['pos_isi']    ?? 'Kanan Atas',
+    'semb_dafus'   => $order['semb_dafus'] ?? 'Tidak',
+    'semb_lamprn'  => $order['semb_lamprn']?? 'Tidak',
+    'num_cover'    => $order['num_cover']  ?? 1,
+    'dimulai_dari' => $order['dimulai']    ?? 'i',
+    'via'          => 'bot',
+]);
+
+try {
+    $db = getDB();
+    $db->prepare("
+        INSERT INTO orders
+            (order_id, phone, file_input, file_output, paket, font, size, hidden_cover, posisi, harga, status, extra_data, created_at)
+        VALUES
+            (:order_id, :phone, :file_input, :file_output, :paket, :font, :size, :hidden_cover, :posisi, :harga, 'pending', :extra_data, NOW())
+    ")->execute([
+        ':order_id'    => $orderId,
+        ':phone'       => $email,
+        ':file_input'  => $origName,
+        ':file_output' => $outputRel,
+        ':paket'       => $paketKey,
+        ':font'        => $order['font']   ?? 'Times New Roman',
+        ':size'        => $order['size']   ?? '12 pt',
+        ':hidden_cover'=> $order['hidden'] ?? 'Ya',
+        ':posisi'      => $order['posisi'] ?? 'Tengah Bawah',
+        ':harga'       => $harga,
+        ':extra_data'  => $extraData,
+    ]);
+} catch (Exception $e) {
+    adk_log('error', 'Gagal simpan order bot', ['err' => $e->getMessage()]);
+}
+
+// Generate magic link token (reusable, valid 7 days)
+$botToken   = bin2hex(random_bytes(32));
+$expiresAt  = date('Y-m-d H:i:s', strtotime('+7 days'));
+$historyUrl = APP_URL . '/history.php?bot_token=' . $botToken;
+
+try {
+    $db->prepare("
+        INSERT INTO bot_login_tokens (token, email, expires_at)
+        VALUES (:token, :email, :expires_at)
+    ")->execute([
+        ':token'      => $botToken,
+        ':email'      => $email,
+        ':expires_at' => $expiresAt,
+    ]);
+} catch (Exception $e) {
+    adk_log('error', 'Gagal simpan bot_login_token', ['err' => $e->getMessage()]);
+    $historyUrl = APP_URL . '/cek_pembelian.php';
+}
+
 echo json_encode([
-    'success'     => true,
-    'output_file' => $outputName,
-    'output_url'  => APP_URL . '/uploads/bot/hasil/' . $outputName,
+    'success'      => true,
+    'order_id'     => $orderId,
+    'output_file'  => $outputName,
+    'output_url'   => APP_URL . '/uploads/bot/hasil/' . $outputName,
+    'history_url'  => $historyUrl,
+    'cek_url'      => APP_URL . '/cek_pembelian.php',
 ]);
