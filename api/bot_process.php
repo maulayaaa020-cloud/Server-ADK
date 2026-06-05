@@ -116,12 +116,14 @@ if ($exitCode !== 0 || !file_exists($outputPath)) {
 adk_log('processing', 'Bot process selesai', ['phone' => $phone, 'output' => $outputName]);
 
 // Buat order di tabel orders
-$hargaMap  = ['paket1'=>5000,'paket2'=>10000,'paket3'=>10000,'paket4'=>15000];
-$paketKey  = $order['paket'] ?? 'paket3';
-$harga     = $hargaMap[$paketKey] ?? 10000;
-$email     = $order['email'] ?? $phone;
-$orderId   = 'ADK-BOT-' . date('YmdHis') . '-' . strtoupper(bin2hex(random_bytes(3)));
-$outputRel = 'uploads/bot/hasil/' . $outputName;
+$hargaMap         = ['paket1'=>5000,'paket2'=>10000,'paket3'=>10000,'paket4'=>15000];
+$paketKey         = $order['paket'] ?? 'paket3';
+$hargaPaket       = $hargaMap[$paketKey] ?? 10000;
+$biayaOperasional = 2000;
+$harga            = $hargaPaket + $biayaOperasional;
+$email            = $order['email'] ?? $phone;
+$orderId          = 'ADK-BOT-' . date('YmdHis') . '-' . strtoupper(bin2hex(random_bytes(3)));
+$outputRel        = 'uploads/bot/hasil/' . $outputName;
 
 $extraData = json_encode([
     'pos_bab'      => $order['pos_bab']    ?? 'Tengah Bawah',
@@ -131,6 +133,8 @@ $extraData = json_encode([
     'num_cover'    => $order['num_cover']  ?? 1,
     'dimulai_dari' => $order['dimulai']    ?? 'i',
     'via'          => 'bot',
+    'harga_paket'  => $hargaPaket,
+    'bot_surcharge'=> $biayaOperasional,
 ]);
 
 try {
@@ -177,10 +181,13 @@ try {
 }
 
 echo json_encode([
-    'success'      => true,
-    'order_id'     => $orderId,
-    'output_file'  => $outputName,
-    'output_url'   => APP_URL . '/uploads/bot/hasil/' . $outputName,
-    'history_url'  => $historyUrl,
-    'cek_url'      => APP_URL . '/cek_pembelian.php',
+    'success'           => true,
+    'order_id'          => $orderId,
+    'output_file'       => $outputName,
+    'output_url'        => APP_URL . '/uploads/bot/hasil/' . $outputName,
+    'history_url'       => $historyUrl,
+    'cek_url'           => APP_URL . '/cek_pembelian.php',
+    'harga_paket'       => 'Rp ' . number_format($hargaPaket, 0, ',', '.'),
+    'biaya_operasional' => 'Rp ' . number_format($biayaOperasional, 0, ',', '.'),
+    'total'             => 'Rp ' . number_format($harga, 0, ',', '.'),
 ]);
