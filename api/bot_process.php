@@ -15,9 +15,10 @@ if ($apiKey !== 'adkivia-bot-2026') {
 
 set_time_limit(300);
 
-$data       = json_decode(file_get_contents('php://input'), true);
-$phone      = trim($data['phone']    ?? '');
-$filename   = trim($data['filename'] ?? '');
+$data      = json_decode(file_get_contents('php://input'), true);
+$phone     = trim($data['phone']     ?? '');
+$filename  = trim($data['filename']  ?? '');
+$origName  = trim($data['orig_name'] ?? $filename);
 
 if (!$phone || !$filename) {
     http_response_code(400);
@@ -61,11 +62,18 @@ if (!$order) {
     ];
 }
 
-// Siapkan path output
-$hasilDir  = __DIR__ . '/../uploads/bot/hasil/';
+// Siapkan path output — format sama seperti website
+$hasilDir = __DIR__ . '/../uploads/bot/hasil/';
 if (!is_dir($hasilDir)) mkdir($hasilDir, 0755, true);
 
-$outputName = 'hasil_' . basename($filename);
+$namaAsli  = pathinfo($origName, PATHINFO_FILENAME);
+$ext       = strtolower(pathinfo($origName, PATHINFO_EXTENSION)) ?: 'docx';
+$namaAsli  = preg_replace('/^\d+_/', '', $namaAsli);
+$namaAsli  = preg_replace('/[^a-zA-Z0-9]/', '_', $namaAsli);
+$namaAsli  = trim(preg_replace('/_+/', '_', $namaAsli), '_');
+$timestamp = date('YmdHis');
+$random    = bin2hex(random_bytes(4));
+$outputName = $namaAsli . '_ADK_' . $timestamp . '_' . $random . '.' . $ext;
 $outputPath = $hasilDir . $outputName;
 
 // Build command
