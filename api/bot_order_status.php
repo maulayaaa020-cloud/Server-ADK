@@ -23,15 +23,15 @@ if (empty($phone)) {
 
 try {
     $db   = getDB();
-    $stmt = $db->prepare("SELECT order_done, email FROM bot_pending_orders WHERE phone = ?");
+    $stmt = $db->prepare("SELECT order_done, email, paket FROM bot_pending_orders WHERE phone = ?");
     $stmt->execute([$phone]);
     $row  = $stmt->fetch(PDO::FETCH_ASSOC);
 
     echo json_encode($row
-        ? ['order_done' => (int)$row['order_done'], 'email' => $row['email'], 'exists' => true]
+        ? ['order_done' => (int)$row['order_done'], 'email' => $row['email'], 'paket' => $row['paket'] ?? 'paket3', 'exists' => true]
         : ['order_done' => 0, 'exists' => false]
     );
 } catch (Exception $e) {
     http_response_code(500);
-    echo json_encode(['error' => 'Server error']);
+    echo json_encode(['error' => $e->getMessage()]);
 }

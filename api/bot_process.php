@@ -20,6 +20,12 @@ $phone     = trim($data['phone']     ?? '');
 $filename  = trim($data['filename']  ?? '');
 $origName  = trim($data['orig_name'] ?? $filename);
 
+if (strpos($origName, '_ADK_') !== false) {
+    http_response_code(400);
+    echo json_encode(['error' => 'FILE_IS_OUTPUT', 'message' => 'File ini adalah hasil pemrosesan sebelumnya']);
+    exit;
+}
+
 if (!$phone || !$filename) {
     http_response_code(400);
     echo json_encode(['error' => 'Parameter phone dan filename dibutuhkan']);
