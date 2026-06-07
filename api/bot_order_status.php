@@ -28,8 +28,8 @@ try {
     $row  = $stmt->fetch(PDO::FETCH_ASSOC);
 
     echo json_encode($row
-        ? ['order_done' => (int)$row['order_done'], 'email' => $row['email'], 'paket' => $row['paket'] ?? 'paket3', 'exists' => true]
-        : ['order_done' => 0, 'exists' => false]
+        ? ['order_done' => (int)$row['order_done'], 'email' => $row['email'], 'paket' => $row['paket'] ?? 'paket3', 'phone' => $phone, 'exists' => true]
+        : ['order_done' => 0, 'exists' => false, 'phone' => $phone]
     );
 } catch (Exception $e) {
     http_response_code(500);
