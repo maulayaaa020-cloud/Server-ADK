@@ -115,8 +115,17 @@ if ($exitCode !== 0 || !file_exists($outputPath)) {
 
 adk_log('processing', 'Bot process selesai', ['phone' => $phone, 'output' => $outputName]);
 
+// Tandai order selesai diproses
+try {
+    $db = getDB();
+    $db->prepare("UPDATE bot_pending_orders SET order_done = 1 WHERE phone = ?")
+       ->execute([$phone]);
+} catch (Exception $e) {
+    adk_log('error', 'Gagal set order_done', ['err' => $e->getMessage()]);
+}
+
 // Buat order di tabel orders
-$hargaMap         = ['paket1'=>5000,'paket2'=>10000,'paket3'=>10000,'paket4'=>15000];
+$hargaMap         = ['paket1'=>3000,'paket2'=>5000,'paket3'=>8000,'paket4'=>10000];
 $paketKey         = $order['paket'] ?? 'paket3';
 $hargaPaket       = $hargaMap[$paketKey] ?? 10000;
 $biayaOperasional = 2000;
