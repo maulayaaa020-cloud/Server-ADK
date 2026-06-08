@@ -41,19 +41,37 @@ if (empty($data['phone'])) {
     exit;
 }
 
-$phone      = trim($data['phone']);
-$email      = trim($data['email']      ?? '');
-$paket      = $data['paket']      ?? 'paket3';
-$font       = $data['font']       ?? 'Times New Roman';
-$size       = $data['size']       ?? '12 pt';
-$hidden     = $data['hidden']     ?? 'Ya';
-$posisi     = $data['posisi']     ?? 'Tengah Bawah';
-$pos_bab    = $data['pos_bab']    ?? 'Tengah Bawah';
-$pos_isi    = $data['pos_isi']    ?? 'Kanan Atas';
-$dimulai    = $data['dimulai']    ?? 'i';
-$semb_dafus = $data['semb_dafus'] ?? 'Tidak';
-$semb_lamprn= $data['semb_lamprn']?? 'Tidak';
-$num_cover  = (int)($data['num_cover'] ?? 1);
+// Helper: pakai nilai dari request jika tidak kosong, else null (pertahankan nilai DB)
+function val($data, $key, $default = '') {
+    $v = isset($data[$key]) ? trim((string)$data[$key]) : '';
+    return $v !== '' ? $v : null;
+}
+
+$phone       = trim($data['phone']);
+$email       = val($data, 'email');
+$paket       = val($data, 'paket')       ?? 'paket3';
+$font        = val($data, 'font');
+$size        = val($data, 'size');
+$hidden      = val($data, 'hidden');
+$posisi      = val($data, 'posisi');
+$pos_bab     = val($data, 'pos_bab');
+$pos_isi     = val($data, 'pos_isi');
+$dimulai     = val($data, 'dimulai');
+$semb_dafus  = val($data, 'semb_dafus');
+$semb_lamprn = val($data, 'semb_lamprn');
+$num_cover   = isset($data['num_cover']) && $data['num_cover'] !== '' ? (int)$data['num_cover'] : null;
+
+// Untuk INSERT baru: pakai default jika null
+$ins_font        = $font        ?? 'Times New Roman';
+$ins_size        = $size        ?? '12 pt';
+$ins_hidden      = $hidden      ?? 'Ya';
+$ins_posisi      = $posisi      ?? 'Tengah Bawah';
+$ins_pos_bab     = $pos_bab     ?? 'Tengah Bawah';
+$ins_pos_isi     = $pos_isi     ?? 'Kanan Atas';
+$ins_dimulai     = $dimulai     ?? 'i';
+$ins_semb_dafus  = $semb_dafus  ?? 'Tidak';
+$ins_semb_lamprn = $semb_lamprn ?? 'Tidak';
+$ins_num_cover   = $num_cover   ?? 1;
 
 try {
     $db = getDB();
@@ -63,26 +81,46 @@ try {
         VALUES
             (:phone, :email, :paket, :font, :size, :hidden, :posisi, :pos_bab, :pos_isi, :dimulai, :semb_dafus, :semb_lamprn, :num_cover)
         ON DUPLICATE KEY UPDATE
-            email=IF(VALUES(email)='', email, VALUES(email)),
-            paket=VALUES(paket), font=VALUES(font), size=VALUES(size),
-            hidden=VALUES(hidden), posisi=VALUES(posisi), pos_bab=VALUES(pos_bab),
-            pos_isi=VALUES(pos_isi), dimulai=VALUES(dimulai),
-            semb_dafus=VALUES(semb_dafus), semb_lamprn=VALUES(semb_lamprn),
-            num_cover=VALUES(num_cover), order_done=order_done, updated_at=NOW()
+            email        = IF(:u_email        IS NULL, email,        :u_email),
+            paket        = :u_paket,
+            font         = IF(:u_font         IS NULL, font,         :u_font),
+            size         = IF(:u_size         IS NULL, size,         :u_size),
+            hidden       = IF(:u_hidden       IS NULL, hidden,       :u_hidden),
+            posisi       = IF(:u_posisi       IS NULL, posisi,       :u_posisi),
+            pos_bab      = IF(:u_pos_bab      IS NULL, pos_bab,      :u_pos_bab),
+            pos_isi      = IF(:u_pos_isi      IS NULL, pos_isi,      :u_pos_isi),
+            dimulai      = IF(:u_dimulai      IS NULL, dimulai,      :u_dimulai),
+            semb_dafus   = IF(:u_semb_dafus   IS NULL, semb_dafus,   :u_semb_dafus),
+            semb_lamprn  = IF(:u_semb_lamprn  IS NULL, semb_lamprn,  :u_semb_lamprn),
+            num_cover    = IF(:u_num_cover    IS NULL, num_cover,    :u_num_cover),
+            order_done   = order_done,
+            updated_at   = NOW()
     ")->execute([
-        ':phone'      => $phone,
-        ':email'      => $email,
-        ':paket'      => $paket,
-        ':font'       => $font,
-        ':size'       => $size,
-        ':hidden'     => $hidden,
-        ':posisi'     => $posisi,
-        ':pos_bab'    => $pos_bab,
-        ':pos_isi'    => $pos_isi,
-        ':dimulai'    => $dimulai,
-        ':semb_dafus' => $semb_dafus,
-        ':semb_lamprn'=> $semb_lamprn,
-        ':num_cover'  => $num_cover,
+        ':phone'         => $phone,
+        ':email'         => $email ?? '',
+        ':paket'         => $paket,
+        ':font'          => $ins_font,
+        ':size'          => $ins_size,
+        ':hidden'        => $ins_hidden,
+        ':posisi'        => $ins_posisi,
+        ':pos_bab'       => $ins_pos_bab,
+        ':pos_isi'       => $ins_pos_isi,
+        ':dimulai'       => $ins_dimulai,
+        ':semb_dafus'    => $ins_semb_dafus,
+        ':semb_lamprn'   => $ins_semb_lamprn,
+        ':num_cover'     => $ins_num_cover,
+        ':u_email'       => $email,
+        ':u_paket'       => $paket,
+        ':u_font'        => $font,
+        ':u_size'        => $size,
+        ':u_hidden'      => $hidden,
+        ':u_posisi'      => $posisi,
+        ':u_pos_bab'     => $pos_bab,
+        ':u_pos_isi'     => $pos_isi,
+        ':u_dimulai'     => $dimulai,
+        ':u_semb_dafus'  => $semb_dafus,
+        ':u_semb_lamprn' => $semb_lamprn,
+        ':u_num_cover'   => $num_cover,
     ]);
 
     echo json_encode(['success' => true, 'phone' => $phone]);
