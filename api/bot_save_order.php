@@ -12,6 +12,28 @@ if ($apiKey !== 'adkivia-bot-2026') {
     exit;
 }
 
+// GET: cek status order_done
+if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+    $phone = trim($_GET['phone'] ?? '');
+    if (empty($phone)) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Parameter phone dibutuhkan']);
+        exit;
+    }
+    try {
+        $db   = getDB();
+        $stmt = $db->prepare("SELECT phone, email, order_done FROM bot_pending_orders WHERE phone = ?");
+        $stmt->execute([$phone]);
+        $row  = $stmt->fetch(PDO::FETCH_ASSOC);
+        echo json_encode($row ? ['order_done' => (int)$row['order_done'], 'email' => $row['email'], 'exists' => true]
+                               : ['order_done' => 0, 'exists' => false]);
+    } catch (Exception $e) {
+        http_response_code(500);
+        echo json_encode(['error' => 'Server error']);
+    }
+    exit;
+}
+
 $data = json_decode(file_get_contents('php://input'), true);
 if (empty($data['phone'])) {
     http_response_code(400);
@@ -20,6 +42,7 @@ if (empty($data['phone'])) {
 }
 
 $phone      = trim($data['phone']);
+$email      = trim($data['email']      ?? '');
 $paket      = $data['paket']      ?? 'paket3';
 $font       = $data['font']       ?? 'Times New Roman';
 $size       = $data['size']       ?? '12 pt';
@@ -36,17 +59,19 @@ try {
     $db = getDB();
     $db->prepare("
         INSERT INTO bot_pending_orders
-            (phone, paket, font, size, hidden, posisi, pos_bab, pos_isi, dimulai, semb_dafus, semb_lamprn, num_cover)
+            (phone, email, paket, font, size, hidden, posisi, pos_bab, pos_isi, dimulai, semb_dafus, semb_lamprn, num_cover)
         VALUES
-            (:phone, :paket, :font, :size, :hidden, :posisi, :pos_bab, :pos_isi, :dimulai, :semb_dafus, :semb_lamprn, :num_cover)
+            (:phone, :email, :paket, :font, :size, :hidden, :posisi, :pos_bab, :pos_isi, :dimulai, :semb_dafus, :semb_lamprn, :num_cover)
         ON DUPLICATE KEY UPDATE
+            email=IF(VALUES(email)='', email, VALUES(email)),
             paket=VALUES(paket), font=VALUES(font), size=VALUES(size),
             hidden=VALUES(hidden), posisi=VALUES(posisi), pos_bab=VALUES(pos_bab),
             pos_isi=VALUES(pos_isi), dimulai=VALUES(dimulai),
             semb_dafus=VALUES(semb_dafus), semb_lamprn=VALUES(semb_lamprn),
-            num_cover=VALUES(num_cover), updated_at=NOW()
+            num_cover=VALUES(num_cover), order_done=order_done, updated_at=NOW()
     ")->execute([
         ':phone'      => $phone,
+        ':email'      => $email,
         ':paket'      => $paket,
         ':font'       => $font,
         ':size'       => $size,
