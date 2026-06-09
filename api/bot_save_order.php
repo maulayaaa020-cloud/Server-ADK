@@ -22,11 +22,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     }
     try {
         $db   = getDB();
-        $stmt = $db->prepare("SELECT phone, email, order_done FROM bot_pending_orders WHERE phone = ?");
+        $stmt = $db->prepare("SELECT phone, email, order_done, paket_confirmed FROM bot_pending_orders WHERE phone = ?");
         $stmt->execute([$phone]);
         $row  = $stmt->fetch(PDO::FETCH_ASSOC);
-        echo json_encode($row ? ['order_done' => (int)$row['order_done'], 'email' => $row['email'], 'exists' => true]
-                               : ['order_done' => 0, 'exists' => false]);
+        echo json_encode($row ? ['order_done' => (int)$row['order_done'], 'email' => $row['email'], 'paket_confirmed' => (int)$row['paket_confirmed'], 'exists' => true]
+                               : ['order_done' => 0, 'paket_confirmed' => 0, 'exists' => false]);
     } catch (Exception $e) {
         http_response_code(500);
         echo json_encode(['error' => 'Server error']);
