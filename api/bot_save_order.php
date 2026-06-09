@@ -49,7 +49,8 @@ function val($data, $key, $default = '') {
 
 $phone       = trim($data['phone']);
 $email       = val($data, 'email');
-$paket       = val($data, 'paket')       ?? 'paket3';
+$paket_raw   = val($data, 'paket');
+$paket       = $paket_raw ?? 'paket3';
 $font        = val($data, 'font');
 $size        = val($data, 'size');
 $hidden      = val($data, 'hidden');
@@ -60,6 +61,10 @@ $dimulai     = val($data, 'dimulai');
 $semb_dafus  = val($data, 'semb_dafus');
 $semb_lamprn = val($data, 'semb_lamprn');
 $num_cover   = isset($data['num_cover']) && $data['num_cover'] !== '' ? (int)$data['num_cover'] : null;
+
+// paket_confirmed: 1 hanya kalau user eksplisit kirim paket
+$ins_paket_confirmed = ($paket_raw !== null) ? 1 : 0;
+$upd_paket_confirmed = ($paket_raw !== null) ? 1 : null;
 
 // Untuk INSERT baru: pakai default jika null
 $ins_font        = $font        ?? 'Times New Roman';
@@ -77,13 +82,14 @@ try {
     $db = getDB();
     $db->prepare("
         INSERT INTO bot_pending_orders
-            (phone, email, paket, font, size, hidden, posisi, pos_bab, pos_isi, dimulai, semb_dafus, semb_lamprn, num_cover)
+            (phone, email, paket, paket_confirmed, font, size, hidden, posisi, pos_bab, pos_isi, dimulai, semb_dafus, semb_lamprn, num_cover)
         VALUES
-            (:phone, :email, :paket, :font, :size, :hidden, :posisi, :pos_bab, :pos_isi, :dimulai, :semb_dafus, :semb_lamprn, :num_cover)
+            (:phone, :email, :paket, :paket_confirmed, :font, :size, :hidden, :posisi, :pos_bab, :pos_isi, :dimulai, :semb_dafus, :semb_lamprn, :num_cover)
         ON DUPLICATE KEY UPDATE
-            email        = IF(:u_email        IS NULL, email,        :u_email),
-            paket        = :u_paket,
-            font         = IF(:u_font         IS NULL, font,         :u_font),
+            email           = IF(:u_email           IS NULL, email,           :u_email),
+            paket           = :u_paket,
+            paket_confirmed = IF(:u_paket_confirmed IS NULL, paket_confirmed, :u_paket_confirmed),
+            font            = IF(:u_font            IS NULL, font,            :u_font),
             size         = IF(:u_size         IS NULL, size,         :u_size),
             hidden       = IF(:u_hidden       IS NULL, hidden,       :u_hidden),
             posisi       = IF(:u_posisi       IS NULL, posisi,       :u_posisi),
@@ -96,10 +102,11 @@ try {
             order_done   = order_done,
             updated_at   = NOW()
     ")->execute([
-        ':phone'         => $phone,
-        ':email'         => $email ?? '',
-        ':paket'         => $paket,
-        ':font'          => $ins_font,
+        ':phone'              => $phone,
+        ':email'              => $email ?? '',
+        ':paket'              => $paket,
+        ':paket_confirmed'    => $ins_paket_confirmed,
+        ':font'               => $ins_font,
         ':size'          => $ins_size,
         ':hidden'        => $ins_hidden,
         ':posisi'        => $ins_posisi,
@@ -109,9 +116,10 @@ try {
         ':semb_dafus'    => $ins_semb_dafus,
         ':semb_lamprn'   => $ins_semb_lamprn,
         ':num_cover'     => $ins_num_cover,
-        ':u_email'       => $email,
-        ':u_paket'       => $paket,
-        ':u_font'        => $font,
+        ':u_email'            => $email,
+        ':u_paket'            => $paket,
+        ':u_paket_confirmed'  => $upd_paket_confirmed,
+        ':u_font'             => $font,
         ':u_size'        => $size,
         ':u_hidden'      => $hidden,
         ':u_posisi'      => $posisi,

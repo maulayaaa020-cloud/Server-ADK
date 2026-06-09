@@ -51,6 +51,19 @@ try {
     exit;
 }
 
+if ($order) {
+    if (empty($order['email'])) {
+        http_response_code(422);
+        echo json_encode(['error' => 'EMAIL_REQUIRED', 'message' => 'Email user belum diisi. Minta user konfirmasi email terlebih dahulu.']);
+        exit;
+    }
+    if (empty($order['paket_confirmed'])) {
+        http_response_code(422);
+        echo json_encode(['error' => 'PAKET_REQUIRED', 'message' => 'Paket belum dikonfirmasi user. Minta user pilih paket terlebih dahulu.']);
+        exit;
+    }
+}
+
 if (!$order) {
     // Gunakan default jika tidak ada parameter tersimpan
     $order = [
