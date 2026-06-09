@@ -62,6 +62,7 @@ function val($data, $key, $default = '') {
 
 $phone       = trim($data['phone']);
 $email       = val($data, 'email');
+if ($email !== null && strpos($email, '@') === false) $email = null;
 $paket_raw   = val($data, 'paket');
 $paket       = $paket_raw ?? 'paket3';
 $font        = val($data, 'font');
