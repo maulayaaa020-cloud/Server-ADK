@@ -199,7 +199,6 @@ echo json_encode([
     'success'           => true,
     'order_id'          => $orderId,
     'output_file'       => $outputName,
-    'debug_orig_name'   => $origName,
     'output_url'        => APP_URL . '/uploads/bot/hasil/' . $outputName,
     'history_url'       => $historyUrl,
     'cek_url'           => APP_URL . '/cek_pembelian.php',
