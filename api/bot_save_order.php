@@ -22,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     }
     try {
         $db   = getDB();
-        $stmt = $db->prepare("SELECT phone, email, paket, order_done, paket_confirmed, specs_confirmed FROM bot_pending_orders WHERE phone = ?");
+        $stmt = $db->prepare("SELECT phone, email, paket, order_done, paket_confirmed, specs_confirmed, last_activity FROM bot_pending_orders WHERE phone = ?");
         $stmt->execute([$phone]);
         $row  = $stmt->fetch(PDO::FETCH_ASSOC);
         echo json_encode($row ? [
@@ -31,11 +31,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             'paket'           => $row['paket'],
             'paket_confirmed' => (int)$row['paket_confirmed'],
             'specs_confirmed' => (int)$row['specs_confirmed'],
+            'last_activity'   => $row['last_activity'],
             'exists'          => true,
         ] : [
             'order_done'      => 0,
             'paket_confirmed' => 0,
             'specs_confirmed' => 0,
+            'last_activity'   => null,
             'exists'          => false,
         ]);
     } catch (Exception $e) {
@@ -99,9 +101,9 @@ try {
     $db = getDB();
     $db->prepare("
         INSERT INTO bot_pending_orders
-            (phone, email, paket, paket_confirmed, specs_confirmed, font, size, hidden, posisi, pos_bab, pos_isi, dimulai, semb_dafus, semb_lamprn, num_cover)
+            (phone, email, paket, paket_confirmed, specs_confirmed, font, size, hidden, posisi, pos_bab, pos_isi, dimulai, semb_dafus, semb_lamprn, num_cover, last_activity)
         VALUES
-            (:phone, :email, :paket, :paket_confirmed, :specs_confirmed, :font, :size, :hidden, :posisi, :pos_bab, :pos_isi, :dimulai, :semb_dafus, :semb_lamprn, :num_cover)
+            (:phone, :email, :paket, :paket_confirmed, :specs_confirmed, :font, :size, :hidden, :posisi, :pos_bab, :pos_isi, :dimulai, :semb_dafus, :semb_lamprn, :num_cover, NOW())
         ON DUPLICATE KEY UPDATE
             email           = IF(:u_email           IS NULL, email,           :u_email),
             paket           = :u_paket,
@@ -117,8 +119,9 @@ try {
             semb_dafus   = IF(:u_semb_dafus   IS NULL, semb_dafus,   :u_semb_dafus),
             semb_lamprn  = IF(:u_semb_lamprn  IS NULL, semb_lamprn,  :u_semb_lamprn),
             num_cover    = IF(:u_num_cover    IS NULL, num_cover,    :u_num_cover),
-            order_done   = order_done,
-            updated_at   = NOW()
+            order_done    = order_done,
+            last_activity = NOW(),
+            updated_at    = NOW()
     ")->execute([
         ':phone'              => $phone,
         ':email'              => $email ?? '',
