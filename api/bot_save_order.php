@@ -79,10 +79,9 @@ $num_cover   = isset($data['num_cover']) && $data['num_cover'] !== '' ? (int)$da
 $ins_paket_confirmed = ($paket_raw !== null) ? 1 : 0;
 $upd_paket_confirmed = ($paket_raw !== null) ? 1 : null;
 
-// specs_confirmed: hanya set kalau eksplisit dikirim (0 = reset, 1 = confirmed)
+// specs_confirmed: hanya set kalau eksplisit dikirim (0 = reset, 1 = confirmed), null = pertahankan DB
 $specs_confirmed_raw = isset($data['specs_confirmed']) && $data['specs_confirmed'] !== '' ? (int)$data['specs_confirmed'] : null;
-// Kalau paket berubah dan specs_confirmed tidak eksplisit dikirim → reset ke 0
-$upd_specs_confirmed = ($specs_confirmed_raw !== null) ? $specs_confirmed_raw : (($paket_raw !== null) ? 0 : null);
+$upd_specs_confirmed = $specs_confirmed_raw;
 $ins_specs_confirmed = 0;
 
 // order_done: hanya set kalau eksplisit dikirim (0 = reset untuk order baru)
