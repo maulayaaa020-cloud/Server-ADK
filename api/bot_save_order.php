@@ -85,6 +85,9 @@ $specs_confirmed_raw = isset($data['specs_confirmed']) && $data['specs_confirmed
 $upd_specs_confirmed = ($specs_confirmed_raw !== null) ? $specs_confirmed_raw : (($paket_raw !== null) ? 0 : null);
 $ins_specs_confirmed = 0;
 
+// order_done: hanya set kalau eksplisit dikirim (0 = reset untuk order baru)
+$upd_order_done = isset($data['order_done']) && $data['order_done'] !== '' ? (int)$data['order_done'] : null;
+
 // Untuk INSERT baru: pakai default jika null
 $ins_font        = $font        ?? 'Times New Roman';
 $ins_size        = $size        ?? '12 pt';
@@ -119,7 +122,7 @@ try {
             semb_dafus   = IF(:u_semb_dafus   IS NULL, semb_dafus,   :u_semb_dafus),
             semb_lamprn  = IF(:u_semb_lamprn  IS NULL, semb_lamprn,  :u_semb_lamprn),
             num_cover    = IF(:u_num_cover    IS NULL, num_cover,    :u_num_cover),
-            order_done    = order_done,
+            order_done    = IF(:u_order_done IS NULL, order_done, :u_order_done),
             last_activity = NOW(),
             updated_at    = NOW()
     ")->execute([
@@ -142,6 +145,7 @@ try {
         ':u_paket'            => $paket,
         ':u_paket_confirmed'  => $upd_paket_confirmed,
         ':u_specs_confirmed'  => $upd_specs_confirmed,
+        ':u_order_done'       => $upd_order_done,
         ':u_font'             => $font,
         ':u_size'        => $size,
         ':u_hidden'      => $hidden,

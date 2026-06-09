@@ -23,7 +23,7 @@ if (empty($phone)) {
 
 try {
     $db   = getDB();
-    $stmt = $db->prepare("SELECT order_done, email, paket, paket_confirmed, specs_confirmed FROM bot_pending_orders WHERE phone = ?");
+    $stmt = $db->prepare("SELECT order_done, email, paket, paket_confirmed, specs_confirmed, font, size, hidden, posisi, pos_bab, pos_isi, dimulai, semb_dafus, semb_lamprn, num_cover FROM bot_pending_orders WHERE phone = ?");
     $stmt->execute([$phone]);
     $row  = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -34,6 +34,16 @@ try {
             'paket'           => $row['paket'] ?? 'paket3',
             'paket_confirmed' => (int)$row['paket_confirmed'],
             'specs_confirmed' => (int)$row['specs_confirmed'],
+            'font'            => $row['font'] ?? '',
+            'size'            => $row['size'] ?? '',
+            'hidden'          => $row['hidden'] ?? '',
+            'posisi'          => $row['posisi'] ?? '',
+            'pos_bab'         => $row['pos_bab'] ?? '',
+            'pos_isi'         => $row['pos_isi'] ?? '',
+            'dimulai'         => $row['dimulai'] ?? '',
+            'semb_dafus'      => $row['semb_dafus'] ?? '',
+            'semb_lamprn'     => $row['semb_lamprn'] ?? '',
+            'num_cover'       => $row['num_cover'] ?? '',
             'phone'           => $phone,
             'exists'          => true,
           ]
