@@ -23,13 +23,21 @@ if (empty($phone)) {
 
 try {
     $db   = getDB();
-    $stmt = $db->prepare("SELECT order_done, email, paket FROM bot_pending_orders WHERE phone = ?");
+    $stmt = $db->prepare("SELECT order_done, email, paket, paket_confirmed, specs_confirmed FROM bot_pending_orders WHERE phone = ?");
     $stmt->execute([$phone]);
     $row  = $stmt->fetch(PDO::FETCH_ASSOC);
 
     echo json_encode($row
-        ? ['order_done' => (int)$row['order_done'], 'email' => $row['email'], 'paket' => $row['paket'] ?? 'paket3', 'phone' => $phone, 'exists' => true]
-        : ['order_done' => 0, 'exists' => false, 'phone' => $phone]
+        ? [
+            'order_done'      => (int)$row['order_done'],
+            'email'           => $row['email'],
+            'paket'           => $row['paket'] ?? 'paket3',
+            'paket_confirmed' => (int)$row['paket_confirmed'],
+            'specs_confirmed' => (int)$row['specs_confirmed'],
+            'phone'           => $phone,
+            'exists'          => true,
+          ]
+        : ['order_done' => 0, 'paket_confirmed' => 0, 'specs_confirmed' => 0, 'exists' => false, 'phone' => $phone]
     );
 } catch (Exception $e) {
     http_response_code(500);
