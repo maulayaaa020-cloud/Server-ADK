@@ -62,6 +62,11 @@ if ($order) {
         echo json_encode(['error' => 'PAKET_REQUIRED', 'message' => 'Paket belum dikonfirmasi user. Minta user pilih paket terlebih dahulu.']);
         exit;
     }
+    if (empty($order['specs_confirmed'])) {
+        http_response_code(422);
+        echo json_encode(['error' => 'SPECS_REQUIRED', 'message' => 'Spesifikasi belum dikonfirmasi. Tanyakan spesifikasi sesuai paket yang dipilih.']);
+        exit;
+    }
 }
 
 if (!$order) {

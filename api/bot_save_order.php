@@ -22,11 +22,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     }
     try {
         $db   = getDB();
-        $stmt = $db->prepare("SELECT phone, email, order_done, paket_confirmed FROM bot_pending_orders WHERE phone = ?");
+        $stmt = $db->prepare("SELECT phone, email, paket, order_done, paket_confirmed, specs_confirmed FROM bot_pending_orders WHERE phone = ?");
         $stmt->execute([$phone]);
         $row  = $stmt->fetch(PDO::FETCH_ASSOC);
-        echo json_encode($row ? ['order_done' => (int)$row['order_done'], 'email' => $row['email'], 'paket_confirmed' => (int)$row['paket_confirmed'], 'exists' => true]
-                               : ['order_done' => 0, 'paket_confirmed' => 0, 'exists' => false]);
+        echo json_encode($row ? [
+            'order_done'      => (int)$row['order_done'],
+            'email'           => $row['email'],
+            'paket'           => $row['paket'],
+            'paket_confirmed' => (int)$row['paket_confirmed'],
+            'specs_confirmed' => (int)$row['specs_confirmed'],
+            'exists'          => true,
+        ] : [
+            'order_done'      => 0,
+            'paket_confirmed' => 0,
+            'specs_confirmed' => 0,
+            'exists'          => false,
+        ]);
     } catch (Exception $e) {
         http_response_code(500);
         echo json_encode(['error' => 'Server error']);
@@ -66,6 +77,12 @@ $num_cover   = isset($data['num_cover']) && $data['num_cover'] !== '' ? (int)$da
 $ins_paket_confirmed = ($paket_raw !== null) ? 1 : 0;
 $upd_paket_confirmed = ($paket_raw !== null) ? 1 : null;
 
+// specs_confirmed: hanya set kalau eksplisit dikirim (0 = reset, 1 = confirmed)
+$specs_confirmed_raw = isset($data['specs_confirmed']) && $data['specs_confirmed'] !== '' ? (int)$data['specs_confirmed'] : null;
+// Kalau paket berubah dan specs_confirmed tidak eksplisit dikirim → reset ke 0
+$upd_specs_confirmed = ($specs_confirmed_raw !== null) ? $specs_confirmed_raw : (($paket_raw !== null) ? 0 : null);
+$ins_specs_confirmed = 0;
+
 // Untuk INSERT baru: pakai default jika null
 $ins_font        = $font        ?? 'Times New Roman';
 $ins_size        = $size        ?? '12 pt';
@@ -82,13 +99,14 @@ try {
     $db = getDB();
     $db->prepare("
         INSERT INTO bot_pending_orders
-            (phone, email, paket, paket_confirmed, font, size, hidden, posisi, pos_bab, pos_isi, dimulai, semb_dafus, semb_lamprn, num_cover)
+            (phone, email, paket, paket_confirmed, specs_confirmed, font, size, hidden, posisi, pos_bab, pos_isi, dimulai, semb_dafus, semb_lamprn, num_cover)
         VALUES
-            (:phone, :email, :paket, :paket_confirmed, :font, :size, :hidden, :posisi, :pos_bab, :pos_isi, :dimulai, :semb_dafus, :semb_lamprn, :num_cover)
+            (:phone, :email, :paket, :paket_confirmed, :specs_confirmed, :font, :size, :hidden, :posisi, :pos_bab, :pos_isi, :dimulai, :semb_dafus, :semb_lamprn, :num_cover)
         ON DUPLICATE KEY UPDATE
             email           = IF(:u_email           IS NULL, email,           :u_email),
             paket           = :u_paket,
             paket_confirmed = IF(:u_paket_confirmed IS NULL, paket_confirmed, :u_paket_confirmed),
+            specs_confirmed = IF(:u_specs_confirmed IS NULL, specs_confirmed, :u_specs_confirmed),
             font            = IF(:u_font            IS NULL, font,            :u_font),
             size         = IF(:u_size         IS NULL, size,         :u_size),
             hidden       = IF(:u_hidden       IS NULL, hidden,       :u_hidden),
@@ -106,6 +124,7 @@ try {
         ':email'              => $email ?? '',
         ':paket'              => $paket,
         ':paket_confirmed'    => $ins_paket_confirmed,
+        ':specs_confirmed'    => $ins_specs_confirmed,
         ':font'               => $ins_font,
         ':size'          => $ins_size,
         ':hidden'        => $ins_hidden,
@@ -119,6 +138,7 @@ try {
         ':u_email'            => $email,
         ':u_paket'            => $paket,
         ':u_paket_confirmed'  => $upd_paket_confirmed,
+        ':u_specs_confirmed'  => $upd_specs_confirmed,
         ':u_font'             => $font,
         ':u_size'        => $size,
         ':u_hidden'      => $hidden,
