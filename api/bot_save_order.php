@@ -109,7 +109,7 @@ try {
             (:phone, :email, :paket, :paket_confirmed, :specs_confirmed, :font, :size, :hidden, :posisi, :pos_bab, :pos_isi, :dimulai, :semb_dafus, :semb_lamprn, :num_cover, NOW())
         ON DUPLICATE KEY UPDATE
             email           = IF(:u_email           IS NULL, email,           :u_email),
-            paket           = :u_paket,
+            paket           = IF(:u_paket IS NULL, paket, :u_paket),
             paket_confirmed = IF(:u_paket_confirmed IS NULL, paket_confirmed, :u_paket_confirmed),
             specs_confirmed = IF(:u_specs_confirmed IS NULL, specs_confirmed, :u_specs_confirmed),
             font            = IF(:u_font            IS NULL, font,            :u_font),
@@ -142,7 +142,7 @@ try {
         ':semb_lamprn'   => $ins_semb_lamprn,
         ':num_cover'     => $ins_num_cover,
         ':u_email'            => $email,
-        ':u_paket'            => $paket,
+        ':u_paket'            => $paket_raw,
         ':u_paket_confirmed'  => $upd_paket_confirmed,
         ':u_specs_confirmed'  => $upd_specs_confirmed,
         ':u_order_done'       => $upd_order_done,
