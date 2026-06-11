@@ -63,6 +63,18 @@ function val($data, $key, $default = '') {
 $phone       = trim($data['phone']);
 $email       = val($data, 'email');
 if ($email !== null && strpos($email, '@') === false) $email = null;
+
+// reset_session: hapus paket + specs, pertahankan email
+$reset_session = isset($data['reset_session']) && $data['reset_session'] == 1;
+if ($reset_session) {
+    try {
+        $db = getDB();
+        $db->prepare("UPDATE bot_pending_orders SET paket = NULL, paket_confirmed = 0, specs_confirmed = 0, font = NULL, size = NULL, hidden = NULL, posisi = NULL, pos_bab = NULL, pos_isi = NULL, dimulai = NULL, semb_dafus = NULL, semb_lamprn = NULL, num_cover = NULL, order_done = 0, updated_at = NOW() WHERE phone = ?")->execute([$phone]);
+    } catch (Exception $e) {}
+    echo json_encode(['success' => true, 'phone' => $phone, 'reset' => true]);
+    exit;
+}
+
 $paket_raw   = val($data, 'paket');
 $paket       = $paket_raw ?? 'paket3';
 $font        = val($data, 'font');
