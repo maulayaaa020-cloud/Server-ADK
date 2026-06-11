@@ -4,6 +4,24 @@ session_start();
 require_once __DIR__ . '/includes/config.php';
 require_once __DIR__ . '/includes/db.php';
 
+// Magic link dari bot WA — auto-login tanpa OTP, valid 7 hari
+if (!empty($_GET['bot_token'])) {
+    try {
+        $db   = getDB();
+        $stmt = $db->prepare("SELECT email FROM bot_login_tokens WHERE token = ? AND expires_at > NOW() LIMIT 1");
+        $stmt->execute([trim($_GET['bot_token'])]);
+        $row  = $stmt->fetch();
+        if ($row) {
+            $_SESSION['email']     = $row['email'];
+            $_SESSION['cek_email'] = $row['email'];
+            unset($_SESSION['is_guest'], $_SESSION['guest_token']);
+            header("Location: history.php");
+            exit;
+        }
+    } catch (Exception $e) {}
+    // Token tidak valid, lanjut ke flow biasa
+}
+
 $isAdmin = !empty($_SESSION['adk_admin']);
 
 $email = $_SESSION['email'] ?? $_SESSION['cek_email'] ?? null;

@@ -4,9 +4,10 @@ RewriteEngine On
 RewriteCond %{HTTP_HOST} ^www\.adkivia\.com [NC]
 RewriteRule ^(.*)$ https://adkivia.com/$1 [R=301,L]
 
-# Force HTTPS (skip di localhost)
-RewriteCond %{HTTPS} off
+# Force HTTPS — hanya di production, skip di localhost
 RewriteCond %{HTTP_HOST} !^localhost [NC]
+RewriteCond %{HTTP_HOST} !^127\.0\.0\.1 [NC]
+RewriteCond %{HTTPS} off
 RewriteRule ^(.*)$ https://%{HTTP_HOST}/$1 [R=301,L]
 
 # Browser caching untuk static assets

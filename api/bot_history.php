@@ -1,0 +1,54 @@
+<?php
+require_once __DIR__ . '/../includes/config.php';
+require_once __DIR__ . '/../includes/db.php';
+
+header('Content-Type: application/json');
+header('Access-Control-Allow-Origin: *');
+
+// Simple API key auth
+$apiKey = $_SERVER['HTTP_X_BOT_KEY'] ?? '';
+if ($apiKey !== 'adkivia-bot-2026') {
+    http_response_code(401);
+    echo json_encode(['error' => 'Unauthorized']);
+    exit;
+}
+
+$email = trim($_GET['email'] ?? '');
+if (empty($email)) {
+    http_response_code(400);
+    echo json_encode(['error' => 'Parameter email dibutuhkan']);
+    exit;
+}
+
+$phone = $email;
+
+try {
+    $db = getDB();
+
+    // Ambil 5 order penomoran terakhir
+    $stmt = $db->prepare("
+        SELECT order_id, paket, harga, status, created_at
+        FROM orders
+        WHERE phone = ?
+        ORDER BY created_at DESC
+        LIMIT 5
+    ");
+    $stmt->execute([$phone]);
+    $penomoran = $stmt->fetchAll();
+
+    $daftarIsi = [];
+
+    $total = count($penomoran) + count($daftarIsi);
+
+    echo json_encode([
+        'success'    => true,
+        'email'      => $email,
+        'total'      => $total,
+        'penomoran'  => $penomoran,
+        'daftar_isi' => $daftarIsi,
+    ]);
+
+} catch (Exception $e) {
+    http_response_code(500);
+    echo json_encode(['error' => 'Server error']);
+}
