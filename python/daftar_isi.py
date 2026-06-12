@@ -1,4 +1,4 @@
-
+﻿
 
 
 """
@@ -156,7 +156,9 @@ _FRONT_MATTER_RE = re.compile(
     r'JUDUL|COVER|ORISINALITAS)(\s+\S+)*|'
     r'FORMULIR\s+(PERBAIKAN|REVISI|PERSETUJUAN)(\s+\S+)*|'
     r'PENGESAHAN\s+\S+(\s+\S+)*|'
-    r'PERNYATAAN\s+(KEASLIAN|ORISINALITAS)|'
+    r'PERNYATAAN\s+(KEASLIAN|ORISINALITAS)(\s+\S+)*|'
+    r'PENGAJUAN(\s+\S+)*|'
+    r'PERSETUJUAN\s+\S+(\s+\S+)*|'
     r'MOTTO|PERSEMBAHAN|REFERENCES?|BIBLIOGRAPHY|'
     r'LAMPIRAN|APPENDIX|APPENDICES)$',
     re.IGNORECASE
@@ -381,6 +383,20 @@ def detect_headings(doc, max_level):
         results.append((i, lvl, text))
 
     results = _dedup_bab_clusters(results)
+
+    # Deduplikasi front-matter sebelum BAB I (case-insensitive)
+    if first_bab is not None:
+        seen_fm = set()
+        deduped = []
+        for (pidx, lvl, txt) in results:
+            if pidx < first_bab:
+                key = txt.upper()
+                if key in seen_fm:
+                    continue
+                seen_fm.add(key)
+            deduped.append((pidx, lvl, txt))
+        results = deduped
+
     return results
 
 
@@ -951,7 +967,7 @@ def _get_text_width_twips(doc):
         return 8505
 
 
-def _ensure_toc_style(doc, level, use_dots, font='Times New Roman', size_pt=12, line_spacing=1.0):
+def _ensure_toc_style(doc, level, use_dots, font='Times New Roman', size_pt=12, line_spacing=1.0, h3_left_tab=None):
     """
     Pastikan style 'TOC X' ada dengan font/size/spasi seragam + tab stop kanan.
 
@@ -995,15 +1011,16 @@ def _ensure_toc_style(doc, level, use_dots, font='Times New Roman', size_pt=12, 
         from docx.enum.text import WD_ALIGN_PARAGRAPH
         pf.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
 
-        # Indentasi per level
-        # TOC1: left=0
-        # TOC2: left=709t, hanging=425t → baris pertama di 284t (angka), baris lanjut di 709t (teks)
-        # TOC3: left=1320t, hanging=611t → baris pertama di 709t (angka), baris lanjut di 1320t (teks)
+        # Indentasi per level — TOC3 left_tab dinamis berdasarkan panjang angka H3
+        # TOC2: left=709t, hang=425t -> nomor di 284t, teks di 709t
+        # TOC3: left=h3_left_tab, hang=(h3_left_tab-709) -> nomor di 709t, teks di h3_left_tab
+        #   993 untuk angka pendek, 1320 untuk multilevel (1.4.1)
         from docx.shared import Twips as _Twips
+        _h3_tab = h3_left_tab if (level == 3 and h3_left_tab is not None) else 1320
         IND = {
             1: (0,    0),
             2: (709, 425),
-            3: (1320, 611),
+            3: (_h3_tab, _h3_tab - 709),
         }
         left_t, hang_t = IND.get(level, (284 * (level - 1), 0))
         pf.left_indent       = _Twips(left_t)
@@ -1024,10 +1041,10 @@ def _ensure_toc_style(doc, level, use_dots, font='Times New Roman', size_pt=12, 
         # kadang kembalikan None untuk properti margin tertentu.
         right_tab = _get_text_width_twips(doc)
 
-        # TOC2: DUA tab stop — tab kiri 709t (alignment teks) + tab kanan (halaman)
-        # TOC3: DUA tab stop — tab kiri 1320t (alignment teks, cukup untuk angka "1.4.1") + tab kanan (halaman)
+        # TOC2: DUA tab stop — tab kiri 709t + tab kanan (halaman)
+        # TOC3: DUA tab stop — tab kiri _h3_tab (dinamis) + tab kanan (halaman)
         # TOC1: hanya tab kanan
-        LEFT_TAB_TWIPS = {2: 709, 3: 1320}
+        LEFT_TAB_TWIPS = {2: 709, 3: _h3_tab}
 
         pPr = style.element.find(qn('w:pPr'))
         if pPr is None:
@@ -1702,7 +1719,11 @@ def _build_toc_content(headings, doc, docx_path, font, size_pt, use_dots,
                 if m:
                     num_text, content_text = m.group(1), m.group(2)
                 else:
-                    num_text, content_text = '', t_clean
+                    m2 = re.match(r'^([A-Z]\.) (.+)', t_clean)
+                    if m2:
+                        num_text, content_text = m2.group(1), m2.group(2)
+                    else:
+                        num_text, content_text = '', t_clean
 
         bk_id   = bk_id_base + seq
         bk_name = f'_ADKToc{bk_id}'
@@ -2061,8 +2082,9 @@ def main():
     except Exception as e:
         _fail("FILE_READ_ERROR", f"Gagal membuka file: {e}")
 
-    # ── Seragamkan style TOC agar font/size/spasi konsisten ─────────────────
-    for lvl in range(1, max_level + 1):
+
+    # ── Seragamkan style TOC ager font/size/spasi konsisten (H1/H2 dulu) ─────
+    for lvl in range(1, min(max_level, 2) + 1):
         _ensure_toc_style(doc, lvl, use_dots, font=font, size_pt=size_pt, line_spacing=line_spacing)
 
     # ── Fix Heading X Char styles (root cause inkonsistensi font) ────────────
@@ -2085,6 +2107,36 @@ def main():
               "pola penomoran seperti 'BAB I', '1.', '1.1', atau judul front matter "
               "seperti 'KATA PENGANTAR', 'DAFTAR ISI'.")
 
+
+    # ── TOC3 style: hitung tab dinamis berdasarkan panjang angka H3 ─────────
+    if max_level >= 3:
+        _h3_deep = any(
+            re.match(r'^\d+\.\d+', txt)
+            for _, lvl, txt in headings if lvl == 3
+        )
+        if not _h3_deep:
+            # Cek via numbering XML: ada template multilevel (%N.%N.)?
+            try:
+                _n2a, _, _aft, _ = _load_numbering_full(input_file)
+                for pidx, lvl, _ in headings:
+                    if lvl != 3: continue
+                    _pPr = doc.paragraphs[pidx]._p.find(qn('w:pPr'))
+                    if _pPr is None: continue
+                    _nPr = _pPr.find(qn('w:numPr'))
+                    if _nPr is None: continue
+                    _nid_el = _nPr.find(qn('w:numId')); _ilvl_el = _nPr.find(qn('w:ilvl'))
+                    if _nid_el is None: continue
+                    _nid = _nid_el.get(qn('w:val')); _ilvl = int(_ilvl_el.get(qn('w:val'), '0') if _ilvl_el is not None else '0')
+                    _absid = _n2a.get(_nid)
+                    if _absid and _absid in _aft:
+                        _, _tmpl = _aft[_absid].get(_ilvl, (None, ''))
+                        if _tmpl and _tmpl.count('%') >= 2:
+                            _h3_deep = True
+                            break
+            except Exception:
+                pass
+        _h3_left_tab = 1320 if _h3_deep else 993
+        _ensure_toc_style(doc, 3, use_dots, font=font, size_pt=size_pt, line_spacing=line_spacing, h3_left_tab=_h3_left_tab)
     # ── Demote semua Heading-styled paragraf yang tidak terdeteksi ────────────
     # Heading yang tidak lolos deteksi (body text salah format, metadata cover,
     # dll.) di-clone ke style non-Heading agar tidak masuk TOC field Word.
