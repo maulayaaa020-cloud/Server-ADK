@@ -988,13 +988,13 @@ def _ensure_toc_style(doc, level, use_dots, font='Times New Roman', size_pt=12, 
 
         # Indentasi per level
         # TOC1: left=0
-        # TOC2: left=851t, hanging=567t → baris pertama di 284t (angka), baris lanjut di 851t (teks)
-        # TOC3: left=1560t, hanging=709t (teks mulai di 1560-709=851t)
+        # TOC2: left=709t, hanging=425t → baris pertama di 284t (angka), baris lanjut di 709t (teks)
+        # TOC3: left=1320t, hanging=611t → baris pertama di 709t (angka), baris lanjut di 1320t (teks)
         from docx.shared import Twips as _Twips
         IND = {
             1: (0,    0),
-            2: (851, 567),
-            3: (1560, 709),
+            2: (709, 425),
+            3: (1320, 611),
         }
         left_t, hang_t = IND.get(level, (284 * (level - 1), 0))
         pf.left_indent       = _Twips(left_t)
@@ -1015,10 +1015,10 @@ def _ensure_toc_style(doc, level, use_dots, font='Times New Roman', size_pt=12, 
         # kadang kembalikan None untuk properti margin tertentu.
         right_tab = _get_text_width_twips(doc)
 
-        # TOC2: DUA tab stop — tab kiri 851t (alignment teks) + tab kanan (halaman)
-        # TOC3: hanya tab kanan (alignment diatur oleh left+hanging indent)
+        # TOC2: DUA tab stop — tab kiri 709t (alignment teks) + tab kanan (halaman)
+        # TOC3: DUA tab stop — tab kiri 1320t (alignment teks, cukup untuk angka "1.4.1") + tab kanan (halaman)
         # TOC1: hanya tab kanan
-        LEFT_TAB_TWIPS = {2: 851}  # dari analisis referensi terbaru
+        LEFT_TAB_TWIPS = {2: 709, 3: 1320}
 
         pPr = style.element.find(qn('w:pPr'))
         if pPr is None:
