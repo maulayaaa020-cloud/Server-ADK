@@ -2228,10 +2228,13 @@ def main():
             last_inserted.addnext(sect_para)
             last_inserted = sect_para
 
-        # Page break setelah TOC agar konten berikutnya mulai di halaman baru
+        # Page break setelah TOC agar konten berikutnya mulai di halaman baru.
+        # Lalu hapus page break paragraf yang sudah ada tepat setelahnya
+        # agar tidak double break.
         pb_para = _make_page_break_para()
         last_inserted.addnext(pb_para)
         last_inserted = pb_para
+        _remove_trailing_empty_paras(pb_para)
 
         insert_pos_desc = f'setelah paragraf "DAFTAR ISI" (index {daftar_idx})'
     else:
