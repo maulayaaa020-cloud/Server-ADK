@@ -2229,12 +2229,20 @@ def main():
             last_inserted = sect_para
 
         # Page break setelah TOC agar konten berikutnya mulai di halaman baru.
-        # Lalu hapus page break paragraf yang sudah ada tepat setelahnya
-        # agar tidak double break.
-        pb_para = _make_page_break_para()
-        last_inserted.addnext(pb_para)
-        last_inserted = pb_para
-        _remove_trailing_empty_paras(pb_para)
+        # Jangan tambah jika elemen berikutnya sudah punya inline page break
+        # (misal paragraf DAFTAR TABEL yang diawali page break) — itu sudah cukup.
+        _nxt = last_inserted.getnext()
+        _nxt_has_pb = (
+            _nxt is not None
+            and _nxt.tag.endswith('}p')
+            and any(br.get(qn('w:type')) == 'page'
+                    for br in _nxt.findall('.//' + qn('w:br')))
+        )
+        if not _nxt_has_pb:
+            pb_para = _make_page_break_para()
+            last_inserted.addnext(pb_para)
+            last_inserted = pb_para
+        _remove_trailing_empty_paras(last_inserted)
 
         insert_pos_desc = f'setelah paragraf "DAFTAR ISI" (index {daftar_idx})'
     else:
