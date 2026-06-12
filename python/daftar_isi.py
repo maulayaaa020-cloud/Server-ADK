@@ -1403,6 +1403,163 @@ def _get_effective_num_prefix(para, num_def_map, style_num_info, level, counters
     return prefix
 
 
+def _load_numbering_full(docx_path):
+    """
+    Returns (num_to_abs, abs_starts, abs_fmttmpl, override_starts):
+      num_to_abs:      {numId_str: absId_str}
+      abs_starts:      {absId_str: {ilvl_int: start_int}}
+      abs_fmttmpl:     {absId_str: {ilvl_int: (fmt_str, tmpl_str)}}
+      override_starts: {numId_str: {ilvl_int: start_int}}  # dari lvlOverride/startOverride
+    """
+    try:
+        from lxml import etree as _et
+    except ImportError:
+        return {}, {}, {}, {}
+
+    ns = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main'
+    W  = f'{{{ns}}}'
+
+    try:
+        with zipfile.ZipFile(docx_path, 'r') as z:
+            if 'word/numbering.xml' not in z.namelist():
+                return {}, {}, {}, {}
+            with z.open('word/numbering.xml') as f:
+                num_tree = _et.fromstring(f.read())
+    except Exception:
+        return {}, {}, {}, {}
+
+    abs_starts  = {}
+    abs_fmttmpl = {}
+    for abs_el in num_tree.findall(f'{W}abstractNum'):
+        absId = abs_el.get(f'{W}abstractNumId', '')
+        abs_starts[absId]  = {}
+        abs_fmttmpl[absId] = {}
+        for lvl_el in abs_el.findall(f'{W}lvl'):
+            ilvl    = int(lvl_el.get(f'{W}ilvl', 0))
+            numFmt  = lvl_el.find(f'{W}numFmt')
+            lvlText = lvl_el.find(f'{W}lvlText')
+            start   = lvl_el.find(f'{W}start')
+            fmt  = numFmt.get(f'{W}val', '')  if numFmt  is not None else ''
+            tmpl = lvlText.get(f'{W}val', '') if lvlText is not None else ''
+            sv   = int(start.get(f'{W}val', 1)) if start is not None else 1
+            abs_starts[absId][ilvl]  = sv
+            abs_fmttmpl[absId][ilvl] = (fmt, tmpl)
+
+    num_to_abs      = {}
+    override_starts = {}
+    for num_el in num_tree.findall(f'{W}num'):
+        numId  = num_el.get(f'{W}numId', '')
+        absRef = num_el.find(f'{W}abstractNumId')
+        if absRef is None:
+            continue
+        num_to_abs[numId] = absRef.get(f'{W}val', '')
+        ovr = {}
+        for ov in num_el.findall(f'{W}lvlOverride'):
+            ol = int(ov.get(f'{W}ilvl', 0))
+            so = ov.find(f'{W}startOverride')
+            if so is not None:
+                ovr[ol] = int(so.get(f'{W}val', 1))
+        if ovr:
+            override_starts[numId] = ovr
+
+    return num_to_abs, abs_starts, abs_fmttmpl, override_starts
+
+
+def _compute_list_prefixes(headings, doc, docx_path):
+    """
+    Scan semua paragraf (termasuk di dalam tabel) sambil melacak counter list
+    per abstractNum. Mengembalikan {para_idx: prefix_str} HANYA untuk heading
+    yang menggunakan template multilevel (mengandung 2+ placeholder %N).
+    Template single-level tetap ditangani oleh _get_effective_num_prefix.
+    """
+    import re as _re
+
+    num_to_abs, abs_starts, abs_fmttmpl, override_starts = _load_numbering_full(docx_path)
+    if not num_to_abs:
+        return {}
+
+    # Peta id(para._p) → para_idx untuk heading paragraf.
+    # Simpan referensi ke elemen agar proxy lxml tidak di-GC sebelum iterasi,
+    # sehingga id() tetap konsisten antara tahap registrasi dan pencarian.
+    heading_elems  = {}
+    _held_elements = []  # cegah GC proxy lxml
+    for (para_idx, _level, _text) in headings:
+        p_el = doc.paragraphs[para_idx]._p
+        _held_elements.append(p_el)
+        heading_elems[id(p_el)] = para_idx
+
+    BULLET_FMTS = {'bullet', 'none', ''}
+
+    def _eff_start(absId, ilvl, numId):
+        ovr = override_starts.get(numId, {})
+        if ilvl in ovr:
+            return ovr[ilvl]
+        return abs_starts.get(absId, {}).get(ilvl, 1)
+
+    abs_counters = {}  # {absId: {ilvl: int or None}}
+
+    def _increment(absId, ilvl, numId):
+        if absId not in abs_counters:
+            abs_counters[absId] = {}
+        cur   = abs_counters[absId].get(ilvl)
+        start = _eff_start(absId, ilvl, numId)
+        abs_counters[absId][ilvl] = start if cur is None else cur + 1
+        # Reset semua sub-level ke start-1 (akan naik ke start saat next increment)
+        for sub in list(abs_counters[absId].keys()):
+            if sub > ilvl:
+                abs_counters[absId][sub] = _eff_start(absId, sub, numId) - 1
+
+    def _read(absId, ilvl, numId):
+        val = abs_counters.get(absId, {}).get(ilvl)
+        return _eff_start(absId, ilvl, numId) if val is None else val
+
+    def _resolve(absId, ilvl, numId):
+        fmt, tmpl = abs_fmttmpl.get(absId, {}).get(ilvl, ('', ''))
+        if fmt in BULLET_FMTS:
+            return ''
+
+        def _repl(m):
+            ref_ilvl = int(m.group(1)) - 1          # %1 → ilvl=0
+            ref_val  = _read(absId, ref_ilvl, numId)
+            ref_fmt  = abs_fmttmpl.get(absId, {}).get(ref_ilvl, ('decimal', ''))[0]
+            return _format_num(ref_val, ref_fmt)
+
+        return _re.sub(r'%(\d+)', _repl, tmpl)
+
+    result = {}
+    for para_xml in doc.element.body.iter(qn('w:p')):
+        pPr   = para_xml.find(qn('w:pPr'))
+        if pPr is None:
+            continue
+        numPr = pPr.find(qn('w:numPr'))
+        if numPr is None:
+            continue
+        nid_el = numPr.find(qn('w:numId'))
+        ilv_el = numPr.find(qn('w:ilvl'))
+        if nid_el is None:
+            continue
+        nid  = nid_el.get(qn('w:val'), '0')
+        if nid == '0':
+            continue
+        ilvl = int(ilv_el.get(qn('w:val'), 0)) if ilv_el is not None else 0
+
+        absId = num_to_abs.get(nid, '')
+        if not absId:
+            continue
+
+        _increment(absId, ilvl, nid)
+
+        elem_id = id(para_xml)
+        if elem_id in heading_elems:
+            fmt, tmpl = abs_fmttmpl.get(absId, {}).get(ilvl, ('', ''))
+            if len(_re.findall(r'%\d+', tmpl)) >= 2:
+                prefix = _resolve(absId, ilvl, nid)
+                if prefix:
+                    result[heading_elems[elem_id]] = prefix
+
+    return result
+
+
 def _find_max_bookmark_id(doc):
     """Kembalikan ID terbesar dari semua bookmarkStart di dokumen."""
     max_id = 0
@@ -1498,10 +1655,11 @@ def _build_toc_content(headings, doc, docx_path, font, size_pt, use_dots,
     """
     import copy as _cp
 
-    num_info    = _read_heading_num_info(docx_path)
-    num_def_map = _read_num_def_map(docx_path)
-    bk_id_base  = _find_max_bookmark_id(doc) + 1
-    counters    = {}  # {level: current_count}
+    num_info      = _read_heading_num_info(docx_path)
+    num_def_map   = _read_num_def_map(docx_path)
+    para_list_pfx = _compute_list_prefixes(headings, doc, docx_path)
+    bk_id_base    = _find_max_bookmark_id(doc) + 1
+    counters      = {}  # {level: current_count}
 
     entry_paras = []
     for seq, (para_idx, level, text) in enumerate(headings):
@@ -1519,10 +1677,16 @@ def _build_toc_content(headings, doc, docx_path, font, size_pt, use_dots,
                 if k > 3:
                     del counters[k]
 
-        prefix = _get_effective_num_prefix(para, num_def_map, num_info, level, counters)
+        if para_idx in para_list_pfx:
+            prefix = para_list_pfx[para_idx]
+        else:
+            prefix = _get_effective_num_prefix(para, num_def_map, num_info, level, counters)
         bk_id      = bk_id_base + seq
         bk_name    = f'_ADKToc{bk_id}'
         entry_text = (prefix + text).replace('\n', ' ')
+        # Hilangkan satu spasi setelah prefix nomor bertitik yang diketik manual
+        # (mis. "1.1 Latar" → "1.1Latar") agar sesuai format referensi
+        entry_text = re.sub(r'^((?:\d+\.)+\d+) ', r'\1', entry_text)
 
         _add_paragraph_bookmark(para, bk_id, bk_name)
 
@@ -1848,9 +2012,9 @@ def main():
     font         = sys.argv[5] if len(sys.argv) > 5 else 'Times New Roman'
     size_pt      = int(sys.argv[6]) if len(sys.argv) > 6 else 12
     try:
-        line_spacing = float(sys.argv[7]) if len(sys.argv) > 7 else 1.0
+        line_spacing = float(sys.argv[7]) if len(sys.argv) > 7 else 1.5
     except (ValueError, TypeError):
-        line_spacing = 1.0
+        line_spacing = 1.5
 
     max_level = MAX_LEVEL_MAP.get(kedalaman, 1)
     use_dots  = format_titik in ('titik', 'kecualikan_bab')
@@ -1976,6 +2140,11 @@ def main():
             sect_para.append(sp_pPr)
             last_inserted.addnext(sect_para)
             last_inserted = sect_para
+
+        # Page break setelah TOC agar konten berikutnya mulai di halaman baru
+        pb_para = _make_page_break_para()
+        last_inserted.addnext(pb_para)
+        last_inserted = pb_para
 
         insert_pos_desc = f'setelah paragraf "DAFTAR ISI" (index {daftar_idx})'
     else:
