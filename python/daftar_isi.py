@@ -2354,10 +2354,6 @@ def main():
     except Exception as e:
         _fail("FILE_SAVE_ERROR", f"Gagal menyimpan file: {e}")
 
-    # ── Bake nomor halaman via Word COM ──────────────────────────────────────
-    # Word membuka file, menghitung pagination, update semua PAGEREF fields,
-    # lalu simpan kembali. User langsung lihat nomor halaman yang benar.
-    _update_fields_via_word_com(output_file)
 
     print(json.dumps({
         "status":           "success",
