@@ -2277,6 +2277,18 @@ def main():
                 # Stop jika teks panjang (> 100 char) → ini prosa, bukan TOC entry
                 if len(_txt2) > 100:
                     break
+                # Jika paragraf punya bookmark _ADKToc* (kita sisipkan di sini),
+                # jangan hapus — hanya strip semua runs agar jadi paragraf kosong
+                # yang tetap bisa jadi anchor PAGEREF.
+                _has_adk_bk = any(
+                    bk.get(qn('w:name'), '').startswith('_ADKToc')
+                    for bk in _cur.findall('.//' + qn('w:bookmarkStart'))
+                )
+                if _has_adk_bk:
+                    for _r in list(_cur.findall(qn('w:r'))):
+                        _cur.remove(_r)
+                    _cur = _cur.getnext()
+                    continue
                 # Hapus paragraf pendek/kosong (TOC manual entry)
                 _nxt2 = _cur.getnext()
                 _cur.getparent().remove(_cur)
