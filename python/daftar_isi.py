@@ -1696,13 +1696,10 @@ def _build_toc_content(headings, doc, docx_path, font, size_pt, use_dots,
     """
     Bangun daftar paragraf TOC pre-populated dengan bookmark + PAGEREF.
 
-    Struktur yang dikembalikan (untuk diisi ke sdtContent setelah TOCHeading):
-      [0]      : entri pertama, outer TOC field begin+instrText+separate di-prepend
-      [1..N-1] : entri-entri berikutnya (TOC1/2/3 dengan PAGEREF per entry)
-      [N]      : paragraf penutup berisi fldChar(end) outer TOC field
-
     Setiap entri mengandung teks heading (dengan prefix "A.", "1." jika ada) +
     tab + PAGEREF field ke bookmark yang disisipkan di paragraf heading asli.
+    Tidak ada outer TOC field — cukup PAGEREF per entri agar page number
+    diupdate Word via F9 tanpa meregenerasi (dan merusak formatting) isi TOC.
     """
     import copy as _cp
 
@@ -1763,19 +1760,6 @@ def _build_toc_content(headings, doc, docx_path, font, size_pt, use_dots,
     if not entry_paras:
         # Fallback jika tidak ada heading terdeteksi
         return _make_toc_field_para(max_level)
-
-    # Prepend outer TOC field begin ke entri pertama
-    _prepend_toc_field_begin(entry_paras[0], max_level)
-
-    # Paragraf penutup: fldChar(end) outer TOC field
-    p_close = OxmlElement('w:p')
-    r_end   = OxmlElement('w:r')
-    r_end.append(_build_run_rPr(font, size_pt, False))
-    fc_end  = OxmlElement('w:fldChar')
-    fc_end.set(qn('w:fldCharType'), 'end')
-    r_end.append(fc_end)
-    p_close.append(r_end)
-    entry_paras.append(p_close)
 
     return entry_paras
 
