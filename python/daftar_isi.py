@@ -1,3 +1,6 @@
+
+
+
 """
 daftar_isi.py — Buat daftar isi otomatis dari dokumen Word.
 Usage: python daftar_isi.py <input.docx> <output.docx> <kedalaman> <format_titik>
@@ -1120,7 +1123,7 @@ def _make_toc_field_para(max_level):
     r_instr = OxmlElement('w:r')
     instr = OxmlElement('w:instrText')
     instr.set('{http://www.w3.org/XML/1998/namespace}space', 'preserve')
-    instr.text = f' TOC \\h \\z \\u '
+    instr.text = f' TOC \\o "1-{max_level}" \\h \\z \\u '
     r_instr.append(instr)
     p1.append(r_instr)
 
@@ -1150,7 +1153,12 @@ def _add_paragraph_bookmark(para, bk_id, bk_name):
     bkStart.set(qn('w:name'), bk_name)
     bkEnd = OxmlElement('w:bookmarkEnd')
     bkEnd.set(qn('w:id'), str(bk_id))
-    para._p.insert(0, bkStart)
+    # Sisipkan setelah pPr (bukan di posisi 0 yang akan mendahului pPr)
+    pPr = para._p.find(qn('w:pPr'))
+    if pPr is not None:
+        pPr.addnext(bkStart)
+    else:
+        para._p.insert(0, bkStart)
     para._p.append(bkEnd)
 
 
@@ -1186,6 +1194,363 @@ def _build_run_rPr(font, size_pt, bold):
     return rPr
 
 
+# ── Numbering prefix helpers ──────────────────────────────────────────────────
+
+def _read_heading_num_info(docx_path):
+    """
+    Baca numbering.xml dan styles.xml untuk membangun map:
+      style_id → (ilvl, fmt, template)
+
+    Hanya untuk style yang punya numPr di definisi style (bukan di paragraf).
+    Dipakai untuk menghitung prefix "A.", "1.", dll. saat membuat entri TOC.
+    """
+    try:
+        from lxml import etree as _et
+    except ImportError:
+        return {}
+
+    ns    = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main'
+    W     = f'{{{ns}}}'
+    ns_map = {'w': ns}
+
+    try:
+        with zipfile.ZipFile(docx_path, 'r') as z:
+            if 'word/numbering.xml' not in z.namelist():
+                return {}
+            with z.open('word/numbering.xml') as f:
+                num_tree = _et.fromstring(f.read())
+            with z.open('word/styles.xml') as f:
+                styles_tree = _et.fromstring(f.read())
+    except Exception:
+        return {}
+
+    # abstractNum map: absId → {ilvl: (fmt, template)}
+    abs_map = {}
+    for abs_el in num_tree.findall('w:abstractNum', ns_map):
+        absId = abs_el.get(f'{W}abstractNumId', '')
+        abs_map[absId] = {}
+        for lvl_el in abs_el.findall('w:lvl', ns_map):
+            ilvl    = int(lvl_el.get(f'{W}ilvl', 0))
+            numFmt  = lvl_el.find('w:numFmt',  ns_map)
+            lvlText = lvl_el.find('w:lvlText', ns_map)
+            fmt  = numFmt.get(f'{W}val', '')  if numFmt  is not None else ''
+            tmpl = lvlText.get(f'{W}val', '') if lvlText is not None else ''
+            abs_map[absId][ilvl] = (fmt, tmpl)
+
+    # numId → abstractNumId
+    num_to_abs = {}
+    for num_el in num_tree.findall('w:num', ns_map):
+        numId  = num_el.get(f'{W}numId', '')
+        absRef = num_el.find('w:abstractNumId', ns_map)
+        if absRef is not None:
+            num_to_abs[numId] = absRef.get(f'{W}val', '')
+
+    # style_id → (ilvl, fmt, template)
+    result = {}
+    for style_el in styles_tree.findall('.//w:style', ns_map):
+        sid   = style_el.get(f'{W}styleId', '')
+        numPr = style_el.find(f'.//{W}numPr')
+        if numPr is None:
+            continue
+        numId_el = numPr.find(f'{W}numId')
+        ilvl_el  = numPr.find(f'{W}ilvl')
+        if numId_el is None:
+            continue
+        numId = numId_el.get(f'{W}val', '0')
+        if numId == '0':
+            continue
+        ilvl  = int(ilvl_el.get(f'{W}val', 0)) if ilvl_el is not None else 0
+        absId = num_to_abs.get(numId, '')
+        if not absId or absId not in abs_map:
+            continue
+        if ilvl not in abs_map[absId]:
+            continue
+        fmt, tmpl = abs_map[absId][ilvl]
+        result[sid] = (ilvl, fmt, tmpl)
+
+    return result
+
+
+def _format_num(count, fmt):
+    """Format count sesuai numFmt Word (upperLetter, decimal, upperRoman, dst.)."""
+    if fmt == 'upperLetter':
+        if count <= 26:
+            return chr(64 + count)
+        q, r = divmod(count - 1, 26)
+        return chr(64 + q) + chr(65 + r)
+    if fmt == 'lowerLetter':
+        if count <= 26:
+            return chr(96 + count)
+        q, r = divmod(count - 1, 26)
+        return chr(96 + q) + chr(97 + r)
+    if fmt == 'decimal':
+        return str(count)
+    if fmt in ('upperRoman', 'lowerRoman'):
+        val, result = count, ''
+        for n, r in [(1000,'M'),(900,'CM'),(500,'D'),(400,'CD'),(100,'C'),
+                     (90,'XC'),(50,'L'),(40,'XL'),(10,'X'),(9,'IX'),
+                     (5,'V'),(4,'IV'),(1,'I')]:
+            while val >= n:
+                result += r
+                val   -= n
+        return result if fmt == 'upperRoman' else result.lower()
+    return str(count)
+
+
+def _get_num_prefix(style_id, level, num_info, counters):
+    """
+    Hitung prefix dari style-level numPr.
+    Menginkremen counter level saat ini; counters adalah dict mutable.
+    """
+    if style_id not in num_info:
+        return ''
+    _ilvl, fmt, tmpl = num_info[style_id]
+    counters[level] = counters.get(level, 0) + 1
+    count  = counters[level]
+    prefix = re.sub(r'%\d+', _format_num(count, fmt), tmpl, count=1)
+    return prefix
+
+
+def _read_num_def_map(docx_path):
+    """
+    Baca numbering.xml, kembalikan dict:
+      (numId_str, ilvl_int) → (fmt_str, tmpl_str)
+
+    Berguna untuk lookup format berdasarkan para-level numPr yang tidak ikut
+    terdapat di style definition (misalnya Style3 dengan numPr di paragraf).
+    """
+    try:
+        from lxml import etree as _et
+    except ImportError:
+        return {}
+
+    ns    = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main'
+    W     = f'{{{ns}}}'
+    ns_map = {'w': ns}
+
+    try:
+        with zipfile.ZipFile(docx_path, 'r') as z:
+            if 'word/numbering.xml' not in z.namelist():
+                return {}
+            with z.open('word/numbering.xml') as f:
+                num_tree = _et.fromstring(f.read())
+    except Exception:
+        return {}
+
+    # absId → {ilvl: (fmt, tmpl)}
+    abs_map = {}
+    for abs_el in num_tree.findall('w:abstractNum', ns_map):
+        absId = abs_el.get(f'{W}abstractNumId', '')
+        abs_map[absId] = {}
+        for lvl_el in abs_el.findall('w:lvl', ns_map):
+            ilvl    = int(lvl_el.get(f'{W}ilvl', 0))
+            numFmt  = lvl_el.find('w:numFmt',  ns_map)
+            lvlText = lvl_el.find('w:lvlText', ns_map)
+            fmt  = numFmt.get(f'{W}val', '')  if numFmt  is not None else ''
+            tmpl = lvlText.get(f'{W}val', '') if lvlText is not None else ''
+            abs_map[absId][ilvl] = (fmt, tmpl)
+
+    result = {}
+    for num_el in num_tree.findall('w:num', ns_map):
+        numId  = num_el.get(f'{W}numId', '')
+        absRef = num_el.find('w:abstractNumId', ns_map)
+        if absRef is None:
+            continue
+        absId = absRef.get(f'{W}val', '')
+        if absId not in abs_map:
+            continue
+        for ilvl, (fmt, tmpl) in abs_map[absId].items():
+            result[(numId, ilvl)] = (fmt, tmpl)
+
+    return result
+
+
+def _get_effective_num_prefix(para, num_def_map, style_num_info, level, counters):
+    """
+    Hitung prefix penomoran untuk satu paragraf heading.
+    Cek para-level numPr dulu, lalu style-level.
+    Menginkremen counters[level].
+    """
+    fmt, tmpl = '', ''
+
+    # 1. Para-level numPr (lebih spesifik dari style)
+    pPr = para._p.find(qn('w:pPr'))
+    if pPr is not None:
+        numPr = pPr.find(qn('w:numPr'))
+        if numPr is not None:
+            numId_el = numPr.find(qn('w:numId'))
+            ilvl_el  = numPr.find(qn('w:ilvl'))
+            if numId_el is not None:
+                nid  = numId_el.get(qn('w:val'), '0')
+                ilvl = int(ilvl_el.get(qn('w:val'), 0)) if ilvl_el is not None else 0
+                if nid != '0' and (nid, ilvl) in num_def_map:
+                    fmt, tmpl = num_def_map[(nid, ilvl)]
+
+    # 2. Style-level numPr sebagai fallback
+    if not fmt:
+        style_id = ''
+        if para.style and para.style.element is not None:
+            style_id = para.style.element.get(qn('w:styleId'), '')
+        if style_id in style_num_info:
+            _ilvl, fmt, tmpl = style_num_info[style_id]
+
+    if not fmt:
+        return ''
+
+    counters[level] = counters.get(level, 0) + 1
+    count  = counters[level]
+    prefix = re.sub(r'%\d+', _format_num(count, fmt), tmpl, count=1)
+    return prefix
+
+
+def _find_max_bookmark_id(doc):
+    """Kembalikan ID terbesar dari semua bookmarkStart di dokumen."""
+    max_id = 0
+    for bks in doc.element.body.iter(qn('w:bookmarkStart')):
+        try:
+            max_id = max(max_id, int(bks.get(qn('w:id'), '0')))
+        except (ValueError, TypeError):
+            pass
+    return max_id
+
+
+# ── Builder TOC content pre-populated ────────────────────────────────────────
+
+def _prepend_toc_field_begin(p_elem, max_level):
+    """
+    Prepend fldChar(begin) + instrText("TOC ...") + fldChar(separate)
+    ke elemen paragraf — menjadi awal dari outer TOC field yang mencakup
+    semua entry paragraf hingga fldChar(end) di paragraf terakhir.
+    """
+    r_begin = OxmlElement('w:r')
+    fc = OxmlElement('w:fldChar')
+    fc.set(qn('w:fldCharType'), 'begin')
+    fc.set(qn('w:dirty'), 'true')
+    r_begin.append(fc)
+
+    r_instr = OxmlElement('w:r')
+    instr = OxmlElement('w:instrText')
+    instr.set(_XML_SPACE, 'preserve')
+    instr.text = f' TOC \\o "1-{max_level}" \\h \\z \\u '
+    r_instr.append(instr)
+
+    r_sep = OxmlElement('w:r')
+    fc_sep = OxmlElement('w:fldChar')
+    fc_sep.set(qn('w:fldCharType'), 'separate')
+    r_sep.append(fc_sep)
+
+    # Sisipkan setelah pPr (jika ada) agar urutan XML valid
+    pPr = p_elem.find(qn('w:pPr'))
+    if pPr is not None:
+        children   = list(p_elem)
+        insert_pos = children.index(pPr) + 1
+    else:
+        insert_pos = 0
+
+    p_elem.insert(insert_pos,     r_begin)
+    p_elem.insert(insert_pos + 1, r_instr)
+    p_elem.insert(insert_pos + 2, r_sep)
+
+
+def _create_toc_sdt(toc_paras):
+    """
+    Buat elemen SDT (Content Control) baru berisi TOCHeading + toc_paras.
+    Dipakai ketika dokumen tidak memiliki SDT placeholder setelah DAFTAR ISI.
+    """
+    sdt = OxmlElement('w:sdt')
+
+    sdtPr   = OxmlElement('w:sdtPr')
+    tag_el  = OxmlElement('w:tag')
+    tag_el.set(qn('w:val'), 'Contents')
+    sdtPr.append(tag_el)
+    sdt.append(sdtPr)
+
+    sdtContent = OxmlElement('w:sdtContent')
+    sdt.append(sdtContent)
+
+    # TOCHeading paragraph (kosong)
+    p_hd    = OxmlElement('w:p')
+    pPr_hd  = OxmlElement('w:pPr')
+    pSt_hd  = OxmlElement('w:pStyle')
+    pSt_hd.set(qn('w:val'), 'TOCHeading')
+    pPr_hd.append(pSt_hd)
+    p_hd.append(pPr_hd)
+    sdtContent.append(p_hd)
+
+    for p in toc_paras:
+        sdtContent.append(p)
+
+    return sdt
+
+
+def _build_toc_content(headings, doc, docx_path, font, size_pt, use_dots,
+                       right_tab_pos, max_level):
+    """
+    Bangun daftar paragraf TOC pre-populated dengan bookmark + PAGEREF.
+
+    Struktur yang dikembalikan (untuk diisi ke sdtContent setelah TOCHeading):
+      [0]      : entri pertama, outer TOC field begin+instrText+separate di-prepend
+      [1..N-1] : entri-entri berikutnya (TOC1/2/3 dengan PAGEREF per entry)
+      [N]      : paragraf penutup berisi fldChar(end) outer TOC field
+
+    Setiap entri mengandung teks heading (dengan prefix "A.", "1." jika ada) +
+    tab + PAGEREF field ke bookmark yang disisipkan di paragraf heading asli.
+    """
+    import copy as _cp
+
+    num_info    = _read_heading_num_info(docx_path)
+    num_def_map = _read_num_def_map(docx_path)
+    bk_id_base  = _find_max_bookmark_id(doc) + 1
+    counters    = {}  # {level: current_count}
+
+    entry_paras = []
+    for seq, (para_idx, level, text) in enumerate(headings):
+        para = doc.paragraphs[para_idx]
+
+        # Reset counter sub-level saat heading yang lebih tinggi muncul
+        if level <= 1:
+            counters.clear()
+        elif level == 2:
+            for k in list(counters.keys()):
+                if k > 2:
+                    del counters[k]
+        elif level == 3:
+            for k in list(counters.keys()):
+                if k > 3:
+                    del counters[k]
+
+        prefix = _get_effective_num_prefix(para, num_def_map, num_info, level, counters)
+        bk_id      = bk_id_base + seq
+        bk_name    = f'_ADKToc{bk_id}'
+        entry_text = (prefix + text).replace('\n', ' ')
+
+        _add_paragraph_bookmark(para, bk_id, bk_name)
+
+        p = _make_static_toc_para(
+            entry_text, level, bk_name, font, size_pt, use_dots, right_tab_pos
+        )
+        entry_paras.append(p)
+
+    if not entry_paras:
+        # Fallback jika tidak ada heading terdeteksi
+        return _make_toc_field_para(max_level)
+
+    # Prepend outer TOC field begin ke entri pertama
+    _prepend_toc_field_begin(entry_paras[0], max_level)
+
+    # Paragraf penutup: fldChar(end) outer TOC field
+    p_close = OxmlElement('w:p')
+    r_end   = OxmlElement('w:r')
+    r_end.append(_build_run_rPr(font, size_pt, False))
+    fc_end  = OxmlElement('w:fldChar')
+    fc_end.set(qn('w:fldCharType'), 'end')
+    r_end.append(fc_end)
+    p_close.append(r_end)
+    entry_paras.append(p_close)
+
+    return entry_paras
+
+
 def _make_static_toc_para(text, level, bk_name, font, size_pt, use_dots, right_tab_pos):
     """
     Buat satu paragraf TOC statis dengan PAGEREF untuk nomor halaman.
@@ -1200,41 +1565,13 @@ def _make_static_toc_para(text, level, bk_name, font, size_pt, use_dots, right_t
     is_bold = (level == 1)
 
     # ── pPr ──────────────────────────────────────────────────────────────────
+    # Hanya set style — indentasi, tab stops, dan spacing diatur oleh _ensure_toc_style
+    # pada definisi TOC style. Tidak ada inline override agar sesuai dengan dokumen
+    # Word standar (File Benar menggunakan format ini).
     pPr = OxmlElement('w:pPr')
-
     pStyle = OxmlElement('w:pStyle')
     pStyle.set(qn('w:val'), f'TOC{level}')
     pPr.append(pStyle)
-
-    spacing = OxmlElement('w:spacing')
-    spacing.set(qn('w:after'), '0')
-    spacing.set(qn('w:line'), '360')
-    spacing.set(qn('w:lineRule'), 'auto')
-    pPr.append(spacing)
-
-    IND = {1: (0, 0), 2: (851, 567), 3: (1560, 709)}
-    left_t, hang_t = IND.get(level, (284 * (level - 1), 0))
-    if left_t or hang_t:
-        ind = OxmlElement('w:ind')
-        if left_t:  ind.set(qn('w:left'),    str(left_t))
-        if hang_t:  ind.set(qn('w:hanging'), str(hang_t))
-        pPr.append(ind)
-
-    LEFT_TAB = {2: 851}
-    tabs_el = OxmlElement('w:tabs')
-    if level in LEFT_TAB:
-        lt = OxmlElement('w:tab')
-        lt.set(qn('w:val'), 'left')
-        lt.set(qn('w:pos'), str(LEFT_TAB[level]))
-        lt.set(qn('w:leader'), 'none')
-        tabs_el.append(lt)
-    rt = OxmlElement('w:tab')
-    rt.set(qn('w:val'), 'right')
-    rt.set(qn('w:pos'), str(right_tab_pos))
-    rt.set(qn('w:leader'), 'dot' if use_dots else 'none')
-    tabs_el.append(rt)
-    pPr.append(tabs_el)
-
     p.append(pPr)
 
     # ── Teks heading ──────────────────────────────────────────────────────────
@@ -1587,8 +1924,13 @@ def main():
     # ── Aktifkan auto-update agar Word langsung hitung nomor halaman ─────────
     enable_auto_update_fields(doc)
 
-    # ── Buat TOC field ───────────────────────────────────────────────────────
-    toc_paras = _make_toc_field_para(max_level)  # returns [p_begin, p_end]
+    # ── Hitung lebar area teks untuk tab stop nomor halaman ──────────────────
+    right_tab_pos = _get_text_width_twips(doc)
+
+    # ── Bangun TOC pre-populated (entri + bookmark + PAGEREF) ────────────────
+    toc_paras = _build_toc_content(
+        headings, doc, input_file, font, size_pt, use_dots, right_tab_pos, max_level
+    )
 
     # ── Sisipkan setelah "DAFTAR ISI" ────────────────────────────────────────
     daftar_idx = find_daftar_isi_idx(doc)
@@ -1602,8 +1944,7 @@ def main():
         if had_pb:
             _remove_inline_page_break(daftar_para)
 
-        # Jika paragraf DAFTAR ISI menyimpan sectPr (section break di akhirnya),
-        # pindahkan ke SETELAH TOC agar TOC masuk ke seksi yang sama dengan judul.
+        # Jika paragraf DAFTAR ISI menyimpan sectPr, pindahkan ke setelah TOC
         saved_sectPr = None
         daftar_pPr = daftar_para._p.find(qn('w:pPr'))
         if daftar_pPr is not None:
@@ -1618,65 +1959,23 @@ def main():
         )
 
         if sdt_elem is not None:
-            # Masukkan TOC ke dalam SDT yang sudah ada — ikuti struktur Word native
+            # SDT sudah ada — isi ulang kontennya
             _populate_sdt_with_toc(sdt_elem, toc_paras)
             last_inserted = sdt_elem
-
-            # Re-sisipkan sectPr setelah SDT jika perlu
-            if saved_sectPr is not None:
-                sect_para = OxmlElement('w:p')
-                sp_pPr = OxmlElement('w:pPr')
-                sp_pPr.append(saved_sectPr)
-                sect_para.append(sp_pPr)
-                last_inserted.addnext(sect_para)
-                last_inserted = sect_para
-
-            # Heading setelah SDT sudah punya page-break-before dari style —
-            # tidak perlu page break eksplisit agar tidak double.
         else:
-            # Fallback: tidak ada SDT — sisipkan sebagai paragraf biasa
-            for new_p in reversed(toc_paras):
-                insert_element_after(doc, daftar_idx, new_p)
+            # Tidak ada SDT — buat SDT baru dan sisipkan setelah heading
+            sdt_new = _create_toc_sdt(toc_paras)
+            daftar_para._p.addnext(sdt_new)
+            last_inserted = sdt_new
 
-            last_inserted = toc_paras[-1]
-
-            # Re-sisipkan sectPr setelah TOC, dalam paragraf kosong baru
-            if saved_sectPr is not None:
-                sect_para = OxmlElement('w:p')
-                sp_pPr = OxmlElement('w:pPr')
-                sp_pPr.append(saved_sectPr)
-                sect_para.append(sp_pPr)
-                last_inserted.addnext(sect_para)
-                last_inserted = sect_para
-
-            # Cek apakah sudah ada section break (non-continuous) yang membuat halaman baru.
-            def _sectPr_is_page_breaking(sp):
-                type_el = sp.find(qn('w:type'))
-                val = type_el.get(qn('w:val'), 'nextPage') if type_el is not None else 'nextPage'
-                return val not in ('continuous',)
-
-            _needs_pb = True
-            if saved_sectPr is not None and _sectPr_is_page_breaking(saved_sectPr):
-                _needs_pb = False
-            if _needs_pb:
-                nxt = last_inserted.getnext()
-                while nxt is not None and nxt.tag.endswith('}p'):
-                    pPr = nxt.find(qn('w:pPr'))
-                    if pPr is not None:
-                        sp = pPr.find(qn('w:sectPr'))
-                        if sp is not None:
-                            if _sectPr_is_page_breaking(sp):
-                                _needs_pb = False
-                            break
-                    text = ''.join(t.text or '' for t in nxt.findall(f'.//{qn("w:t")}')).strip()
-                    if text:
-                        break
-                    nxt = nxt.getnext()
-
-            if _needs_pb:
-                pb = _make_page_break_para()
-                last_inserted.addnext(pb)
-                _remove_trailing_empty_paras(pb)
+        # Re-sisipkan sectPr setelah SDT jika perlu
+        if saved_sectPr is not None:
+            sect_para = OxmlElement('w:p')
+            sp_pPr = OxmlElement('w:pPr')
+            sp_pPr.append(saved_sectPr)
+            sect_para.append(sp_pPr)
+            last_inserted.addnext(sect_para)
+            last_inserted = sect_para
 
         insert_pos_desc = f'setelah paragraf "DAFTAR ISI" (index {daftar_idx})'
     else:
