@@ -994,38 +994,29 @@ def _get_text_width_twips(doc):
 
 def _ensure_toc_style(doc, level, use_dots, font='Times New Roman', size_pt=12, line_spacing=1.0, h3_left_tab=None):
     """
-    Pastikan style 'TOC X' ada dengan font/size/spasi seragam + tab stop kanan.
+    Pastikan style 'ADKTocX' ada dengan font/size/spasi seragam + tab stop kanan.
 
-    Menangani DUA versi style yang mungkin ada di dokumen Word Indonesia:
-      - 'TOC 1' / 'TOC 2' / 'TOC 3'  (Pascal case — dipakai saat Word update field)
-      - 'toc 1' / 'toc 2' / 'toc 3'  (lowercase — style bawaan Word Indonesia)
-
-    Kedua versi harus punya font yang sama. Jika 'toc X' lowercase tidak punya
-    rPr (seperti yang ditemukan di dokumen sumber), Word akan fallback ke Normal
-    style yang fontnya Calibri — menyebabkan inkonsistensi.
+    Menggunakan prefix 'ADKToc' (bukan 'TOC') agar tidak konflik dengan
+    built-in style Word ('TOC 1', ID 'TOC1'). Konflik menyebabkan Word rename
+    style kita menjadi 'TOC11'/'TOC21' saat file dibuka, mengacaukan formatting.
 
     Menggunakan XML langsung agar semua script font (ascii/hAnsi/cs/eastAsia)
     ter-override secara eksplisit tanpa theme reference.
     """
     from docx.enum.style import WD_STYLE_TYPE
 
-    # Tangani kedua versi nama style (Pascal dan lowercase)
-    style_names_to_fix = [f'TOC {level}', f'toc {level}']
+    style_name = f'ADKToc{level}'
+    style_names_to_fix = [style_name]
 
     for style_name in style_names_to_fix:
         try:
             style = doc.styles[style_name]
         except KeyError:
-            if style_name == f'TOC {level}':
-                # Hanya buat style TOC jika belum ada (versi Pascal case adalah utama)
-                style = doc.styles.add_style(style_name, WD_STYLE_TYPE.PARAGRAPH)
-                try:
-                    style.base_style = doc.styles['Normal']
-                except Exception:
-                    pass
-            else:
-                # Versi lowercase opsional — skip jika tidak ada
-                continue
+            style = doc.styles.add_style(style_name, WD_STYLE_TYPE.PARAGRAPH)
+            try:
+                style.base_style = doc.styles['Normal']
+            except Exception:
+                pass
 
         # ── Paragraph format ─────────────────────────────────────────────────
         pf = style.paragraph_format
@@ -1680,7 +1671,7 @@ def _create_toc_sdt(toc_paras):
     p_hd    = OxmlElement('w:p')
     pPr_hd  = OxmlElement('w:pPr')
     pSt_hd  = OxmlElement('w:pStyle')
-    pSt_hd.set(qn('w:val'), 'TOCHeading')
+    pSt_hd.set(qn('w:val'), 'ADKTocH')
     pPr_hd.append(pSt_hd)
     p_hd.append(pPr_hd)
     sdtContent.append(p_hd)
@@ -1784,7 +1775,7 @@ def _make_static_toc_para(num_text, content_text, level, bk_name, font, size_pt,
     # ── pPr ──────────────────────────────────────────────────────────────────
     pPr = OxmlElement('w:pPr')
     pStyle = OxmlElement('w:pStyle')
-    pStyle.set(qn('w:val'), f'TOC{level}')
+    pStyle.set(qn('w:val'), f'ADKToc{level}')
     pPr.append(pStyle)
     p.append(pPr)
 
@@ -1933,7 +1924,7 @@ def _populate_sdt_with_toc(sdt, toc_paras):
     p_heading = OxmlElement('w:p')
     pPr_h = OxmlElement('w:pPr')
     pStyle_h = OxmlElement('w:pStyle')
-    pStyle_h.set(qn('w:val'), 'TOCHeading')
+    pStyle_h.set(qn('w:val'), 'ADKTocH')
     pPr_h.append(pStyle_h)
     p_heading.append(pPr_h)
     sdtContent.append(p_heading)
@@ -2046,6 +2037,50 @@ def find_daftar_isi_idx(doc):
         if len(text) >= 4 and _fuzzy_str(text.lower(), 'daftar isi', threshold=0.85):
             return i
     return None
+
+
+# ── Update fields via Word COM (bake nomor halaman yang benar) ───────────────
+
+def _update_fields_via_word_com(docx_path):
+    """
+    Buka file via Word COM automation, update semua PAGEREF fields (Word
+    menghitung pagination dulu), lalu simpan. Hasilnya: nomor halaman
+    sudah ter-bake benar tanpa user perlu F9.
+
+    Membutuhkan Microsoft Word di Windows. Jika gagal, return False (graceful).
+    """
+    import os
+    abs_path = os.path.abspath(docx_path)
+    word = None
+    doc  = None
+    try:
+        import win32com.client
+        word = win32com.client.Dispatch('Word.Application')
+        word.Visible      = False
+        word.DisplayAlerts = 0  # wdAlertsNone — suppress semua dialog
+        doc = word.Documents.Open(
+            abs_path,
+            ConfirmConversions=False,
+            ReadOnly=False,
+            AddToRecentFiles=False,
+            Visible=False,
+        )
+        doc.Fields.Update()
+        doc.Save()
+        return True
+    except Exception:
+        return False
+    finally:
+        try:
+            if doc is not None:
+                doc.Close(False)
+        except Exception:
+            pass
+        try:
+            if word is not None:
+                word.Quit()
+        except Exception:
+            pass
 
 
 # ── Auto-update fields on open ────────────────────────────────────────────────
@@ -2318,6 +2353,11 @@ def main():
         doc.save(output_file)
     except Exception as e:
         _fail("FILE_SAVE_ERROR", f"Gagal menyimpan file: {e}")
+
+    # ── Bake nomor halaman via Word COM ──────────────────────────────────────
+    # Word membuka file, menghitung pagination, update semua PAGEREF fields,
+    # lalu simpan kembali. User langsung lihat nomor halaman yang benar.
+    _update_fields_via_word_com(output_file)
 
     print(json.dumps({
         "status":           "success",
