@@ -397,6 +397,31 @@ def detect_headings(doc, max_level):
             deduped.append((pidx, lvl, txt))
         results = deduped
 
+    # Deduplikasi BAB cluster: jika BAB yang sama muncul >1 kali (karena TOC
+    # manual diketik sebelum konten asli), pertahankan kemunculan TERAKHIR
+    # beserta sub-headingnya, hapus kemunculan awal beserta H2/H3-nya.
+    _bab_id_re = re.compile(r'^\s*BAB\s+([IVXivx\d]+)\b', re.IGNORECASE)
+    bab_occ = {}
+    for i, (pidx, lvl, txt) in enumerate(results):
+        if lvl == 1:
+            m = _bab_id_re.match(txt)
+            if m:
+                key = m.group(1).upper()
+                bab_occ.setdefault(key, []).append(i)
+
+    dup_bab_remove = set()
+    for key, idxs in bab_occ.items():
+        if len(idxs) > 1:
+            for ri in idxs[:-1]:
+                dup_bab_remove.add(ri)
+                for j in range(ri + 1, len(results)):
+                    if results[j][1] == 1:
+                        break
+                    dup_bab_remove.add(j)
+
+    if dup_bab_remove:
+        results = [e for i, e in enumerate(results) if i not in dup_bab_remove]
+
     return results
 
 
@@ -2184,6 +2209,15 @@ def main():
     )
 
     # ── Sisipkan setelah "DAFTAR ISI" ────────────────────────────────────────
+    # Simpan referensi elemen BAB pertama yang nyata (sebelum paragraf dimodifikasi)
+    # untuk batas penghapusan TOC manual (jika ada)
+    _bab_re_main = re.compile(r'^\s*BAB\s+[IVXivx\d]+\b', re.IGNORECASE)
+    _first_real_bab_el = None
+    for _pidx, _lvl, _txt in headings:
+        if _lvl == 1 and _bab_re_main.match(_txt):
+            _first_real_bab_el = doc.paragraphs[_pidx]._p
+            break
+
     daftar_idx = find_daftar_isi_idx(doc)
     if daftar_idx is not None:
         # Hapus seluruh TOC field lama (begin → end) di paragraf langsung jika ada
@@ -2243,6 +2277,26 @@ def main():
             last_inserted.addnext(pb_para)
             last_inserted = pb_para
         _remove_trailing_empty_paras(last_inserted)
+
+        # Hapus sisa TOC manual (paragraf Normal bergaya heading/kosong) antara
+        # page break kita dan BAB pertama konten asli, agar tidak double TOC.
+        if _first_real_bab_el is not None:
+            _cur = last_inserted.getnext()
+            while _cur is not None and _cur is not _first_real_bab_el:
+                if not _cur.tag.endswith('}p'):
+                    break
+                # Stop jika paragraph punya sectPr (section break)
+                _pPr2 = _cur.find(qn('w:pPr'))
+                if _pPr2 is not None and _pPr2.find(qn('w:sectPr')) is not None:
+                    break
+                _txt2 = ''.join(t.text or '' for t in _cur.iter(qn('w:t'))).strip()
+                # Stop jika teks panjang (> 100 char) → ini prosa, bukan TOC entry
+                if len(_txt2) > 100:
+                    break
+                # Hapus paragraf pendek/kosong (TOC manual entry)
+                _nxt2 = _cur.getnext()
+                _cur.getparent().remove(_cur)
+                _cur = _nxt2
 
         insert_pos_desc = f'setelah paragraf "DAFTAR ISI" (index {daftar_idx})'
     else:
