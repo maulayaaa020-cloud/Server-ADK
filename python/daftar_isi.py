@@ -151,13 +151,14 @@ _FRONT_MATTER_RE = re.compile(
     r'ABSTRAK|ABSTRACT|INTISARI|SARI|RINGKASAN|SUMMARY|'
     r'DAFTAR\s+(ISI|GAMBAR|TABEL|LAMPIRAN|SINGKATAN|SIMBOL|NOTASI|'
     r'ARTI\s+LAMBANG|PERSAMAAN)|'
-    r'LEMBAR\s+(PERSETUJUAN|PENGESAHAN|PERNYATAAN\S*|ORISINALITAS)|'
-    r'HALAMAN\s+(PERSETUJUAN\S*|PENGESAHAN|PERNYATAAN\S*|PERSEMBAHAN|'
-    r'JUDUL|COVER|ORISINALITAS)|'
+    r'LEMBAR\s+(PERSETUJUAN|PENGESAHAN|PERNYATAAN|ORISINALITAS)(\s+\S+)*|'
+    r'HALAMAN\s+(PERSETUJUAN|PENGESAHAN|PERNYATAAN|PERSEMBAHAN|'
+    r'JUDUL|COVER|ORISINALITAS)(\s+\S+)*|'
+    r'FORMULIR\s+(PERBAIKAN|REVISI|PERSETUJUAN)(\s+\S+)*|'
+    r'PENGESAHAN\s+\S+(\s+\S+)*|'
     r'PERNYATAAN\s+(KEASLIAN|ORISINALITAS)|'
     r'MOTTO|PERSEMBAHAN|REFERENCES?|BIBLIOGRAPHY|'
-    r'LAMPIRAN|APPENDIX|APPENDICES|'
-    r'HALAMAN\s+PERSETUJUAN\s+PEMBIMBING|HALAMAN\s+PERNYATAAN\s+KEASLIAN)$',
+    r'LAMPIRAN|APPENDIX|APPENDICES)$',
     re.IGNORECASE
 )
 
@@ -368,6 +369,14 @@ def detect_headings(doc, max_level):
                     text = text + ' ' + nt
                     merged_idx.add(j)
                     break
+
+        # Paragraf front-matter sebelum BAB I yang berisi dua judul digabung
+        # (misal "HALAMAN PENGESAHAN SKRIPSI HALAMAN PERSETUJUAN SKRIPSI"):
+        # ambil segmen terakhir saja agar cocok dengan referensi Word.
+        if first_bab is not None and i < first_bab:
+            _fm_starts = list(re.finditer(r'\b(HALAMAN|LEMBAR|FORMULIR)\b', text, re.IGNORECASE))
+            if len(_fm_starts) > 1:
+                text = text[_fm_starts[-1].start():]
 
         results.append((i, lvl, text))
 
