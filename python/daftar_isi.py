@@ -1788,6 +1788,12 @@ def _make_static_toc_para(num_text, content_text, level, bk_name, font, size_pt,
     pPr.append(pStyle)
     p.append(pPr)
 
+    # ── Hyperlink wrapper (Ctrl+Click navigasi ke heading) ────────────────────
+    hl = OxmlElement('w:hyperlink')
+    hl.set(qn('w:anchor'), bk_name)
+    hl.set(qn('w:history'), '1')
+    p.append(hl)
+
     # ── Teks heading ──────────────────────────────────────────────────────────
     if num_text:
         # Run nomor
@@ -1797,12 +1803,12 @@ def _make_static_toc_para(num_text, content_text, level, bk_name, font, size_pt,
         t_num.set(_XML_SPACE, 'preserve')
         t_num.text = num_text
         r_num.append(t_num)
-        p.append(r_num)
+        hl.append(r_num)
         # Tab pemisah nomor-konten
         r_tab_sep = OxmlElement('w:r')
         r_tab_sep.append(_build_run_rPr(font, size_pt, is_bold))
         r_tab_sep.append(OxmlElement('w:tab'))
-        p.append(r_tab_sep)
+        hl.append(r_tab_sep)
 
     r_text = OxmlElement('w:r')
     r_text.append(_build_run_rPr(font, size_pt, is_bold))
@@ -1810,13 +1816,13 @@ def _make_static_toc_para(num_text, content_text, level, bk_name, font, size_pt,
     t.set(_XML_SPACE, 'preserve')
     t.text = content_text
     r_text.append(t)
-    p.append(r_text)
+    hl.append(r_text)
 
     # ── Tab ───────────────────────────────────────────────────────────────────
     r_tab = OxmlElement('w:r')
     r_tab.append(_build_run_rPr(font, size_pt, is_bold))
     r_tab.append(OxmlElement('w:tab'))
-    p.append(r_tab)
+    hl.append(r_tab)
 
     # ── PAGEREF field ─────────────────────────────────────────────────────────
     base_rPr = _build_run_rPr(font, size_pt, is_bold)
@@ -1826,7 +1832,7 @@ def _make_static_toc_para(num_text, content_text, level, bk_name, font, size_pt,
     fc = OxmlElement('w:fldChar')
     fc.set(qn('w:fldCharType'), 'begin')
     r_begin.append(fc)
-    p.append(r_begin)
+    hl.append(r_begin)
 
     r_instr = OxmlElement('w:r')
     r_instr.append(copy.deepcopy(base_rPr))
@@ -1834,28 +1840,28 @@ def _make_static_toc_para(num_text, content_text, level, bk_name, font, size_pt,
     instr.set(_XML_SPACE, 'preserve')
     instr.text = f' PAGEREF {bk_name} \\h '
     r_instr.append(instr)
-    p.append(r_instr)
+    hl.append(r_instr)
 
     r_sep = OxmlElement('w:r')
     r_sep.append(copy.deepcopy(base_rPr))
     fc_sep = OxmlElement('w:fldChar')
     fc_sep.set(qn('w:fldCharType'), 'separate')
     r_sep.append(fc_sep)
-    p.append(r_sep)
+    hl.append(r_sep)
 
     r_ph = OxmlElement('w:r')
     r_ph.append(copy.deepcopy(base_rPr))
     t_ph = OxmlElement('w:t')
     t_ph.text = '1'
     r_ph.append(t_ph)
-    p.append(r_ph)
+    hl.append(r_ph)
 
     r_end = OxmlElement('w:r')
     r_end.append(copy.deepcopy(base_rPr))
     fc_end = OxmlElement('w:fldChar')
     fc_end.set(qn('w:fldCharType'), 'end')
     r_end.append(fc_end)
-    p.append(r_end)
+    hl.append(r_end)
 
     return p
 
