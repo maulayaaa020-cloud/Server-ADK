@@ -1831,6 +1831,7 @@ def _make_static_toc_para(num_text, content_text, level, bk_name, font, size_pt,
     r_begin.append(copy.deepcopy(base_rPr))
     fc = OxmlElement('w:fldChar')
     fc.set(qn('w:fldCharType'), 'begin')
+    fc.set(qn('w:dirty'), 'true')
     r_begin.append(fc)
     hl.append(r_begin)
 
