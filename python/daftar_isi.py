@@ -1678,20 +1678,30 @@ def _build_toc_content(headings, doc, docx_path, font, size_pt, use_dots,
                     del counters[k]
 
         if para_idx in para_list_pfx:
-            prefix = para_list_pfx[para_idx]
+            num_text     = para_list_pfx[para_idx]
+            content_text = text.replace('\n', ' ')
         else:
             prefix = _get_effective_num_prefix(para, num_def_map, num_info, level, counters)
-        bk_id      = bk_id_base + seq
-        bk_name    = f'_ADKToc{bk_id}'
-        entry_text = (prefix + text).replace('\n', ' ')
-        # Hilangkan satu spasi setelah prefix nomor bertitik yang diketik manual
-        # (mis. "1.1 Latar" → "1.1Latar") agar sesuai format referensi
-        entry_text = re.sub(r'^((?:\d+\.)+\d+) ', r'\1', entry_text)
+            if prefix:
+                num_text     = prefix
+                content_text = text.replace('\n', ' ')
+            else:
+                # Tidak ada numPr prefix — cek apakah teks diawali nomor bertitik
+                # seperti "1.1 Latar Belakang" (diketik manual di dokumen asli)
+                t_clean = text.replace('\n', ' ')
+                m = re.match(r'^((?:\d+\.)+\d+) (.+)', t_clean)
+                if m:
+                    num_text, content_text = m.group(1), m.group(2)
+                else:
+                    num_text, content_text = '', t_clean
+
+        bk_id   = bk_id_base + seq
+        bk_name = f'_ADKToc{bk_id}'
 
         _add_paragraph_bookmark(para, bk_id, bk_name)
 
         p = _make_static_toc_para(
-            entry_text, level, bk_name, font, size_pt, use_dots, right_tab_pos
+            num_text, content_text, level, bk_name, font, size_pt, use_dots, right_tab_pos
         )
         entry_paras.append(p)
 
@@ -1715,7 +1725,8 @@ def _build_toc_content(headings, doc, docx_path, font, size_pt, use_dots,
     return entry_paras
 
 
-def _make_static_toc_para(text, level, bk_name, font, size_pt, use_dots, right_tab_pos):
+def _make_static_toc_para(num_text, content_text, level, bk_name, font, size_pt,
+                          use_dots, right_tab_pos):
     """
     Buat satu paragraf TOC statis dengan PAGEREF untuk nomor halaman.
 
@@ -1723,15 +1734,15 @@ def _make_static_toc_para(text, level, bk_name, font, size_pt, use_dots, right_t
     - Formatting (font, bold) sepenuhnya dikontrol kita via rPr inline
     - Tidak ada warisan bold/font dari paragraf sumber (DAF2 problem)
     - Nomor halaman tetap dinamis via PAGEREF — diupdate Word saat dibuka
+
+    Jika num_text non-kosong, struktur: <t>num_text</t><TAB/><t>content_text</t>
+    Jika num_text kosong: <t>content_text</t>
     """
     import copy
     p       = OxmlElement('w:p')
     is_bold = (level == 1)
 
     # ── pPr ──────────────────────────────────────────────────────────────────
-    # Hanya set style — indentasi, tab stops, dan spacing diatur oleh _ensure_toc_style
-    # pada definisi TOC style. Tidak ada inline override agar sesuai dengan dokumen
-    # Word standar (File Benar menggunakan format ini).
     pPr = OxmlElement('w:pPr')
     pStyle = OxmlElement('w:pStyle')
     pStyle.set(qn('w:val'), f'TOC{level}')
@@ -1739,11 +1750,26 @@ def _make_static_toc_para(text, level, bk_name, font, size_pt, use_dots, right_t
     p.append(pPr)
 
     # ── Teks heading ──────────────────────────────────────────────────────────
+    if num_text:
+        # Run nomor
+        r_num = OxmlElement('w:r')
+        r_num.append(_build_run_rPr(font, size_pt, is_bold))
+        t_num = OxmlElement('w:t')
+        t_num.set(_XML_SPACE, 'preserve')
+        t_num.text = num_text
+        r_num.append(t_num)
+        p.append(r_num)
+        # Tab pemisah nomor-konten
+        r_tab_sep = OxmlElement('w:r')
+        r_tab_sep.append(_build_run_rPr(font, size_pt, is_bold))
+        r_tab_sep.append(OxmlElement('w:tab'))
+        p.append(r_tab_sep)
+
     r_text = OxmlElement('w:r')
     r_text.append(_build_run_rPr(font, size_pt, is_bold))
     t = OxmlElement('w:t')
     t.set(_XML_SPACE, 'preserve')
-    t.text = text.replace('\n', ' ')
+    t.text = content_text
     r_text.append(t)
     p.append(r_text)
 
